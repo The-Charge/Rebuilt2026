@@ -4,10 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.TurretSubsystem;
 
-public class pointAtHub extends Command {
+public class pointAndShoot extends Command {
     private final TurretSubsystem turretSub;
 
-    public pointAtHub(TurretSubsystem tsub) {
+    public pointAndShoot(TurretSubsystem tsub) {
         turretSub = tsub;
 
         addRequirements(turretSub);
