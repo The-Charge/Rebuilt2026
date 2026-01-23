@@ -46,13 +46,13 @@ public class IntakeSubsystem extends SubsystemBase {
         pivotMotor.setControl(request);
     }
 
-    public void startIntake() {
+    public void startRoller() {
         rollerMotor
             .getClosedLoopController() // this might cuase problems??????
             .setSetpoint(IntakeConstants.RollerVelocity, ControlType.kVelocity);
     }
 
-    public void stopIntake() {
+    public void stopRoller() {
         rollerMotor.set(0);
     }
 
