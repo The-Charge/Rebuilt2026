@@ -14,4 +14,6 @@ public class IntakeConstants {
     public static double RetractedPosition = 7.654321;
 
     public static double RollerVelocity = 123.456;
+
+    public static double StateTolerance = 1.23456;
 }

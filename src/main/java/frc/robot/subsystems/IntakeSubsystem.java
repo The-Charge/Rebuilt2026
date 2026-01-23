@@ -13,27 +13,41 @@ public class IntakeSubsystem extends SubsystemBase {
     public TalonFX pivotMotor;
     public SparkMax rollerMotor;
 
-    enum State {
+    enum Target {
         DEPLOYED,
         RETRACTED,
         UNKNOWN,
     }
 
-    public State state; // TODO: use this???
+    public Target target; // TODO: use this???
 
     public IntakeSubsystem() {
         pivotMotor = new TalonFX(IntakeConstants.PivotMotorId);
         rollerMotor = new SparkMax(IntakeConstants.RollerMotorId, MotorType.kBrushless);
         
-        state = State.RETRACTED;
+        target = Target.UNKNOWN;
     }
 
-    public boolean isDeployed() { return state == State.DEPLOYED; }
+    public Target currentState() {
+        if (target == Target.DEPLOYED
+            && pivotMotor.getPosition().isNear(IntakeConstants.DeployedPosition, IntakeConstants.StateTolerance)) {
+            return Target.DEPLOYED;
+        }
+        if (target == Target.RETRACTED
+            && pivotMotor.getPosition().isNear(IntakeConstants.RetractedPosition, IntakeConstants.StateTolerance)) {
+            return Target.RETRACTED;
+        }
 
-    public boolean isRetracted() { return state == State.RETRACTED; }
+        return Target.UNKNOWN;
+    }
+
+    public boolean isDeployed() { return currentState() == Target.DEPLOYED; }
+    public boolean isRetracted() { return currentState() == Target.RETRACTED; }
 
     public void deploy() {
         if (isDeployed()) return;
+
+        target = Target.DEPLOYED;
         
         PositionVoltage request = new PositionVoltage(IntakeConstants.DeployedPosition);
         pivotMotor.setControl(request);
@@ -41,6 +55,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void retract() {
         if (isRetracted()) return;
+
+        target = Target.RETRACTED;
 
         PositionVoltage request = new PositionVoltage(IntakeConstants.RetractedPosition);
         pivotMotor.setControl(request);
