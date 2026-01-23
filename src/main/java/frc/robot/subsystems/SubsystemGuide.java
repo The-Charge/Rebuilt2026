@@ -5,7 +5,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.units.measure.AngularVelocity;
+
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ConstantsGuide;
 
@@ -62,8 +63,8 @@ public class SubsystemGuide extends SubsystemBase {
     }
 
     // example code to get the current velocity of a motor
-    public AngularVelocity getExampleMotorVelocity() {
-        return exampleTalonFXMotor.getVelocity().getValue();
+    public double getExampleMotorRPM() {
+        return exampleTalonFXMotor.getVelocity().getValue().abs(Units.RPM);
     }
 
     // this is a function for use only within the subsystem itself, so it is marked private
