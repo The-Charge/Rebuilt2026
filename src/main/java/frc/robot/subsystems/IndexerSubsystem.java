@@ -2,10 +2,12 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexConstants;
 
@@ -18,6 +20,15 @@ public class IndexerSubsystem extends SubsystemBase {
         spindexerMotor = new TalonFX(IndexConstants.spindexerMotorID);//port number under indexConstants
 
         configureTalonFXMotor(); //always configure before their use
+    }
+
+public double getVelocityRPM(){
+    return spindexerMotor.getVelocity().getValue().abs(Units.RPM);
+}
+
+    public void setIndexerVelocity(double velocity){
+        VelocityVoltage request = new VelocityVoltage(velocity);
+        spindexerMotor.setControl(request);
     }
 @Override
     public void periodic(){

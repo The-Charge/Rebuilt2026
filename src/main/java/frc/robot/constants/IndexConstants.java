@@ -25,4 +25,5 @@ public class IndexConstants {
     public static final Optional<Double> forwardHardLimitResetValue = Optional.empty();
     public static final boolean reverseHardLimitEnabled = false;
     public static final Optional<Double> reverseHardLimitResetValue = Optional.empty();
+    public static final double spindexerMotorVelocity = 0;
 }

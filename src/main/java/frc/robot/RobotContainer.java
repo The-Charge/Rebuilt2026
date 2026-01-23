@@ -9,9 +9,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.IndexerSubsystem;
 
 public class RobotContainer {
+  
+  public final IndexerSubsystem indexer;
 
   public RobotContainer() {
     configureBindings();
+    indexer = new IndexerSubsystem();
   }
 
   private void configureBindings() {}
