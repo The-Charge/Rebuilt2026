@@ -7,28 +7,27 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LEDSubsystem extends SubsystemBase {
 
-  AddressableLED led;
-  AddressableLEDBuffer buffer;
+    AddressableLED led;
+    AddressableLEDBuffer buffer;
 
-  public LEDSubsystem() {
-    led = new AddressableLED(9); // port number
-    buffer = new AddressableLEDBuffer(60); // nuumber of LEDs
+    public LEDSubsystem() {
+        led = new AddressableLED(9); // port number
+        buffer = new AddressableLEDBuffer(60); // nuumber of LEDs
 
-    led.setLength(buffer.getLength()); // set led buffer
-    led.setData(buffer);
-    led.start();
-  }
-
-  @Override
-  public void periodic() {
-    update();
-  }
-
-  private void update() {
-    for (int i = 0; i < buffer.getLength(); i++) {
-      buffer.setLED(i, Color.kGreen); // LED color
+        led.setLength(buffer.getLength()); // set led buffer
+        led.setData(buffer);
+        led.start();
     }
-    led.setData(buffer); // update to led
-  }
+
+    @Override
+    public void periodic() {
+        update();
+    }
+
+    private void update() {
+        for (int i = 0; i < buffer.getLength(); i++) {
+            buffer.setLED(i, Color.kGreen); // LED color
+        }
+        led.setData(buffer); // update to led
+    }
 }
-       

@@ -9,11 +9,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class RobotContainer {
 
-  LEDSubsystem LEDSubsystem;
-  public RobotContainer() {
-    configureBindings();
-    LEDSubsystem = new LEDSubsystem();
-  }
+    LEDSubsystem LEDSubsystem;
+
+    public RobotContainer() {
+        configureBindings();
+        LEDSubsystem = new LEDSubsystem();
+    }
 
     private void configureBindings() {}
 
