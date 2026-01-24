@@ -32,7 +32,7 @@ public class RobotContainer {
     driver2.b().onTrue(new RetractIntake(intakeSystem));
   }
 
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
-  }
+    public Command getAutonomousCommand() {
+        return Commands.print("No autonomous command configured");
+    }
 }
