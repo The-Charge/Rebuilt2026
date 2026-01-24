@@ -15,9 +15,9 @@ public class RobotContainer {
     LEDSubsystem = new LEDSubsystem();
   }
 
-  private void configureBindings() {}
+    private void configureBindings() {}
 
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
-  }
+    public Command getAutonomousCommand() {
+        return Commands.print("No autonomous command configured");
+    }
 }
