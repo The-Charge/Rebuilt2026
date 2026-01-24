@@ -1,17 +1,15 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 
@@ -32,31 +30,36 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMotor = new SparkMax(IntakeConstants.RollerMotorId, MotorType.kBrushless);
 
         // pivotMotor.getConfigurator().
-        
+
         target = Target.UNKNOWN;
     }
 
     public Target currentState() {
         if (target == Target.DEPLOYED
-            && pivotMotor.getPosition().isNear(IntakeConstants.DeployedPosition, IntakeConstants.StateTolerance)) {
+                && pivotMotor.getPosition().isNear(IntakeConstants.DeployedPosition, IntakeConstants.StateTolerance)) {
             return Target.DEPLOYED;
         }
         if (target == Target.RETRACTED
-            && pivotMotor.getPosition().isNear(IntakeConstants.RetractedPosition, IntakeConstants.StateTolerance)) {
+                && pivotMotor.getPosition().isNear(IntakeConstants.RetractedPosition, IntakeConstants.StateTolerance)) {
             return Target.RETRACTED;
         }
 
         return Target.UNKNOWN;
     }
 
-    public boolean isDeployed() { return currentState() == Target.DEPLOYED; }
-    public boolean isRetracted() { return currentState() == Target.RETRACTED; }
+    public boolean isDeployed() {
+        return currentState() == Target.DEPLOYED;
+    }
+
+    public boolean isRetracted() {
+        return currentState() == Target.RETRACTED;
+    }
 
     public void deploy() {
         if (isDeployed()) return;
 
         target = Target.DEPLOYED;
-        
+
         PositionVoltage request = new PositionVoltage(IntakeConstants.DeployedPosition);
         pivotMotor.setControl(request);
     }
@@ -72,8 +75,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void startRoller() {
         rollerMotor
-            .getClosedLoopController() // this might cuase problems??????
-            .setSetpoint(IntakeConstants.RollerVelocity, ControlType.kVelocity);
+                .getClosedLoopController() // this might cuase problems??????
+                .setSetpoint(IntakeConstants.RollerVelocity, ControlType.kVelocity);
     }
 
     public void stopRoller() {
@@ -86,10 +89,10 @@ public class IntakeSubsystem extends SubsystemBase {
         motorConfig.MotorOutput.PeakReverseDutyCycle = -IntakeConstants.maxVBus;
         motorConfig.MotorOutput.withNeutralMode(IntakeConstants.neutralMode);
         motorConfig.MotorOutput.Inverted = IntakeConstants.inverted;
-        
+
         motorConfig.CurrentLimits.StatorCurrentLimit = IntakeConstants.maxCurrent;
         motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        
+
         Slot0Configs slotConfigs = motorConfig.Slot0;
         slotConfigs.kS = slotConfigs.kV = 0;
         slotConfigs.kP = IntakeConstants.pidf.p;
@@ -107,10 +110,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // motorConfig.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = ElevConstants.hardStopResetsEncoder;
         // motorConfig.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = ElevConstants.hardStopResetValue;
-        
+
         pivotMotor.getConfigurator().apply(motorConfig);
-        
-        SoftwareLimitSwitchConfigs  softLimits = new SoftwareLimitSwitchConfigs();
+
+        SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs();
         softLimits.ForwardSoftLimitEnable = softLimits.ReverseSoftLimitEnable = true;
         softLimits.ForwardSoftLimitThreshold = IntakeConstants.maxPosTicks;
         softLimits.ReverseSoftLimitThreshold = IntakeConstants.minPosTicks;
@@ -118,8 +121,5 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
-        
-    }
-
+    public void periodic() {}
 }
