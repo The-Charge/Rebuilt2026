@@ -1,9 +1,8 @@
 package frc.robot.constants;
 
-import java.util.Optional;
-
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import java.util.Optional;
 
 public class IndexConstants {
 
@@ -17,7 +16,7 @@ public class IndexConstants {
     public static final double kI = 0;
     public static final double kD = 0;
     public static final double kG = 0;
-    //TODO: indexer units
+    // TODO: indexer units
     public static final Optional<Double> forwardSoftLimit = Optional.empty();
     public static final Optional<Double> reverseSoftLimit = Optional.empty();
     public static final double maxVoltage = 16;

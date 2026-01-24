@@ -6,7 +6,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
-
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexConstants;
@@ -14,32 +13,31 @@ import frc.robot.constants.IndexConstants;
 public class IndexerSubsystem extends SubsystemBase {
 
     private final TalonFX spindexerMotor;
-    
-    public IndexerSubsystem() {
-        
-        spindexerMotor = new TalonFX(IndexConstants.spindexerMotorID);//port number under indexConstants
 
-        configureTalonFXMotor(); //always configure before their use
+    public IndexerSubsystem() {
+
+        spindexerMotor = new TalonFX(IndexConstants.spindexerMotorID); // port number under indexConstants
+
+        configureTalonFXMotor(); // always configure before their use
     }
 
-public double getVelocityRPM(){
-    return spindexerMotor.getVelocity().getValue().abs(Units.RPM);
-}
+    public double getVelocityRPM() {
+        return spindexerMotor.getVelocity().getValue().abs(Units.RPM);
+    }
 
-    public void setIndexerVelocity(double velocity){
+    public void setIndexerVelocity(double velocity) {
         VelocityVoltage request = new VelocityVoltage(velocity);
         spindexerMotor.setControl(request);
     }
-@Override
-    public void periodic(){
 
+    @Override
+    public void periodic() {}
+
+    public void stop() {
+        spindexerMotor.stopMotor(); // safety
     }
 
-    public void stop(){
-        spindexerMotor.stopMotor();//safety
-    }
-
-    private void configureTalonFXMotor(){
+    private void configureTalonFXMotor() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         // current limits
@@ -50,11 +48,13 @@ public double getVelocityRPM(){
         config.HardwareLimitSwitch.ForwardLimitEnable = IndexConstants.forwardHardLimitEnabled;
         config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable =
                 IndexConstants.forwardHardLimitResetValue.isPresent();
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue = IndexConstants.forwardHardLimitResetValue.orElse(0d);
+        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue =
+                IndexConstants.forwardHardLimitResetValue.orElse(0d);
         config.HardwareLimitSwitch.ReverseLimitEnable = IndexConstants.reverseHardLimitEnabled;
         config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable =
                 IndexConstants.reverseHardLimitResetValue.isPresent();
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue = IndexConstants.reverseHardLimitResetValue.orElse(0d);
+        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue =
+                IndexConstants.reverseHardLimitResetValue.orElse(0d);
 
         // braking mode
         config.MotorOutput.NeutralMode = IndexConstants.neutralMode;
@@ -83,10 +83,9 @@ public double getVelocityRPM(){
         config.Voltage.PeakReverseVoltage = -IndexConstants.maxVoltage;
 
         if (spindexerMotor.getConfigurator().apply(config) != StatusCode.OK) {
-            //TODO: error reporting
-            //Logger.reportError("Failed to configure elevator motor");
-            //Alerts.elevMotorConfigFail.set(true);
+            // TODO: error reporting
+            // Logger.reportError("Failed to configure elevator motor");
+            // Alerts.elevMotorConfigFail.set(true);
         }
     }
 }
-
