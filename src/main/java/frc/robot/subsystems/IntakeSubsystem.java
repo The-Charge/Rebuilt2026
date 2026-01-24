@@ -7,11 +7,16 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
+import frc.robot.constants.IntakeConstants.PivotConfig;
+import frc.robot.constants.IntakeConstants.RollerConfig;
 
 public class IntakeSubsystem extends SubsystemBase {
     public TalonFX pivotMotor;
@@ -83,22 +88,33 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMotor.set(0);
     }
 
+    public void configureRollerMotor() {
+        SparkMaxConfig motorConfig = new SparkMaxConfig();
+        motorConfig.closedLoop.p(RollerConfig.pid.p);
+        motorConfig.closedLoop.i(RollerConfig.pid.i);
+        motorConfig.closedLoop.d(RollerConfig.pid.d);
+        rollerMotor.configure(
+                motorConfig,
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters); // TODO: I don't know if these are good params
+    }
+
     public void configurePivotMotor() {
         TalonFXConfiguration motorConfig = new TalonFXConfiguration();
-        motorConfig.MotorOutput.PeakForwardDutyCycle = IntakeConstants.maxVBus;
-        motorConfig.MotorOutput.PeakReverseDutyCycle = -IntakeConstants.maxVBus;
-        motorConfig.MotorOutput.withNeutralMode(IntakeConstants.neutralMode);
-        motorConfig.MotorOutput.Inverted = IntakeConstants.inverted;
+        motorConfig.MotorOutput.PeakForwardDutyCycle = PivotConfig.maxVBus;
+        motorConfig.MotorOutput.PeakReverseDutyCycle = -PivotConfig.maxVBus;
+        motorConfig.MotorOutput.withNeutralMode(PivotConfig.neutralMode);
+        motorConfig.MotorOutput.Inverted = PivotConfig.inverted;
 
-        motorConfig.CurrentLimits.StatorCurrentLimit = IntakeConstants.maxCurrent;
+        motorConfig.CurrentLimits.StatorCurrentLimit = PivotConfig.maxCurrent;
         motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         Slot0Configs slotConfigs = motorConfig.Slot0;
         slotConfigs.kS = slotConfigs.kV = 0;
-        slotConfigs.kP = IntakeConstants.pidf.p;
-        slotConfigs.kI = IntakeConstants.pidf.i;
-        slotConfigs.kD = IntakeConstants.pidf.d;
-        slotConfigs.kG = IntakeConstants.pidf.f;
+        slotConfigs.kP = PivotConfig.pidf.p;
+        slotConfigs.kI = PivotConfig.pidf.i;
+        slotConfigs.kD = PivotConfig.pidf.d;
+        slotConfigs.kG = PivotConfig.pidf.f;
 
         slotConfigs.GravityType = GravityTypeValue.Elevator_Static;
 
@@ -115,8 +131,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
         SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs();
         softLimits.ForwardSoftLimitEnable = softLimits.ReverseSoftLimitEnable = true;
-        softLimits.ForwardSoftLimitThreshold = IntakeConstants.maxPosTicks;
-        softLimits.ReverseSoftLimitThreshold = IntakeConstants.minPosTicks;
+        softLimits.ForwardSoftLimitThreshold = PivotConfig.maxPosTicks;
+        softLimits.ReverseSoftLimitThreshold = PivotConfig.minPosTicks;
         pivotMotor.getConfigurator().apply(softLimits);
     }
 

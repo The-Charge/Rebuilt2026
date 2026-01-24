@@ -20,17 +20,27 @@ public class IntakeConstants {
 
     public static double StateTolerance = 1.23456;
 
-    public static double maxVBus = 1.00;
-    public static NeutralModeValue neutralMode = NeutralModeValue.Brake;
-    public static InvertedValue inverted = InvertedValue.Clockwise_Positive;
-    public static double maxCurrent = 35;
-    public static double minPosTicks = 0;
-    public static double maxPosTicks = 123;
+    public static class RollerConfig {
+        public static class pid {
+            public static double p = 0.3;
+            public static double i = 0;
+            public static double d = 0.02;
+        }
+    }
 
-    public static class pidf {
-        public static double p = 0.3;
-        public static double i = 0;
-        public static double d = 0.02;
-        public static double f = 0;
+    public static class PivotConfig {
+        public static double maxVBus = 1.00;
+        public static NeutralModeValue neutralMode = NeutralModeValue.Brake;
+        public static InvertedValue inverted = InvertedValue.Clockwise_Positive;
+        public static double maxCurrent = 35;
+        public static double minPosTicks = 0;
+        public static double maxPosTicks = 123;
+
+        public static class pidf {
+            public static double p = 0.3;
+            public static double i = 0;
+            public static double d = 0.02;
+            public static double f = 0;
+        }
     }
 }
