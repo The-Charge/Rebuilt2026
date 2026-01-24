@@ -1,9 +1,17 @@
 package frc.robot.commands.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SubsystemGuide;
@@ -21,23 +29,25 @@ public class AlignTurret extends Command {
     private final LimelightSubsystem lsub;
     private final TurretSubsystem tsub;
     private PoseEstimate poseEstimate;
-    private PIDController pid;
+    private boolean detectionStatus;
+    private boolean isRed;
+
+    private Pose2d robotToHub;
+    private Rotation2d rotationToHub;
+
     public AlignTurret(LimelightSubsystem lsub, TurretSubsystem tsub) {
         this.lsub = lsub;
         this.tsub = tsub;
-
-        pid = new PIDController(TurretConstants.shooterPID.getP(), TurretConstants.shooterPID.getI(), TurretConstants.shooterPID.getD());
-        pid.setSetpoint(TurretConstants.shooterAcceptableAngle);
-
-
+        
         addRequirements(lsub, tsub);
     }
     @Override
     public void initialize() {
+
         // initialize runs only once, that being when the command starts
 
         // LSUB GET POSE, set into pose
-        this.poseEstimate = null;
+        isRed = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red);
     }
 
     @Override
@@ -45,8 +55,30 @@ public class AlignTurret extends Command {
         // execute is a lot like "periodic" for subsystems
         // execute will run in a loop until the command ends
 
-    }
 
+        // Get Detection (safe)
+         if (lsub.getVisionMeasurement().isEmpty()) {
+            SmartDashboard.putString("AprilTagFound","No apriltag :("); // replace later
+            this.detectionStatus = false;
+            return;
+        }
+        else {
+            SmartDashboard.putString("AprilTagFound","Found Apriltag :)");
+            this.detectionStatus = true;
+        }
+        this.poseEstimate = this.detectionStatus ? lsub.getVisionMeasurement().get() : null; 
+
+
+        // Get Pose2d that points from robot to hub (hub vector - robot vector)
+        if (isRed) robotToHub = new Pose2d(FieldConstants.redHubPos.minus(poseEstimate.pose).getTranslation(), new Rotation2d());
+        else robotToHub = new Pose2d(FieldConstants.blueHubPos.minus(poseEstimate.pose).getTranslation(), new Rotation2d());
+
+        // Set turret angle to robotToHub vector
+        rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY()); 
+
+        tsub.setTurretAngle(rotationToHub);
+    }
+    private AprilTagFieldLayout a;
     @Override
     public void end(boolean interrupted) {
         // end is called only once, when the command ends and is exiting
@@ -63,3 +95,4 @@ public class AlignTurret extends Command {
         return false;
     }
 }
+
