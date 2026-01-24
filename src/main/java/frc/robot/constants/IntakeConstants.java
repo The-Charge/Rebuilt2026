@@ -25,12 +25,13 @@ public class IntakeConstants {
     public static double maxCurrent;
     public static double maxPosTicks;
     public static double minPosTicks;
+
     public static class pidf {
 
         public static double p;
         public static double i;
         public static double d;
         public static double f;
-
-    };
+    }
+    ;
 }

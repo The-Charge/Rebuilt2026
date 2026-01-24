@@ -1,12 +1,12 @@
-package frc.commands;
+package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 
-public class DeployIntake extends Command {
+public class RetractIntake extends Command {
     private IntakeSubsystem intake;
 
-    public DeployIntake(IntakeSubsystem intake) {
+    public RetractIntake(IntakeSubsystem intake) {
         this.intake = intake;
 
         addRequirements(intake);
@@ -14,16 +14,17 @@ public class DeployIntake extends Command {
 
     @Override
     public void initialize() {
-        intake.deploy();
+        intake.stopRoller();
+        intake.retract();
     }
 
     @Override
     public void end(boolean interrupted) {
-        intake.startRoller();
+        // idk
     }
 
     @Override
     public boolean isFinished() {
-        return intake.isDeployed();
+        return intake.isRetracted();
     }
 }
