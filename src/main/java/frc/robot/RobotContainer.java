@@ -10,11 +10,11 @@ import frc.robot.subsystems.IndexerSubsystem;
 
 public class RobotContainer {
 
-    public final IndexerSubsystem indexer;
+    public final IndexerSubsystem indexer; // defines instance
 
     public RobotContainer() {
         configureBindings();
-        indexer = new IndexerSubsystem();
+        indexer = new IndexerSubsystem(); // tells what instance is equal to
     }
 
     private void configureBindings() {}

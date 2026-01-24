@@ -12,7 +12,7 @@ import frc.robot.constants.IndexConstants;
 
 public class IndexerSubsystem extends SubsystemBase {
 
-    private final TalonFX spindexerMotor;
+    private final TalonFX spindexerMotor; // MAKES MOTOR
 
     public IndexerSubsystem() {
 
@@ -22,12 +22,12 @@ public class IndexerSubsystem extends SubsystemBase {
     }
 
     public double getVelocityRPM() {
-        return spindexerMotor.getVelocity().getValue().abs(Units.RPM);
+        return spindexerMotor.getVelocity().getValue().abs(Units.RPM); // to check velocity for spinup
     }
 
     public void setIndexerVelocity(double velocity) {
         VelocityVoltage request = new VelocityVoltage(velocity);
-        spindexerMotor.setControl(request);
+        spindexerMotor.setControl(request); // says that velocity controls velocity
     }
 
     @Override
