@@ -6,14 +6,16 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.LEDSubsystem;
 
 public class RobotContainer {
 
-    LEDSubsystem LEDSubsystem;
+    public final LEDSubsystem leds;
 
     public RobotContainer() {
+        leds = new LEDSubsystem();
+
         configureBindings();
-        LEDSubsystem = new LEDSubsystem();
     }
 
     private void configureBindings() {}
