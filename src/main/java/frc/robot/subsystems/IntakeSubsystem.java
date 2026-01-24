@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -99,7 +100,7 @@ public class IntakeSubsystem extends SubsystemBase {
         slotConfigs.GravityType = GravityTypeValue.Elevator_Static;
 
         // conservative motionmagic configs
-        var motionMagicConfigs = motorConfig.MotionMagic;
+        MotionMagicConfigs motionMagicConfigs = motorConfig.MotionMagic;
         motionMagicConfigs.MotionMagicCruiseVelocity = 20; // Target cruise velocity of 80 rps
         motionMagicConfigs.MotionMagicAcceleration = 80; // Target acceleration of 80 rps/s (1 second)
         motionMagicConfigs.MotionMagicJerk = 800; // Target jerk of 800 rps/s/s (0.2 seconds)
