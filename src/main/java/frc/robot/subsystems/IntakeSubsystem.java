@@ -33,10 +33,10 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         pivotMotor = new TalonFX(IntakeConstants.PivotMotorId);
         rollerMotor = new SparkMax(IntakeConstants.RollerMotorId, MotorType.kBrushless);
-
-        // pivotMotor.getConfigurator().
-
         target = Target.UNKNOWN;
+
+        configurePivotMotor();
+        configureRollerMotor();
     }
 
     public Target currentState() {
