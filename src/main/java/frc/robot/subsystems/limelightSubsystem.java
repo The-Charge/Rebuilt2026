@@ -67,7 +67,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
 
-        double rotStdDev = 0.3; // we want to get the rotation from megatag1
+        double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
@@ -92,7 +92,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-
+    public Optional<PoseEstimate> getVisionOnlyPos() {
+        return Optional.of(LimelightHelpers.getBotPoseEstimate_wpiBlue(this.name));
+    }
     // public Optional<PoseEstimate> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
     //     LimelightHelpers.SetRobotOrientation(name, 0, 0, 0, 0, 0, 0);
     // }
