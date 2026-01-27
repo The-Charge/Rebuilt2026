@@ -15,12 +15,12 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import java.util.Optional;
 
-public class LimelightSubsystem extends SubsystemBase {
+public class LimelightSub extends SubsystemBase {
     private final String name;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
-    public LimelightSubsystem(String name) {
+    public LimelightSub(String name) {
         this.name = "limelight-" + name;
     }
 
@@ -117,9 +117,6 @@ public class LimelightSubsystem extends SubsystemBase {
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
 
-    public Optional<PoseEstimate> getVisionOnlyPos() {
-        return Optional.of(LimelightHelpers.getBotPoseEstimate_wpiBlue(this.name));
-    }
     // public Optional<PoseEstimate> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
     //     LimelightHelpers.SetRobotOrientation(name, 0, 0, 0, 0, 0, 0);
     // }

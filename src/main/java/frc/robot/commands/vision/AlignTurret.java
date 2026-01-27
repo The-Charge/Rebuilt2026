@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
-import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.LimelightSub;
 import frc.robot.subsystems.TurretSubsystem;
 
 // commands extend the "Command" class in order to label them as commands
@@ -17,7 +17,7 @@ public class AlignTurret extends Command {
 
     // this is just a reference to the subsystem that was passed in
     // we need this so that we can use the subsystem in the other functions such as initialize and isFinished
-    private final LimelightSubsystem lsub;
+    private final LimelightSub lsub;
     private final TurretSubsystem tsub;
     private Pose2d poseEstimate;
     private boolean isRed;
@@ -25,7 +25,7 @@ public class AlignTurret extends Command {
     private Pose2d robotToHub;
     private Rotation2d rotationToHub;
 
-    public AlignTurret(LimelightSubsystem lsub, TurretSubsystem tsub) {
+    public AlignTurret(LimelightSub lsub, TurretSubsystem tsub) {
         this.lsub = lsub;
         this.tsub = tsub;
 
