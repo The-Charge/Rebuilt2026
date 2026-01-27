@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.LEDConstants;
 
 public class LEDSubsystem extends SubsystemBase {
 
@@ -31,7 +32,7 @@ public class LEDSubsystem extends SubsystemBase {
 
     public void turnGreen() {
         for (int i = 0; i < buffer.getLength(); i++) {
-            buffer.setLED(i, chargeGreen); // LED color
+            buffer.setLED(i, LEDConstants.chargeGreen); // LED color
         }
         led.setData(buffer); // update to led
     }
