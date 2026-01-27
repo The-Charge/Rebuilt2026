@@ -17,7 +17,8 @@ import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
     private final String name;
-    // CommandSwerveDrivetrain drivetrain;
+
+    public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     public LimelightSubsystem(String name) {
         this.name = "limelight-" + name;
@@ -29,22 +30,45 @@ public class LimelightSubsystem extends SubsystemBase {
         return Optional.of(pose);
     }
 
-    public Optional<PoseEstimate> getVisionMeasurement() {
+    public Optional<VisionMeasurement> getVisionMeasurement() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
+    }
+
+    public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
         boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
         if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance) return Optional.empty();
         final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
         final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1;
-        final double robotSpeed = 0; // get swerve speed from ctre
+        final double robotSpeed = swerve.getSpeed(); // get swerve speed from ctre
         final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1;
         final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
         if (!CAN_GET_GOOD_HEADING) return Optional.empty();
         if (CAN_GET_GOOD_HEADING) useMegaTag2 = false;
-        return Optional.empty();
+        return getVisionMeasurement(swerve, useMegaTag2);
     }
 
-    public Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
+    public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
+        PoseEstimate poseEstimate;
+        Optional<Matrix<N3, N1>> stdDevs;
+        if (!useMegaTag2) {
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
+            stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
+        } else {
+            LimelightHelpers.SetRobotOrientation(name, swerve.getHeading().getDegrees(), 0, 0, 0, 0, 0);
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
+            stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
+        }
+        if (stdDevs.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new VisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, stdDevs.get()));
+        }
+    }
+
+    private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
             LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
         double transStdDev = StdDevConstants.MegaTag1.kInitialValue;
@@ -72,7 +96,7 @@ public class LimelightSubsystem extends SubsystemBase {
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
 
-    public Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
+    private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
             LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
         if (swerve.getAngularVelocity().abs(Units.DegreesPerSecond) > LimelightConstants.kMaxAngularSpeed)
@@ -92,8 +116,4 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-
-    // public Optional<PoseEstimate> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
-    //     LimelightHelpers.SetRobotOrientation(name, 0, 0, 0, 0, 0, 0);
-    // }
 }
