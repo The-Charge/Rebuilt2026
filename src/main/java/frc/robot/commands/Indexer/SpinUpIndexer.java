@@ -14,7 +14,7 @@ public class SpinUpIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.setIndexerVelocity(0); // in this instance set velocity to ...
+        indexer.setIndexerVelocity(IndexConstants.spindexerMotorVelocity); // in this instance set velocity to ...
     }
 
     @Override
