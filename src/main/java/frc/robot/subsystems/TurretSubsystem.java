@@ -2,25 +2,24 @@ package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 
 // shoot angle, turret
-public class TurretSubsystem extends SubsystemBase{
+public class TurretSubsystem extends SubsystemBase {
     private final SparkMax spin;
     private final SparkFlex shooter;
     private final Servo hood;
 
-    private Rotation2d offset;
+    private Rotation2d offset = new Rotation2d();
 
     public TurretSubsystem() {
         spin = new SparkMax(TurretConstants.turretId, MotorType.kBrushless);
@@ -31,11 +30,11 @@ public class TurretSubsystem extends SubsystemBase{
     }
 
     @Override
-    public void periodic() {
-    }
+    public void periodic() {}
 
     public void setTurretAngle(Rotation2d angle) {
-        spin.getClosedLoopController().setSetpoint(angle.plus(offset).getRadians()*TurretConstants.ticksPerRadian, ControlType.kPosition);
+        spin.getClosedLoopController()
+                .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian, ControlType.kPosition);
     }
 
     public void setHoodAngle(Rotation2d angle) {
@@ -84,6 +83,5 @@ public class TurretSubsystem extends SubsystemBase{
         flexconfig.inverted(TurretConstants.inverted);
 
         shooter.configure(flexconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
     }
 }

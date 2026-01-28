@@ -2,7 +2,9 @@ package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
@@ -24,6 +26,9 @@ public class AlignTurret extends Command {
 
     private Pose2d robotToHub;
     private Rotation2d rotationToHub;
+
+    AnalogGyro real = new AnalogGyro(0);
+    AnalogGyroSim angle = new AnalogGyroSim(real);
 
     public AlignTurret(LimelightSub lsub, TurretSubsystem tsub) {
         this.lsub = lsub;
@@ -66,6 +71,9 @@ public class AlignTurret extends Command {
         rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         tsub.setTurretAngle(rotationToHub);
+
+        angle.setAngle(rotationToHub.getDegrees() + 1);
+        SmartDashboard.putData(real);
     }
 
     // private AprilTagFieldLayout a;
