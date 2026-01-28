@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.util.Color;
 public class LEDConstants {
     public static final int port = 0;
     public static final int ledCount = 43;
+    public static final int blinkInterval = 1; // in seconds
 
     public static final Color chargeGreen = new Color("#008800");
     public static final Color chargeGold = new Color("#ffaa00");

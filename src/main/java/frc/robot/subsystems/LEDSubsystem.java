@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LEDConstants;
@@ -11,13 +14,10 @@ public class LEDSubsystem extends SubsystemBase {
     private final AddressableLED led;
     private AddressableLEDBuffer buffer;
 
-    public static int bufferLength = 60;
-
     public LEDSubsystem() {
         led = new AddressableLED(LEDConstants.port); // port number
         buffer = new AddressableLEDBuffer(LEDConstants.ledCount); // nuumber of LEDs
-
-        led.setLength(buffer.getLength()); // set led buffer
+        led.setLength(buffer.getLength());
         led.setData(buffer);
         led.start();
     }
@@ -34,6 +34,13 @@ public class LEDSubsystem extends SubsystemBase {
         led.setData(buffer); // update to led
     }
 
+    public void blink(Color color) {
+        LEDPattern blinkingColor = LEDPattern.solid(swapR_B(color)); // color of led
+        LEDPattern pattern = blinkingColor.blink(Seconds.of(LEDConstants.blinkInterval));
+        pattern.applyTo(buffer);
+        led.setData(buffer);
+    }
+
     public void turnOff() {
         for (int i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, 0, 0, 0); // off
@@ -43,5 +50,12 @@ public class LEDSubsystem extends SubsystemBase {
     private void setLEDColor(int index, Color col) {
         // swap green and red to account for incorrect LED type
         buffer.setLED(index, new Color(col.green, col.red, col.blue));
+    }
+
+    /**
+     * Swaps the red and green values (from RGB) and returns the new color
+     */
+    private Color swapR_B(Color col) {
+        return (new Color(col.green, col.red, col.blue));
     }
 }
