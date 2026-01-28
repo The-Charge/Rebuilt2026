@@ -14,16 +14,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.TeleopDrive;
+import frc.robot.commands.vision.AlignTurret;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.LimelightSub;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
 import java.io.File;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
- * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
- * Instead, the structure of the robot (including subsystems, commands, and trigger mappings) should be declared here.
- */
 public class RobotContainer {
 
     private final CommandXboxController driver1;
@@ -36,6 +33,9 @@ public class RobotContainer {
 
     private SendableChooser<Command> autoChooser;
     private TeleopDrive teleopDrive;
+
+    public TurretSubsystem turret;
+    public LimelightSub turretLimelight;
 
     public RobotContainer() {
         driver1 = new CommandXboxController(0);
@@ -56,6 +56,11 @@ public class RobotContainer {
         swerve.setDefaultCommand(teleopDrive);
 
         configureBindings();
+
+        turret = new TurretSubsystem();
+        turretLimelight = new LimelightSub("turret");
+
+        turret.setDefaultCommand(new AlignTurret(turretLimelight, turret));
 
         Field2d field = new Field2d();
         SmartDashboard.putData("Field", field);

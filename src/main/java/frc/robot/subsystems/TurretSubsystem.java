@@ -19,7 +19,7 @@ public class TurretSubsystem extends SubsystemBase {
     private final SparkFlex shooter;
     private final Servo hood;
 
-    private Rotation2d offset;
+    private Rotation2d offset = new Rotation2d();
 
     public TurretSubsystem() {
         spin = new SparkMax(TurretConstants.turretId, MotorType.kBrushless);
