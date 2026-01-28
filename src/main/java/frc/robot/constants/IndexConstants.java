@@ -7,6 +7,7 @@ import java.util.Optional;
 public class IndexConstants {
 
     public static final int spindexerMotorID = 5;
+    public static final int gateToShooterID = 6;
 
     public static final double maxCurrent = 30;
     public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;
@@ -25,4 +26,5 @@ public class IndexConstants {
     public static final boolean reverseHardLimitEnabled = false;
     public static final Optional<Double> reverseHardLimitResetValue = Optional.empty();
     public static final double spindexerMotorVelocity = 30000;
+    public static final double gateToShooterVoltage = 12;
 }

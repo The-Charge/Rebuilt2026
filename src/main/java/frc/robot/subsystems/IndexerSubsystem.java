@@ -6,6 +6,9 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexConstants;
@@ -13,16 +16,26 @@ import frc.robot.constants.IndexConstants;
 public class IndexerSubsystem extends SubsystemBase {
 
     private final TalonFX spindexerMotor; // MAKES MOTOR
+    private final SparkMax gateToShooter;
 
     public IndexerSubsystem() {
 
         spindexerMotor = new TalonFX(IndexConstants.spindexerMotorID); // port number under indexConstants
 
         configureTalonFXMotor(); // always configure before their use
+
+        gateToShooter = new SparkMax(
+                IndexConstants.gateToShooterID,
+                MotorType.kBrushless); // port number in IndexConstants; defines the motor as brushless
+        configureSparkMaxMotor();
     }
 
     public double getVelocityRPM() {
         return spindexerMotor.getVelocity().getValue().abs(Units.RPM); // to check velocity for spinup
+    }
+
+    public double getVoltage() {
+        return gateToShooter.getBusVoltage();
     }
 
     public void setIndexerVelocity(double velocity) {
@@ -30,11 +43,20 @@ public class IndexerSubsystem extends SubsystemBase {
         spindexerMotor.setControl(request); // says that velocity controls velocity
     }
 
+    public void setVoltage(double voltage) {
+        gateToShooter.setVoltage(voltage);
+    }
+
     @Override
     public void periodic() {}
 
     public void stop() {
         spindexerMotor.stopMotor(); // safety
+        gateToShooter.stopMotor();
+    }
+
+    private void configureSparkMaxMotor() {
+        SparkMaxConfig config = new SparkMaxConfig();
     }
 
     private void configureTalonFXMotor() {
