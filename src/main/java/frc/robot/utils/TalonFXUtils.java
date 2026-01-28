@@ -116,11 +116,7 @@ public class TalonFXUtils {
             double kI,
             double kD,
             Optional<Double> kG,
-            Optional<GravityTypeValue> gravityType,
-            Optional<Double> kS,
-            Optional<StaticFeedforwardSignValue> kSSign,
-            Optional<Double> kV,
-            Optional<Double> kA) {
+            Optional<GravityTypeValue> gravityType) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
@@ -135,18 +131,32 @@ public class TalonFXUtils {
         if (gravityType != null && gravityType.isPresent()) {
             config.Slot0.GravityType = gravityType.get();
         }
-        if (kS != null && kS.isPresent()) {
-            config.Slot0.kS = kS.get();
+    }
+
+    public static void configureMotionMagicSettings(
+            TalonFXConfiguration config,
+            double cruiseRPS,
+            double accelRPS2,
+            double jerkRPS3,
+            double kS,
+            Optional<StaticFeedforwardSignValue> kSSign,
+            double kV,
+            double kA) {
+        if (config == null) {
+            Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
+            return;
         }
+
+        config.MotionMagic.MotionMagicCruiseVelocity = cruiseRPS;
+        config.MotionMagic.MotionMagicAcceleration = accelRPS2;
+        config.MotionMagic.MotionMagicJerk = jerkRPS3;
+
+        config.Slot0.kS = kS;
         if (kSSign != null && kSSign.isPresent()) {
             config.Slot0.StaticFeedforwardSign = kSSign.get();
         }
-        if (kV != null && kV.isPresent()) {
-            config.Slot0.kV = kV.get();
-        }
-        if (kA != null && kA.isPresent()) {
-            config.Slot0.kA = kA.get();
-        }
+        config.Slot0.kV = kV;
+        config.Slot0.kA = kA;
     }
 
     public static void configureSoftStops(
