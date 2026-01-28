@@ -7,12 +7,14 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.Logger;
 
 public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
 
     public Robot() {
+        Logger.init(); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
     }
 
