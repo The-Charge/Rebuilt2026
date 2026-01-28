@@ -2,9 +2,9 @@ package frc.robot.utils;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.DeviceEnableValue;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
-import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
@@ -145,7 +145,7 @@ public class Logger {
         println(builder.toString());
     }
 
-    public static void log(String subsystem, String key, boolean val) {
+    public static void logBool(String subsystem, String key, boolean val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -161,7 +161,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, boolean[] val) {
+    public static void logBoolArray(String subsystem, String key, boolean[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -181,7 +181,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, double val) {
+    public static void logDouble(String subsystem, String key, double val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -197,7 +197,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, double[] val) {
+    public static void logDoubleArray(String subsystem, String key, double[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -217,7 +217,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, float val) {
+    public static void logFloat(String subsystem, String key, float val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -233,7 +233,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, float[] val) {
+    public static void logFloatArray(String subsystem, String key, float[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -253,7 +253,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, long val) {
+    public static void logLong(String subsystem, String key, long val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -269,7 +269,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, long[] val) {
+    public static void logLongArray(String subsystem, String key, long[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -289,7 +289,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, ByteBuffer val) {
+    public static void logRaw(String subsystem, String key, ByteBuffer val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -309,7 +309,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, byte[] val) {
+    public static void logRaw(String subsystem, String key, byte[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -329,7 +329,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, String val) {
+    public static void logString(String subsystem, String key, String val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -346,7 +346,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, String[] val) {
+    public static void logStringArray(String subsystem, String key, String[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -366,7 +366,7 @@ public class Logger {
         }
     }
 
-    public static void log(String subsystem, String key, Enum<?> val) {
+    public static void logEnum(String subsystem, String key, Enum<?> val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -377,10 +377,10 @@ public class Logger {
             return;
         }
 
-        log(subsystem, key, val.name());
+        logString(subsystem, key, val.name());
     }
 
-    public static void log(String subsystem, String key, Enum<?>[] val) {
+    public static void logEnumArray(String subsystem, String key, Enum<?>[] val) {
         if (subsystem == null) subsystem = "";
         if (key == null) {
             reportWarning("Cannot log to an empty key", true);
@@ -391,11 +391,12 @@ public class Logger {
             return;
         }
 
-        log(subsystem, key, (String[])
+        logStringArray(subsystem, key, (String[])
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void log(String subsystem, String name, TalonFX motor, Optional<Map<String, String>> additionalData) {
+    public static void logTalonFX(
+            String subsystem, String name, TalonFX motor, Optional<Map<String, String>> additionalData) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -406,93 +407,96 @@ public class Logger {
             return;
         }
 
-        String root = subsystem + "/" + name;
+        String table = subsystem + "/" + name;
 
         TalonFXFaults activeFaults = TalonFXUtils.getAllActiveFaults(motor);
         TalonFXFaults stickyFaults = TalonFXUtils.getAllStickyFaults(motor);
 
-        log(root, "positionRots", motor.getPosition().getValue().abs(Units.Rotations));
-        log(root, "velocityRPM", motor.getVelocity().getValue().abs(Units.RPM));
-        log(root, "tempC", motor.getDeviceTemp().getValue().abs(Units.Celsius));
-        log(root, "dutyCycle", motor.get());
-        log(root, "voltageOut", motor.getMotorVoltage().getValue().abs(Units.Volts));
-        log(root, "voltageIn", motor.getSupplyVoltage().getValue().abs(Units.Volts));
-        log(root, "hardStopForward", activeFaults.forwardHardLimit());
-        log(root, "hardStopReverse", activeFaults.reverseHardLimit());
-        log(root, "softStopForward", activeFaults.forwardSoftLimit());
-        log(root, "softStopReverse", activeFaults.reverseSoftLimit());
-        log(root, "currentOut", motor.getStatorCurrent().getValue().abs(Units.Amps));
-        log(root, "currentIn", motor.getSupplyCurrent().getValue().abs(Units.Amps));
-        log(root, "controlMode", motor.getControlMode().getValue());
-        log(root, "targetRots", motor.getClosedLoopReference().getValue().doubleValue());
-        log(root, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);
-        log(root, "connected", motor.isConnected());
-        log(root, "alive", motor.isAlive());
+        logDouble(table, "positionRots", motor.getPosition().getValue().abs(Units.Rotations));
+        logDouble(table, "velocityRPM", motor.getVelocity().getValue().abs(Units.RPM));
+        logDouble(table, "tempC", motor.getDeviceTemp().getValue().abs(Units.Celsius));
+        logDouble(table, "dutyCycle", motor.get());
+        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().abs(Units.Volts));
+        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().abs(Units.Volts));
+        logBool(table, "hardStopForward", activeFaults.forwardHardLimit());
+        logBool(table, "hardStopReverse", activeFaults.reverseHardLimit());
+        logBool(table, "softStopForward", activeFaults.forwardSoftLimit());
+        logBool(table, "softStopReverse", activeFaults.reverseSoftLimit());
+        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().abs(Units.Amps));
+        logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().abs(Units.Amps));
+        logEnum(table, "controlMode", motor.getControlMode().getValue());
+        logDouble(table, "targetRots", motor.getClosedLoopReference().getValue().doubleValue());
+        logBool(table, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);
+        logBool(table, "connected", motor.isConnected());
+        logBool(table, "alive", motor.isAlive());
 
-        log(root + "/faults", "bootDuringEnable", activeFaults.bootDuringEnable());
-        log(root + "/faults", "bridgeBrownout", activeFaults.bridgeBrownout());
-        log(root + "/faults", "deviceTemp", activeFaults.deviceTemp());
-        log(root + "/faults", "forwardHardLimit", activeFaults.forwardHardLimit());
-        log(root + "/faults", "fowardSoftLimit", activeFaults.forwardSoftLimit());
-        log(root + "/faults", "fusedSensorOutOfSync", activeFaults.fusedSensorOutOfSync());
-        log(root + "/faults", "hardware", activeFaults.hardware());
-        log(root + "/faults", "missingDifferentialFX", activeFaults.missingDifferentialFX());
-        log(root + "/faults", "missingHardLimitRemote", activeFaults.missingHardLimitRemote());
-        log(root + "/faults", "missingSoftLimitRemote", activeFaults.missingSoftLimitRemote());
-        log(root + "/faults", "overSupplyV", activeFaults.overSupplyV());
-        log(root + "/faults", "procTemp", activeFaults.procTemp());
-        log(root + "/faults", "remoteSensorDataInvalid", activeFaults.remoteSensorDataInvalid());
-        log(root + "/faults", "remoteSensorPosOverflow", activeFaults.remoteSensorPosOverflow());
-        log(root + "/faults", "remoteSensorReset", activeFaults.remoteSensorReset());
-        log(root + "/faults", "reverseHardLimit", activeFaults.reverseHardLimit());
-        log(root + "/faults", "reverseSoftLimit", activeFaults.reverseSoftLimit());
-        log(root + "/faults", "staticBrakeDisabled", activeFaults.staticBrakeDisabled());
-        log(root + "/faults", "statorCurrLimit", activeFaults.statorCurrLimit());
-        log(root + "/faults", "supplyCurrLimit", activeFaults.supplyCurrLimit());
-        log(root + "/faults", "undervoltage", activeFaults.undervoltage());
-        log(root + "/faults", "unlicensedFeatureInUse", activeFaults.unlicensedFeatureInUse());
-        log(root + "/faults", "unstableSupplyV", activeFaults.unstableSupplyV());
-        log(root + "/faults", "usingFusedCANCoderWhileUnlicensed", activeFaults.usingFusedCANCoderWhileUnlicensed());
-        log(root, "criticalFaultsActive", activeFaults.hasCriticalFaults());
+        logBool(table + "/faults", "bootDuringEnable", activeFaults.bootDuringEnable());
+        logBool(table + "/faults", "bridgeBrownout", activeFaults.bridgeBrownout());
+        logBool(table + "/faults", "deviceTemp", activeFaults.deviceTemp());
+        logBool(table + "/faults", "forwardHardLimit", activeFaults.forwardHardLimit());
+        logBool(table + "/faults", "fowardSoftLimit", activeFaults.forwardSoftLimit());
+        logBool(table + "/faults", "fusedSensorOutOfSync", activeFaults.fusedSensorOutOfSync());
+        logBool(table + "/faults", "hardware", activeFaults.hardware());
+        logBool(table + "/faults", "missingDifferentialFX", activeFaults.missingDifferentialFX());
+        logBool(table + "/faults", "missingHardLimitRemote", activeFaults.missingHardLimitRemote());
+        logBool(table + "/faults", "missingSoftLimitRemote", activeFaults.missingSoftLimitRemote());
+        logBool(table + "/faults", "overSupplyV", activeFaults.overSupplyV());
+        logBool(table + "/faults", "procTemp", activeFaults.procTemp());
+        logBool(table + "/faults", "remoteSensorDataInvalid", activeFaults.remoteSensorDataInvalid());
+        logBool(table + "/faults", "remoteSensorPosOverflow", activeFaults.remoteSensorPosOverflow());
+        logBool(table + "/faults", "remoteSensorReset", activeFaults.remoteSensorReset());
+        logBool(table + "/faults", "reverseHardLimit", activeFaults.reverseHardLimit());
+        logBool(table + "/faults", "reverseSoftLimit", activeFaults.reverseSoftLimit());
+        logBool(table + "/faults", "staticBrakeDisabled", activeFaults.staticBrakeDisabled());
+        logBool(table + "/faults", "statorCurrLimit", activeFaults.statorCurrLimit());
+        logBool(table + "/faults", "supplyCurrLimit", activeFaults.supplyCurrLimit());
+        logBool(table + "/faults", "undervoltage", activeFaults.undervoltage());
+        logBool(table + "/faults", "unlicensedFeatureInUse", activeFaults.unlicensedFeatureInUse());
+        logBool(table + "/faults", "unstableSupplyV", activeFaults.unstableSupplyV());
+        logBool(
+                table + "/faults",
+                "usingFusedCANCoderWhileUnlicensed",
+                activeFaults.usingFusedCANCoderWhileUnlicensed());
+        logBool(table, "criticalFaultsActive", activeFaults.hasCriticalFaults());
 
-        log(root + "/stickyFaults", "bootDuringEnable", stickyFaults.bootDuringEnable());
-        log(root + "/stickyFaults", "bridgeBrownout", stickyFaults.bridgeBrownout());
-        log(root + "/stickyFaults", "deviceTemp", stickyFaults.deviceTemp());
-        log(root + "/stickyFaults", "forwardHardLimit", stickyFaults.forwardHardLimit());
-        log(root + "/stickyFaults", "fowardSoftLimit", stickyFaults.forwardSoftLimit());
-        log(root + "/stickyFaults", "fusedSensorOutOfSync", stickyFaults.fusedSensorOutOfSync());
-        log(root + "/stickyFaults", "hardware", stickyFaults.hardware());
-        log(root + "/stickyFaults", "missingDifferentialFX", stickyFaults.missingDifferentialFX());
-        log(root + "/stickyFaults", "missingHardLimitRemote", stickyFaults.missingHardLimitRemote());
-        log(root + "/stickyFaults", "missingSoftLimitRemote", stickyFaults.missingSoftLimitRemote());
-        log(root + "/stickyFaults", "overSupplyV", stickyFaults.overSupplyV());
-        log(root + "/stickyFaults", "procTemp", stickyFaults.procTemp());
-        log(root + "/stickyFaults", "remoteSensorDataInvalid", stickyFaults.remoteSensorDataInvalid());
-        log(root + "/stickyFaults", "remoteSensorPosOverflow", stickyFaults.remoteSensorPosOverflow());
-        log(root + "/stickyFaults", "remoteSensorReset", stickyFaults.remoteSensorReset());
-        log(root + "/stickyFaults", "reverseHardLimit", stickyFaults.reverseHardLimit());
-        log(root + "/stickyFaults", "reverseSoftLimit", stickyFaults.reverseSoftLimit());
-        log(root + "/stickyFaults", "staticBrakeDisabled", stickyFaults.staticBrakeDisabled());
-        log(root + "/stickyFaults", "statorCurrLimit", stickyFaults.statorCurrLimit());
-        log(root + "/stickyFaults", "supplyCurrLimit", stickyFaults.supplyCurrLimit());
-        log(root + "/stickyFaults", "undervoltage", stickyFaults.undervoltage());
-        log(root + "/stickyFaults", "unlicensedFeatureInUse", stickyFaults.unlicensedFeatureInUse());
-        log(root + "/stickyFaults", "unstableSupplyV", stickyFaults.unstableSupplyV());
-        log(
-                root + "/stickyFaults",
+        logBool(table + "/stickyFaults", "bootDuringEnable", stickyFaults.bootDuringEnable());
+        logBool(table + "/stickyFaults", "bridgeBrownout", stickyFaults.bridgeBrownout());
+        logBool(table + "/stickyFaults", "deviceTemp", stickyFaults.deviceTemp());
+        logBool(table + "/stickyFaults", "forwardHardLimit", stickyFaults.forwardHardLimit());
+        logBool(table + "/stickyFaults", "fowardSoftLimit", stickyFaults.forwardSoftLimit());
+        logBool(table + "/stickyFaults", "fusedSensorOutOfSync", stickyFaults.fusedSensorOutOfSync());
+        logBool(table + "/stickyFaults", "hardware", stickyFaults.hardware());
+        logBool(table + "/stickyFaults", "missingDifferentialFX", stickyFaults.missingDifferentialFX());
+        logBool(table + "/stickyFaults", "missingHardLimitRemote", stickyFaults.missingHardLimitRemote());
+        logBool(table + "/stickyFaults", "missingSoftLimitRemote", stickyFaults.missingSoftLimitRemote());
+        logBool(table + "/stickyFaults", "overSupplyV", stickyFaults.overSupplyV());
+        logBool(table + "/stickyFaults", "procTemp", stickyFaults.procTemp());
+        logBool(table + "/stickyFaults", "remoteSensorDataInvalid", stickyFaults.remoteSensorDataInvalid());
+        logBool(table + "/stickyFaults", "remoteSensorPosOverflow", stickyFaults.remoteSensorPosOverflow());
+        logBool(table + "/stickyFaults", "remoteSensorReset", stickyFaults.remoteSensorReset());
+        logBool(table + "/stickyFaults", "reverseHardLimit", stickyFaults.reverseHardLimit());
+        logBool(table + "/stickyFaults", "reverseSoftLimit", stickyFaults.reverseSoftLimit());
+        logBool(table + "/stickyFaults", "staticBrakeDisabled", stickyFaults.staticBrakeDisabled());
+        logBool(table + "/stickyFaults", "statorCurrLimit", stickyFaults.statorCurrLimit());
+        logBool(table + "/stickyFaults", "supplyCurrLimit", stickyFaults.supplyCurrLimit());
+        logBool(table + "/stickyFaults", "undervoltage", stickyFaults.undervoltage());
+        logBool(table + "/stickyFaults", "unlicensedFeatureInUse", stickyFaults.unlicensedFeatureInUse());
+        logBool(table + "/stickyFaults", "unstableSupplyV", stickyFaults.unstableSupplyV());
+        logBool(
+                table + "/stickyFaults",
                 "usingFusedCANCoderWhileUnlicensed",
                 stickyFaults.usingFusedCANCoderWhileUnlicensed());
-        log(root, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
+        logBool(table, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
 
         if (additionalData != null && additionalData.isPresent()) {
             for (Entry<String, String> data : additionalData.get().entrySet()) {
-                log(root, data.getKey(), data.getValue());
+                logString(table, data.getKey(), data.getValue());
             }
         }
     }
 
-    public static void log(
-            String subsystem, String name, SparkMax motor, Optional<Map<String, String>> additionalData) {
+    public static void logSparkMotor(
+            String subsystem, String name, SparkBase motor, Optional<Map<String, String>> additionalData) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -503,72 +507,72 @@ public class Logger {
             return;
         }
 
-        String root = subsystem + "/" + name;
+        String table = subsystem + "/" + name;
 
         Faults activeFaults = motor.getFaults();
         Faults stickyFaults = motor.getStickyFaults();
         Warnings activeWarnings = motor.getWarnings();
         Warnings stickyWarnings = motor.getStickyWarnings();
 
-        log(root, "positionRots", motor.getEncoder().getPosition());
-        log(root, "velocityRPM", motor.getEncoder().getVelocity());
-        log(root, "tempC", motor.getMotorTemperature());
-        log(root, "dutyCycle", motor.getAppliedOutput());
-        log(root, "voltageOut", motor.getAppliedOutput() * motor.getBusVoltage());
-        log(root, "voltageIn", motor.getBusVoltage());
-        log(root, "hardStopForward", motor.getForwardLimitSwitch().isPressed());
-        log(root, "hardStopReverse", motor.getReverseLimitSwitch().isPressed());
-        log(root, "currentOut", motor.getOutputCurrent());
-        log(root, "connected", SparkUtils.isConnected(motor));
+        logDouble(table, "positionRots", motor.getEncoder().getPosition());
+        logDouble(table, "velocityRPM", motor.getEncoder().getVelocity());
+        logDouble(table, "tempC", motor.getMotorTemperature());
+        logDouble(table, "dutyCycle", motor.getAppliedOutput());
+        logDouble(table, "voltageOut", motor.getAppliedOutput() * motor.getBusVoltage());
+        logDouble(table, "voltageIn", motor.getBusVoltage());
+        logBool(table, "hardStopForward", motor.getForwardLimitSwitch().isPressed());
+        logBool(table, "hardStopReverse", motor.getReverseLimitSwitch().isPressed());
+        logDouble(table, "currentOut", motor.getOutputCurrent());
+        logBool(table, "connected", SparkUtils.isConnected(motor));
 
-        log(root + "/faults", "can", activeFaults.can);
-        log(root + "/faults", "escEeprom", activeFaults.escEeprom);
-        log(root + "/faults", "firmware", activeFaults.firmware);
-        log(root + "/faults", "gateDriver", activeFaults.gateDriver);
-        log(root + "/faults", "motorType", activeFaults.motorType);
-        log(root + "/faults", "other", activeFaults.other);
-        log(root + "/faults", "sensor", activeFaults.sensor);
-        log(root + "/faults", "temperature", activeFaults.temperature);
-        log(root, "criticalFaultsActive", SparkUtils.hasCriticalFaults(activeFaults));
+        logBool(table + "/faults", "can", activeFaults.can);
+        logBool(table + "/faults", "escEeprom", activeFaults.escEeprom);
+        logBool(table + "/faults", "firmware", activeFaults.firmware);
+        logBool(table + "/faults", "gateDriver", activeFaults.gateDriver);
+        logBool(table + "/faults", "motorType", activeFaults.motorType);
+        logBool(table + "/faults", "other", activeFaults.other);
+        logBool(table + "/faults", "sensor", activeFaults.sensor);
+        logBool(table + "/faults", "temperature", activeFaults.temperature);
+        logBool(table, "criticalFaultsActive", SparkUtils.hasCriticalFaults(activeFaults));
 
-        log(root + "/stickyFaults", "can", stickyFaults.can);
-        log(root + "/stickyFaults", "escEeprom", stickyFaults.escEeprom);
-        log(root + "/stickyFaults", "firmware", stickyFaults.firmware);
-        log(root + "/stickyFaults", "gateDriver", stickyFaults.gateDriver);
-        log(root + "/stickyFaults", "motorType", stickyFaults.motorType);
-        log(root + "/stickyFaults", "other", stickyFaults.other);
-        log(root + "/stickyFaults", "sensor", stickyFaults.sensor);
-        log(root + "/stickyFaults", "temperature", stickyFaults.temperature);
-        log(root, "criticalStickyFaultsActive", SparkUtils.hasCriticalFaults(stickyFaults));
+        logBool(table + "/stickyFaults", "can", stickyFaults.can);
+        logBool(table + "/stickyFaults", "escEeprom", stickyFaults.escEeprom);
+        logBool(table + "/stickyFaults", "firmware", stickyFaults.firmware);
+        logBool(table + "/stickyFaults", "gateDriver", stickyFaults.gateDriver);
+        logBool(table + "/stickyFaults", "motorType", stickyFaults.motorType);
+        logBool(table + "/stickyFaults", "other", stickyFaults.other);
+        logBool(table + "/stickyFaults", "sensor", stickyFaults.sensor);
+        logBool(table + "/stickyFaults", "temperature", stickyFaults.temperature);
+        logBool(table, "criticalStickyFaultsActive", SparkUtils.hasCriticalFaults(stickyFaults));
 
-        log(root + "/warnings", "brownout", activeWarnings.brownout);
-        log(root + "/warnings", "escEeprom", activeWarnings.escEeprom);
-        log(root + "/warnings", "extEeprom", activeWarnings.extEeprom);
-        log(root + "/warnings", "hasReset", activeWarnings.hasReset);
-        log(root + "/warnings", "other", activeWarnings.other);
-        log(root + "/warnings", "overcurrent", activeWarnings.overcurrent);
-        log(root + "/warnings", "sensor", activeWarnings.sensor);
-        log(root + "/warnings", "stall", activeWarnings.stall);
-        log(root, "criticalWarningsActive", SparkUtils.hasCriticalWarnings(activeWarnings));
+        logBool(table + "/warnings", "brownout", activeWarnings.brownout);
+        logBool(table + "/warnings", "escEeprom", activeWarnings.escEeprom);
+        logBool(table + "/warnings", "extEeprom", activeWarnings.extEeprom);
+        logBool(table + "/warnings", "hasReset", activeWarnings.hasReset);
+        logBool(table + "/warnings", "other", activeWarnings.other);
+        logBool(table + "/warnings", "overcurrent", activeWarnings.overcurrent);
+        logBool(table + "/warnings", "sensor", activeWarnings.sensor);
+        logBool(table + "/warnings", "stall", activeWarnings.stall);
+        logBool(table, "criticalWarningsActive", SparkUtils.hasCriticalWarnings(activeWarnings));
 
-        log(root + "/stickyWarnings", "brownout", stickyWarnings.brownout);
-        log(root + "/stickyWarnings", "escEeprom", stickyWarnings.escEeprom);
-        log(root + "/stickyWarnings", "extEeprom", stickyWarnings.extEeprom);
-        log(root + "/stickyWarnings", "hasReset", stickyWarnings.hasReset);
-        log(root + "/stickyWarnings", "other", stickyWarnings.other);
-        log(root + "/stickyWarnings", "overcurrent", stickyWarnings.overcurrent);
-        log(root + "/stickyWarnings", "sensor", stickyWarnings.sensor);
-        log(root + "/stickyWarnings", "stall", stickyWarnings.stall);
-        log(root, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
+        logBool(table + "/stickyWarnings", "brownout", stickyWarnings.brownout);
+        logBool(table + "/stickyWarnings", "escEeprom", stickyWarnings.escEeprom);
+        logBool(table + "/stickyWarnings", "extEeprom", stickyWarnings.extEeprom);
+        logBool(table + "/stickyWarnings", "hasReset", stickyWarnings.hasReset);
+        logBool(table + "/stickyWarnings", "other", stickyWarnings.other);
+        logBool(table + "/stickyWarnings", "overcurrent", stickyWarnings.overcurrent);
+        logBool(table + "/stickyWarnings", "sensor", stickyWarnings.sensor);
+        logBool(table + "/stickyWarnings", "stall", stickyWarnings.stall);
+        logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
 
         if (additionalData != null && additionalData.isPresent()) {
             for (Entry<String, String> data : additionalData.get().entrySet()) {
-                log(root, data.getKey(), data.getValue());
+                logString(table, data.getKey(), data.getValue());
             }
         }
     }
 
-    public static <T extends SubsystemBase> void log(String subsystemName, T subsystem) {
+    public static <T extends SubsystemBase> void logSubsystem(String subsystemName, T subsystem) {
         if (subsystemName == null) {
             reportWarning("Cannot log to an empty subsytemName", true);
             return;
@@ -579,14 +583,20 @@ public class Logger {
         }
 
         if (subsystem.getCurrentCommand() == null) {
-            log(subsystemName, "currentCommand", "none");
+            logString(subsystemName, "currentCommand", "none");
         } else {
-            log(subsystemName, "currentCommand", subsystem.getCurrentCommand().getName());
+            logString(
+                    subsystemName,
+                    "currentCommand",
+                    subsystem.getCurrentCommand().getName());
         }
         if (subsystem.getDefaultCommand() == null) {
-            log(subsystemName, "defaultCommand", "none");
+            logString(subsystemName, "defaultCommand", "none");
         } else {
-            log(subsystemName, "defaultCommand", subsystem.getDefaultCommand().getName());
+            logString(
+                    subsystemName,
+                    "defaultCommand",
+                    subsystem.getDefaultCommand().getName());
         }
     }
 

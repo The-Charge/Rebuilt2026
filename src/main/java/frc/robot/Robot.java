@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
         Alerts.fmsConnected.set(DriverStation.isFMSAttached());
 
         double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
-        Logger.log("PDP", "batteryVoltage", batteryVoltage);
+        Logger.logDouble("PDP", "batteryVoltage", batteryVoltage);
 
         if (batteryVoltage <= 10) {
             Alerts.lowBattery.set(false);
