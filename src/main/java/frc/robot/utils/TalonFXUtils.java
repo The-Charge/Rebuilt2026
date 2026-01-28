@@ -84,7 +84,7 @@ public class TalonFXUtils {
 
     public static void configureBasicSettings(
             TalonFXConfiguration config,
-            double maxCurrent,
+            double maxAmps,
             NeutralModeValue neutralMode,
             InvertedValue inverted,
             double maxDutyCycle,
@@ -94,7 +94,7 @@ public class TalonFXUtils {
             return;
         }
 
-        config.CurrentLimits.StatorCurrentLimit = maxCurrent;
+        config.CurrentLimits.StatorCurrentLimit = maxAmps;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
 
         config.MotorOutput.NeutralMode = neutralMode;
@@ -150,44 +150,44 @@ public class TalonFXUtils {
     }
 
     public static void configureSoftStops(
-            TalonFXConfiguration config, Optional<Double> forwardLimit, Optional<Double> reverseLimit) {
+            TalonFXConfiguration config, Optional<Double> forwardLimitRots, Optional<Double> reverseLimitRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
         }
 
-        if (forwardLimit != null) {
-            config.SoftwareLimitSwitch.ForwardSoftLimitEnable = forwardLimit.isPresent();
-            config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = forwardLimit.orElse(0d);
+        if (forwardLimitRots != null) {
+            config.SoftwareLimitSwitch.ForwardSoftLimitEnable = forwardLimitRots.isPresent();
+            config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = forwardLimitRots.orElse(0d);
         }
 
-        if (reverseLimit != null) {
-            config.SoftwareLimitSwitch.ReverseSoftLimitEnable = reverseLimit.isPresent();
-            config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = reverseLimit.orElse(0d);
+        if (reverseLimitRots != null) {
+            config.SoftwareLimitSwitch.ReverseSoftLimitEnable = reverseLimitRots.isPresent();
+            config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = reverseLimitRots.orElse(0d);
         }
     }
 
     public static void configureHardStops(
             TalonFXConfiguration config,
             boolean forwardLimitEnabled,
-            Optional<Double> forwardLimitResetValue,
+            Optional<Double> forwardLimitResetRots,
             boolean reverseLimitEnabled,
-            Optional<Double> reverseLimitResetValue) {
+            Optional<Double> reverseLimitResetRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
         }
 
         config.HardwareLimitSwitch.ForwardLimitEnable = forwardLimitEnabled;
-        if (forwardLimitResetValue != null) {
-            config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable = forwardLimitResetValue.isPresent();
-            config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue = forwardLimitResetValue.orElse(0d);
+        if (forwardLimitResetRots != null) {
+            config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable = forwardLimitResetRots.isPresent();
+            config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue = forwardLimitResetRots.orElse(0d);
         }
 
         config.HardwareLimitSwitch.ReverseLimitEnable = reverseLimitEnabled;
-        if (reverseLimitResetValue != null) {
-            config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = reverseLimitResetValue.isPresent();
-            config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = reverseLimitResetValue.orElse(0d);
+        if (reverseLimitResetRots != null) {
+            config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = reverseLimitResetRots.isPresent();
+            config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = reverseLimitResetRots.orElse(0d);
         }
     }
 }

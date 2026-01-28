@@ -47,23 +47,23 @@ public class SparkUtils {
 
     public void configureBasicSettings(
             SparkBaseConfig config,
-            int maxCurrent,
+            int maxAmps,
             IdleMode idleMode,
             boolean inverted,
             double maxDutyCycle,
-            Optional<Double> voltageCompensation) {
+            Optional<Double> nominalVoltage) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
-        config.smartCurrentLimit(maxCurrent);
+        config.smartCurrentLimit(maxAmps);
         config.idleMode(idleMode);
         config.inverted(inverted);
         config.closedLoop.outputRange(-maxDutyCycle, maxDutyCycle);
 
-        if (voltageCompensation != null && voltageCompensation.isPresent()) {
-            config.voltageCompensation(voltageCompensation.get());
+        if (nominalVoltage != null && nominalVoltage.isPresent()) {
+            config.voltageCompensation(nominalVoltage.get());
         } else {
             config.disableVoltageCompensation();
         }
@@ -114,38 +114,38 @@ public class SparkUtils {
     }
 
     public void configureSoftStops(
-            SparkBaseConfig config, Optional<Double> forwardLimit, Optional<Double> reverseLimit) {
+            SparkBaseConfig config, Optional<Double> forwardLimitRots, Optional<Double> reverseLimitRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
-        if (forwardLimit != null) {
-            config.softLimit.forwardSoftLimitEnabled(forwardLimit.isPresent());
-            config.softLimit.forwardSoftLimit(forwardLimit.orElse(0d));
+        if (forwardLimitRots != null) {
+            config.softLimit.forwardSoftLimitEnabled(forwardLimitRots.isPresent());
+            config.softLimit.forwardSoftLimit(forwardLimitRots.orElse(0d));
         }
 
-        if (reverseLimit != null) {
-            config.softLimit.reverseSoftLimitEnabled(reverseLimit.isPresent());
-            config.softLimit.reverseSoftLimit(reverseLimit.orElse(0d));
+        if (reverseLimitRots != null) {
+            config.softLimit.reverseSoftLimitEnabled(reverseLimitRots.isPresent());
+            config.softLimit.reverseSoftLimit(reverseLimitRots.orElse(0d));
         }
     }
 
     public void configureHardStops(
             SparkBaseConfig config,
             boolean forwardLimitEnabled,
-            Optional<Double> forwardLimitResetValue,
+            Optional<Double> forwardLimitResetRots,
             boolean reverseLimitEnabled,
-            Optional<Double> reverseLimitResetValue) {
+            Optional<Double> reverseLimitResetRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
         if (forwardLimitEnabled) {
-            if (forwardLimitResetValue != null && forwardLimitResetValue.isPresent()) {
+            if (forwardLimitResetRots != null && forwardLimitResetRots.isPresent()) {
                 config.limitSwitch.forwardLimitSwitchTriggerBehavior(Behavior.kStopMovingMotorAndSetPosition);
-                config.limitSwitch.forwardLimitSwitchPosition(forwardLimitResetValue.get());
+                config.limitSwitch.forwardLimitSwitchPosition(forwardLimitResetRots.get());
             } else {
                 config.limitSwitch.forwardLimitSwitchTriggerBehavior(Behavior.kStopMovingMotor);
             }
@@ -154,9 +154,9 @@ public class SparkUtils {
         }
 
         if (reverseLimitEnabled) {
-            if (reverseLimitResetValue != null && reverseLimitResetValue.isPresent()) {
+            if (reverseLimitResetRots != null && reverseLimitResetRots.isPresent()) {
                 config.limitSwitch.reverseLimitSwitchTriggerBehavior(Behavior.kStopMovingMotorAndSetPosition);
-                config.limitSwitch.reverseLimitSwitchPosition(reverseLimitResetValue.get());
+                config.limitSwitch.reverseLimitSwitchPosition(reverseLimitResetRots.get());
             } else {
                 config.limitSwitch.reverseLimitSwitchTriggerBehavior(Behavior.kStopMovingMotor);
             }
