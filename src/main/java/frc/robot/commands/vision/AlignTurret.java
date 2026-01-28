@@ -2,8 +2,10 @@ package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +26,7 @@ public class AlignTurret extends Command {
     private Pose2d poseEstimate;
     private boolean isRed;
 
-    private Pose2d robotToHub;
+    private Transform2d robotToHub;
     private Rotation2d rotationToHub;
 
     AnalogGyro real = new AnalogGyro(0);
@@ -44,6 +46,7 @@ public class AlignTurret extends Command {
 
         // LSUB GET POSE, set into pose
         isRed = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red);
+        SmartDashboard.putData(real);
     }
 
     @Override
@@ -54,26 +57,22 @@ public class AlignTurret extends Command {
         // Get Detection (safe)
         if (lsub.getRawPosition().isEmpty()) {
             SmartDashboard.putString("AprilTagFound", "No apriltag :("); // replace later
-            return;
+            // return;
         } else {
             SmartDashboard.putString("AprilTagFound", "Found Apriltag :)");
         }
         this.poseEstimate = lsub.getRawPosition().get();
 
         // Get Pose2d that points from robot to hub (hub vector - robot vector)
-        if (isRed)
-            robotToHub = new Pose2d(FieldConstants.redHubPos.minus(poseEstimate).getTranslation(), new Rotation2d());
-        else
-            robotToHub =
-                    new Pose2d(FieldConstants.blueHubPos.minus(poseEstimate).getTranslation(), new Rotation2d());
+        if (isRed) robotToHub = FieldConstants.redHubPos.minus(poseEstimate);
+        else robotToHub = FieldConstants.blueHubPos.minus(poseEstimate);
 
         // Set turret angle to robotToHub vector
         rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         tsub.setTurretAngle(rotationToHub);
 
-        angle.setAngle(rotationToHub.getDegrees() + 1);
-        SmartDashboard.putData(real);
+        angle.setAngle(rotationToHub.getDegrees() + Timer.getMatchTime());
     }
 
     // private AprilTagFieldLayout a;
