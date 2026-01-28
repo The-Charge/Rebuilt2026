@@ -519,7 +519,7 @@ public class Logger {
         log(root, "hardStopForward", motor.getForwardLimitSwitch().isPressed());
         log(root, "hardStopReverse", motor.getReverseLimitSwitch().isPressed());
         log(root, "currentOut", motor.getOutputCurrent());
-        log(root, "connected", SparkMaxUtils.isConnected(motor));
+        log(root, "connected", SparkUtils.isConnected(motor));
 
         log(root + "/faults", "can", activeFaults.can);
         log(root + "/faults", "escEeprom", activeFaults.escEeprom);
@@ -529,7 +529,7 @@ public class Logger {
         log(root + "/faults", "other", activeFaults.other);
         log(root + "/faults", "sensor", activeFaults.sensor);
         log(root + "/faults", "temperature", activeFaults.temperature);
-        log(root, "criticalFaultsActive", SparkMaxUtils.hasCriticalFaults(activeFaults));
+        log(root, "criticalFaultsActive", SparkUtils.hasCriticalFaults(activeFaults));
 
         log(root + "/stickyFaults", "can", stickyFaults.can);
         log(root + "/stickyFaults", "escEeprom", stickyFaults.escEeprom);
@@ -539,7 +539,7 @@ public class Logger {
         log(root + "/stickyFaults", "other", stickyFaults.other);
         log(root + "/stickyFaults", "sensor", stickyFaults.sensor);
         log(root + "/stickyFaults", "temperature", stickyFaults.temperature);
-        log(root, "criticalStickyFaultsActive", SparkMaxUtils.hasCriticalFaults(stickyFaults));
+        log(root, "criticalStickyFaultsActive", SparkUtils.hasCriticalFaults(stickyFaults));
 
         log(root + "/warnings", "brownout", activeWarnings.brownout);
         log(root + "/warnings", "escEeprom", activeWarnings.escEeprom);
@@ -549,7 +549,7 @@ public class Logger {
         log(root + "/warnings", "overcurrent", activeWarnings.overcurrent);
         log(root + "/warnings", "sensor", activeWarnings.sensor);
         log(root + "/warnings", "stall", activeWarnings.stall);
-        log(root, "criticalWarningsActive", SparkMaxUtils.hasCriticalWarnings(activeWarnings));
+        log(root, "criticalWarningsActive", SparkUtils.hasCriticalWarnings(activeWarnings));
 
         log(root + "/stickyWarnings", "brownout", stickyWarnings.brownout);
         log(root + "/stickyWarnings", "escEeprom", stickyWarnings.escEeprom);
@@ -559,7 +559,7 @@ public class Logger {
         log(root + "/stickyWarnings", "overcurrent", stickyWarnings.overcurrent);
         log(root + "/stickyWarnings", "sensor", stickyWarnings.sensor);
         log(root + "/stickyWarnings", "stall", stickyWarnings.stall);
-        log(root, "criticalStickyWarningsActive", SparkMaxUtils.hasCriticalWarnings(stickyWarnings));
+        log(root, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
 
         if (additionalData != null && additionalData.isPresent()) {
             for (Entry<String, String> data : additionalData.get().entrySet()) {

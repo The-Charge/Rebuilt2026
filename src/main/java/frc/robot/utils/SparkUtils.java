@@ -1,16 +1,16 @@
 package frc.robot.utils;
 
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
+import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import java.util.Optional;
 
-public class SparkMaxUtils {
+public class SparkUtils {
 
-    private SparkMaxUtils() {}
+    private SparkUtils() {}
 
     public static boolean hasCriticalFaults(Faults faults) {
         if (faults == null) return false;
@@ -36,7 +36,7 @@ public class SparkMaxUtils {
                 || warnings.sensor;
     }
 
-    public static boolean isConnected(SparkMax motor) {
+    public static boolean isConnected(SparkBase motor) {
         if (motor == null) {
             Logger.reportWarning("Cannot test connectivity of a null motor", true);
             return false;
@@ -46,14 +46,14 @@ public class SparkMaxUtils {
     }
 
     public void configureBasicSettings(
-            SparkMaxConfig config,
+            SparkBaseConfig config,
             int maxCurrent,
             IdleMode idleMode,
             boolean inverted,
             double maxDutyCycle,
             Optional<Double> voltageCompensation) {
         if (config == null) {
-            Logger.reportWarning("Cannot modify a null SparkMaxConfig", true);
+            Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
@@ -81,7 +81,7 @@ public class SparkMaxUtils {
      * @param kA
      */
     public void configureClosedLoopSettings(
-            SparkMaxConfig config,
+            SparkBaseConfig config,
             double kP,
             double kI,
             double kD,
@@ -91,7 +91,7 @@ public class SparkMaxUtils {
             Optional<Double> kV,
             Optional<Double> kA) {
         if (config == null) {
-            Logger.reportWarning("Cannot modify a null SparkMaxConfig", true);
+            Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
@@ -114,9 +114,9 @@ public class SparkMaxUtils {
     }
 
     public void configureSoftStops(
-            SparkMaxConfig config, Optional<Double> forwardLimit, Optional<Double> reverseLimit) {
+            SparkBaseConfig config, Optional<Double> forwardLimit, Optional<Double> reverseLimit) {
         if (config == null) {
-            Logger.reportWarning("Cannot modify a null SparkMaxConfig", true);
+            Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
@@ -132,13 +132,13 @@ public class SparkMaxUtils {
     }
 
     public void configureHardStops(
-            SparkMaxConfig config,
+            SparkBaseConfig config,
             boolean forwardLimitEnabled,
             Optional<Double> forwardLimitResetValue,
             boolean reverseLimitEnabled,
             Optional<Double> reverseLimitResetValue) {
         if (config == null) {
-            Logger.reportWarning("Cannot modify a null SparkMaxConfig", true);
+            Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
