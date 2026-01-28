@@ -5,7 +5,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
@@ -42,7 +41,7 @@ public class LimelightSub extends SubsystemBase {
         if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance) return Optional.empty();
         final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
         final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1;
-        final double robotSpeed = swerve.getSpeed(); // get swerve speed from ctre
+        final double robotSpeed = swerve.getRobotVelocity().vxMetersPerSecond; // get swerve speed from ctre
         final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1;
         final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
         if (!CAN_GET_GOOD_HEADING) return Optional.empty();
@@ -87,7 +86,7 @@ public class LimelightSub extends SubsystemBase {
         }
         transStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
-        transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
+        transStdDev += swerve.getRobotVelocity().vxMetersPerSecond * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
         transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
 
@@ -99,7 +98,7 @@ public class LimelightSub extends SubsystemBase {
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
             LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
-        if (swerve.getAngularVelocity().abs(Units.DegreesPerSecond) > LimelightConstants.kMaxAngularSpeed)
+        if (swerve.getRobotVelocity().omegaRadiansPerSecond > LimelightConstants.kMaxAngularSpeed)
             return Optional.empty(); // don't trust if turning too fast
         if (poseEstimate.avgTagDist > 8) return Optional.empty();
 
@@ -108,7 +107,7 @@ public class LimelightSub extends SubsystemBase {
         if (poseEstimate.tagCount > 1)
             transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus; // TODO: is this even needed?
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
-        transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
+        transStdDev += swerve.getRobotVelocity().vxMetersPerSecond * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
         transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
 

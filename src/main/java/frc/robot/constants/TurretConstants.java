@@ -1,7 +1,6 @@
 package frc.robot.constants;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.math.controller.PIDController;
 
 public class TurretConstants { // split into shooter, spinner, and hood
@@ -21,5 +20,4 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final boolean inverted = false;
     public static double shooterAcceptableAngle;
     public static PIDController shooterPID = new PIDController(0, 0, 0);
-
 }
