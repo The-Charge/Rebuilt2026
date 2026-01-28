@@ -9,12 +9,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
+
     private Command m_autonomousCommand;
 
-    private final RobotContainer m_robotContainer;
-
     public Robot() {
-        m_robotContainer = new RobotContainer();
+        RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
     }
 
     @Override
@@ -33,7 +32,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
