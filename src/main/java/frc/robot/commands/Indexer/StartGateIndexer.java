@@ -19,7 +19,7 @@ public class StartGateIndexer extends Command {
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isFinished() { // always returns true since voltage is instant and doesn't need to be checked
         return true;
     }
 }
