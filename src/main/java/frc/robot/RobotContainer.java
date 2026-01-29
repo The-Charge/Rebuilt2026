@@ -18,12 +18,12 @@ public class RobotContainer {
     public IntakeSubsystem intakeSystem;
 
     public RobotContainer() {
-        configureBindings();
-
         intakeSystem = new IntakeSubsystem();
 
         driver1 = new CommandXboxController(0);
         driver2 = new CommandXboxController(1);
+
+        configureBindings();
     }
 
     private void configureBindings() {

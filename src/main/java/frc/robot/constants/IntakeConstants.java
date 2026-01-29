@@ -4,13 +4,13 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class IntakeConstants {
-    public static int RollerMotorId = 0;
-    public static int PivotMotorId = 0;
+    public static int RollerMotorId = 9;
+    public static int PivotMotorId = 5;
 
-    public static double DeployedPosition = 1.234567;
-    public static double RetractedPosition = 7.654321;
+    public static double DeployedPosition = 2000;
+    public static double RetractedPosition = 0;
 
-    public static double StateTolerance = 1.23456;
+    public static double StateTolerance = 40;
 
     public static class PivotConfig {
         public static double maxVBus = 1.00;
