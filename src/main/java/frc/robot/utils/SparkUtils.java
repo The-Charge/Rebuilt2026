@@ -45,7 +45,7 @@ public class SparkUtils {
         return motor.getFirmwareVersion() != 0;
     }
 
-    public void configureBasicSettings(
+    public static void configureBasicSettings(
             SparkBaseConfig config,
             int maxAmps,
             IdleMode idleMode,
@@ -80,7 +80,7 @@ public class SparkUtils {
      * @param kV
      * @param kA
      */
-    public void configureClosedLoopSettings(
+    public static void configureClosedLoopSettings(
             SparkBaseConfig config,
             double kP,
             double kI,
@@ -113,7 +113,7 @@ public class SparkUtils {
         }
     }
 
-    public void configureSoftStops(
+    public static void configureSoftStops(
             SparkBaseConfig config, Optional<Double> forwardLimitRots, Optional<Double> reverseLimitRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
@@ -131,7 +131,7 @@ public class SparkUtils {
         }
     }
 
-    public void configureHardStops(
+    public static void configureHardStops(
             SparkBaseConfig config,
             boolean forwardLimitEnabled,
             Optional<Double> forwardLimitResetRots,

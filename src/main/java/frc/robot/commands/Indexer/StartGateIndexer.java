@@ -14,15 +14,11 @@ public class StartGateIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.setVoltage(IndexConstants.gateToShooterVoltage);
+        indexer.setGateMotorVoltage(IndexConstants.gateToShooterVoltage);
     }
 
     @Override
     public boolean isFinished() {
-        if (indexer.getVoltage() >= IndexConstants.gateToShooterVoltage) {
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
 }

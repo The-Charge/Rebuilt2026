@@ -13,12 +13,12 @@ public class SpinDownIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.setIndexerVelocity(0); // in this instance set velocity to ...
+        indexer.setSpindexerMotorVelocity(0); // in this instance set velocity to ...
     }
 
     @Override
     public boolean isFinished() {
-        if (indexer.getVelocityRPM() > 0) {
+        if (indexer.getSpindexerRPM() > 0) {
             return false;
         } else {
             return true;

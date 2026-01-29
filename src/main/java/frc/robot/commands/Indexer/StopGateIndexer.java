@@ -13,15 +13,11 @@ public class StopGateIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.setVoltage(0);
+        indexer.setGateMotorVoltage(0);
     }
 
     @Override
     public boolean isFinished() {
-        if (indexer.getVoltage() > 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return true;
     }
 }

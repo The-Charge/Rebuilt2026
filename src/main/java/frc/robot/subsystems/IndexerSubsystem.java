@@ -1,113 +1,82 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexConstants;
+import frc.robot.utils.Logger;
+import frc.robot.utils.SparkUtils;
+import frc.robot.utils.TalonFXUtils;
+import java.util.Optional;
 
 public class IndexerSubsystem extends SubsystemBase {
 
     private final TalonFX spindexerMotor; // MAKES MOTOR
-    private final SparkMax gateToShooter;
+    private final SparkMax gateMotor;
 
     public IndexerSubsystem() {
 
-        spindexerMotor = new TalonFX(IndexConstants.spindexerMotorID); // port number under indexConstants
+        spindexerMotor = new TalonFX(IndexConstants.Spindexer.motorID); // port number under indexConstants
+        TalonFXConfiguration spindexerConfig = new TalonFXConfiguration();
+        TalonFXUtils.configureBasicSettings(
+                spindexerConfig,
+                IndexConstants.Spindexer.maxCurrent,
+                IndexConstants.Spindexer.neutralMode,
+                IndexConstants.Spindexer.inverted,
+                IndexConstants.Spindexer.maxDutyCycle,
+                Optional.of(IndexConstants.Spindexer.maxVoltage));
+        TalonFXUtils.configureClosedLoopSettings(
+                spindexerConfig,
+                IndexConstants.Spindexer.kP,
+                IndexConstants.Spindexer.kI,
+                IndexConstants.Spindexer.kD,
+                Optional.empty(),
+                Optional.empty());
+        spindexerMotor.getConfigurator().apply(spindexerConfig); // TODO: check config apply
 
-        configureTalonFXMotor(); // always configure before their use
-
-        gateToShooter = new SparkMax(
-                IndexConstants.gateToShooterID,
+        gateMotor = new SparkMax(
+                IndexConstants.Gate.motorID,
                 MotorType.kBrushless); // port number in IndexConstants; defines the motor as brushless
-        configureSparkMaxMotor();
-    }
-
-    public double getVelocityRPM() {
-        return spindexerMotor.getVelocity().getValue().abs(Units.RPM); // to check velocity for spinup
-    }
-
-    public double getVoltage() {
-        return gateToShooter.getBusVoltage();
-    }
-
-    public void setIndexerVelocity(double velocity) {
-        VelocityVoltage request = new VelocityVoltage(velocity);
-        spindexerMotor.setControl(request); // says that velocity controls velocity
-    }
-
-    public void setVoltage(double voltage) {
-        gateToShooter.setVoltage(voltage);
+        SparkMaxConfig gateConfig = new SparkMaxConfig();
+        SparkUtils.configureBasicSettings(
+                gateConfig,
+                IndexConstants.Gate.maxCurrent,
+                IndexConstants.Gate.idleMode,
+                IndexConstants.Gate.inverted,
+                IndexConstants.Gate.maxDutyCycle,
+                IndexConstants.Gate.nominalVoltage);
+        gateMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
-    public void periodic() {}
+    public void periodic() {
+        Logger.logSubsystem("Indexer", this);
+        Logger.logTalonFX("Indexer", "spindexerMotor", spindexerMotor, Optional.empty());
+        Logger.logSparkMotor("Indexer", "gateMotor", gateMotor, Optional.empty());
+    }
+
+    public double getSpindexerRPM() {
+        return spindexerMotor.getVelocity().getValue().abs(Units.RPM); // to check velocity for spinup
+    }
+
+    public void setSpindexerMotorVelocity(double RPM) {
+        VelocityVoltage request = new VelocityVoltage(RPM);
+        spindexerMotor.setControl(request); // says that velocity controls velocity
+    }
+
+    public void setGateMotorVoltage(double voltage) {
+        gateMotor.setVoltage(voltage);
+    }
 
     public void stop() {
         spindexerMotor.stopMotor(); // safety
-        gateToShooter.stopMotor();
-    }
-
-    private void configureSparkMaxMotor() {
-        SparkMaxConfig config = new SparkMaxConfig();
-    }
-
-    private void configureTalonFXMotor() {
-        TalonFXConfiguration config = new TalonFXConfiguration();
-
-        // current limits
-        config.CurrentLimits.StatorCurrentLimit = IndexConstants.maxCurrent;
-        config.CurrentLimits.StatorCurrentLimitEnable = true;
-
-        // hardstops
-        config.HardwareLimitSwitch.ForwardLimitEnable = IndexConstants.forwardHardLimitEnabled;
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable =
-                IndexConstants.forwardHardLimitResetValue.isPresent();
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue =
-                IndexConstants.forwardHardLimitResetValue.orElse(0d);
-        config.HardwareLimitSwitch.ReverseLimitEnable = IndexConstants.reverseHardLimitEnabled;
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable =
-                IndexConstants.reverseHardLimitResetValue.isPresent();
-        config.HardwareLimitSwitch.ForwardLimitAutosetPositionValue =
-                IndexConstants.reverseHardLimitResetValue.orElse(0d);
-
-        // braking mode
-        config.MotorOutput.NeutralMode = IndexConstants.neutralMode;
-        // polarity
-        config.MotorOutput.Inverted = IndexConstants.inverted;
-        // duty cycle output limits
-        config.MotorOutput.PeakForwardDutyCycle = IndexConstants.maxDutyCycle;
-        config.MotorOutput.PeakReverseDutyCycle = -IndexConstants.maxDutyCycle;
-
-        // pid
-        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
-        config.Slot0.kP = IndexConstants.kP;
-        config.Slot0.kI = IndexConstants.kI;
-        config.Slot0.kD = IndexConstants.kD;
-        config.Slot0.kG = IndexConstants.kG;
-
-        // softstops
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = IndexConstants.forwardSoftLimit.isPresent();
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = IndexConstants.forwardSoftLimit.orElse(0d);
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = IndexConstants.reverseSoftLimit.isPresent();
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = IndexConstants.reverseSoftLimit.orElse(0d);
-
-        // voltage output limits
-        config.Voltage.PeakForwardVoltage = IndexConstants.maxVoltage;
-        config.Voltage.PeakReverseVoltage = -IndexConstants.maxVoltage;
-
-        if (spindexerMotor.getConfigurator().apply(config) != StatusCode.OK) {
-            // TODO: error reporting
-            // Logger.reportError("Failed to configure elevator motor");
-            // Alerts.elevMotorConfigFail.set(true);
-        }
+        gateMotor.stopMotor();
     }
 }
