@@ -5,11 +5,14 @@ import com.ctre.phoenix6.signals.DeviceEnableValue;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
+import edu.wpi.first.hal.PowerDistributionFaults;
+import edu.wpi.first.hal.PowerDistributionStickyFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -598,6 +601,80 @@ public class Logger {
                     "defaultCommand",
                     subsystem.getDefaultCommand().getName());
         }
+    }
+
+    public static void logPDP(PowerDistribution pdp) {
+        if (pdp == null) {
+            reportWarning("Cannot log a null PDP", true);
+            return;
+        }
+
+        logDouble("PDP", "batteryVoltage", pdp.getVoltage());
+        logDoubleArray("PDP", "currents", pdp.getAllCurrents());
+        logDouble("PDP", "totalCurrent", pdp.getTotalCurrent());
+
+        PowerDistributionFaults faults = pdp.getFaults();
+        String table = "PDP/faults";
+        logBool(table, "channel0Breaker", faults.Channel0BreakerFault);
+        logBool(table, "channel1Breaker", faults.Channel1BreakerFault);
+        logBool(table, "channel2Breaker", faults.Channel2BreakerFault);
+        logBool(table, "channel3Breaker", faults.Channel3BreakerFault);
+        logBool(table, "channel4Breaker", faults.Channel4BreakerFault);
+        logBool(table, "channel5Breaker", faults.Channel5BreakerFault);
+        logBool(table, "channel6Breaker", faults.Channel6BreakerFault);
+        logBool(table, "channel7Breaker", faults.Channel7BreakerFault);
+        logBool(table, "channel8Breaker", faults.Channel8BreakerFault);
+        logBool(table, "channel9Breaker", faults.Channel9BreakerFault);
+        logBool(table, "channel10Breaker", faults.Channel10BreakerFault);
+        logBool(table, "channel11Breaker", faults.Channel11BreakerFault);
+        logBool(table, "channel12Breaker", faults.Channel12BreakerFault);
+        logBool(table, "channel13Breaker", faults.Channel13BreakerFault);
+        logBool(table, "channel14Breaker", faults.Channel14BreakerFault);
+        logBool(table, "channel15Breaker", faults.Channel15BreakerFault);
+        logBool(table, "channel16Breaker", faults.Channel16BreakerFault);
+        logBool(table, "channel17Breaker", faults.Channel17BreakerFault);
+        logBool(table, "channel18Breaker", faults.Channel18BreakerFault);
+        logBool(table, "channel19Breaker", faults.Channel19BreakerFault);
+        logBool(table, "channel20Breaker", faults.Channel20BreakerFault);
+        logBool(table, "channel21Breaker", faults.Channel21BreakerFault);
+        logBool(table, "channel22Breaker", faults.Channel22BreakerFault);
+        logBool(table, "channel23Breaker", faults.Channel23BreakerFault);
+        logBool(table, "brownout", faults.Brownout);
+        logBool(table, "canWarning", faults.CanWarning);
+        logBool(table, "hardware", faults.HardwareFault);
+
+        PowerDistributionStickyFaults stickyFaults = pdp.getStickyFaults();
+        table = "PDP/stickyFaults";
+        logBool(table, "channel0Breaker", stickyFaults.Channel0BreakerFault);
+        logBool(table, "channel1Breaker", stickyFaults.Channel1BreakerFault);
+        logBool(table, "channel2Breaker", stickyFaults.Channel2BreakerFault);
+        logBool(table, "channel3Breaker", stickyFaults.Channel3BreakerFault);
+        logBool(table, "channel4Breaker", stickyFaults.Channel4BreakerFault);
+        logBool(table, "channel5Breaker", stickyFaults.Channel5BreakerFault);
+        logBool(table, "channel6Breaker", stickyFaults.Channel6BreakerFault);
+        logBool(table, "channel7Breaker", stickyFaults.Channel7BreakerFault);
+        logBool(table, "channel8Breaker", stickyFaults.Channel8BreakerFault);
+        logBool(table, "channel9Breaker", stickyFaults.Channel9BreakerFault);
+        logBool(table, "channel10Breaker", stickyFaults.Channel10BreakerFault);
+        logBool(table, "channel11Breaker", stickyFaults.Channel11BreakerFault);
+        logBool(table, "channel12Breaker", stickyFaults.Channel12BreakerFault);
+        logBool(table, "channel13Breaker", stickyFaults.Channel13BreakerFault);
+        logBool(table, "channel14Breaker", stickyFaults.Channel14BreakerFault);
+        logBool(table, "channel15Breaker", stickyFaults.Channel15BreakerFault);
+        logBool(table, "channel16Breaker", stickyFaults.Channel16BreakerFault);
+        logBool(table, "channel17Breaker", stickyFaults.Channel17BreakerFault);
+        logBool(table, "channel18Breaker", stickyFaults.Channel18BreakerFault);
+        logBool(table, "channel19Breaker", stickyFaults.Channel19BreakerFault);
+        logBool(table, "channel20Breaker", stickyFaults.Channel20BreakerFault);
+        logBool(table, "channel21Breaker", stickyFaults.Channel21BreakerFault);
+        logBool(table, "channel22Breaker", stickyFaults.Channel22BreakerFault);
+        logBool(table, "channel23Breaker", stickyFaults.Channel23BreakerFault);
+        logBool(table, "brownout", stickyFaults.Brownout);
+        logBool(table, "canWarning", stickyFaults.CanWarning);
+        logBool(table, "canBusOff", stickyFaults.CanBusOff);
+        logBool(table, "hardware", stickyFaults.HardwareFault);
+        logBool(table, "firmware", stickyFaults.FirmwareFault);
+        logBool(table, "hasReset", stickyFaults.HasReset);
     }
 
     private static class StackTrace {
