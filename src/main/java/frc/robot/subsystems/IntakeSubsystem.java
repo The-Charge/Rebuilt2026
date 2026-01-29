@@ -16,7 +16,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.IntakeConstants.PivotConfig;
-import frc.robot.constants.IntakeConstants.RollerConfig;
 
 public class IntakeSubsystem extends SubsystemBase {
     public TalonFX pivotMotor;
@@ -28,7 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
         UNKNOWN,
     }
 
-    public Target target; // TODO: use this???
+    public Target target;
 
     public IntakeSubsystem() {
         pivotMotor = new TalonFX(IntakeConstants.PivotMotorId);
@@ -79,9 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void startRoller() {
-        rollerMotor
-                .getClosedLoopController() // this might cuase problems??????
-                .setSetpoint(IntakeConstants.RollerVelocity, ControlType.kVelocity);
+        rollerMotor.set(1.00);
     }
 
     public void stopRoller() {
@@ -90,9 +87,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void configureRollerMotor() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
-        motorConfig.closedLoop.p(RollerConfig.pid.p);
-        motorConfig.closedLoop.i(RollerConfig.pid.i);
-        motorConfig.closedLoop.d(RollerConfig.pid.d);
         rollerMotor.configure(
                 motorConfig,
                 ResetMode.kResetSafeParameters,
