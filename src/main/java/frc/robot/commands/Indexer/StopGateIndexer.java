@@ -1,10 +1,11 @@
-package frc.robot.commands.Indexer;
+package frc.robot.commands.indexer;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IndexerSubsystem;
 
 public class StopGateIndexer extends Command {
-    public final IndexerSubsystem indexer;
+
+    private final IndexerSubsystem indexer;
 
     public StopGateIndexer(IndexerSubsystem indexerSub) {
         indexer = indexerSub;

@@ -10,10 +10,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.Indexer.SpinDownIndexer;
-import frc.robot.commands.Indexer.SpinUpIndexer;
-import frc.robot.commands.Indexer.StartGateIndexer;
-import frc.robot.commands.Indexer.StopGateIndexer;
+import frc.robot.commands.indexer.SpinDownIndexer;
+import frc.robot.commands.indexer.SpinUpIndexer;
+import frc.robot.commands.indexer.StartGateIndexer;
+import frc.robot.commands.indexer.StopGateIndexer;
 import frc.robot.subsystems.IndexerSubsystem;
 
 public class RobotContainer {
@@ -49,12 +49,12 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        commandDriver1.a().onTrue(new SpinUpIndexer(indexer));
-        commandDriver1.b().onTrue(new InstantCommand(indexer::stop, indexer).ignoringDisable(true));
+        commandDriver1.a().onTrue(new SpinUpIndexer(indexer, false));
+        commandDriver1.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
         commandDriver1.x().onTrue(new SpinDownIndexer(indexer));
 
         commandDriver2.a().onTrue(new StartGateIndexer(indexer));
-        commandDriver2.b().onTrue(new InstantCommand(indexer::stop, indexer).ignoringDisable(true));
+        commandDriver2.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
         commandDriver2.x().onTrue(new StopGateIndexer(indexer));
     }
 

@@ -1,11 +1,12 @@
-package frc.robot.commands.Indexer;
+package frc.robot.commands.indexer;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.IndexConstants;
+import frc.robot.constants.IndexerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 
 public class StartGateIndexer extends Command {
-    public final IndexerSubsystem indexer;
+
+    private final IndexerSubsystem indexer;
 
     public StartGateIndexer(IndexerSubsystem indexerSub) {
         indexer = indexerSub;
@@ -14,7 +15,7 @@ public class StartGateIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.setGateMotorVoltage(IndexConstants.gateToShooterVoltage);
+        indexer.setGateMotorVoltage(IndexerConstants.gateToShooterVoltage);
     }
 
     @Override

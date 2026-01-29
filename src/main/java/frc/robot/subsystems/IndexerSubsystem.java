@@ -8,9 +8,9 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.IndexConstants;
+import frc.robot.constants.IndexerConstants;
+import frc.robot.units.SpindexerVelocity;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import frc.robot.utils.TalonFXUtils;
@@ -21,62 +21,100 @@ public class IndexerSubsystem extends SubsystemBase {
     private final TalonFX spindexerMotor; // MAKES MOTOR
     private final SparkMax gateMotor;
 
-    public IndexerSubsystem() {
+    private Optional<SpindexerVelocity> spindexerTarget;
 
-        spindexerMotor = new TalonFX(IndexConstants.Spindexer.motorID); // port number under indexConstants
+    public IndexerSubsystem() {
+        spindexerMotor = new TalonFX(IndexerConstants.Spindexer.motorID); // port number under IndexerConstants
         TalonFXConfiguration spindexerConfig = new TalonFXConfiguration();
         TalonFXUtils.configureBasicSettings(
                 spindexerConfig,
-                IndexConstants.Spindexer.maxCurrent,
-                IndexConstants.Spindexer.neutralMode,
-                IndexConstants.Spindexer.inverted,
-                IndexConstants.Spindexer.maxDutyCycle,
-                Optional.of(IndexConstants.Spindexer.maxVoltage));
+                IndexerConstants.Spindexer.maxCurrent,
+                IndexerConstants.Spindexer.neutralMode,
+                IndexerConstants.Spindexer.inverted,
+                IndexerConstants.Spindexer.maxDutyCycle,
+                Optional.of(IndexerConstants.Spindexer.maxVoltage));
         TalonFXUtils.configureClosedLoopSettings(
                 spindexerConfig,
-                IndexConstants.Spindexer.kP,
-                IndexConstants.Spindexer.kI,
-                IndexConstants.Spindexer.kD,
+                IndexerConstants.Spindexer.kP,
+                IndexerConstants.Spindexer.kI,
+                IndexerConstants.Spindexer.kD,
                 Optional.empty(),
                 Optional.empty());
         spindexerMotor.getConfigurator().apply(spindexerConfig); // TODO: check config apply
 
         gateMotor = new SparkMax(
-                IndexConstants.Gate.motorID,
-                MotorType.kBrushless); // port number in IndexConstants; defines the motor as brushless
+                IndexerConstants.Gate.motorID,
+                MotorType.kBrushless); // port number in IndexerConstants; defines the motor as brushless
         SparkMaxConfig gateConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 gateConfig,
-                IndexConstants.Gate.maxCurrent,
-                IndexConstants.Gate.idleMode,
-                IndexConstants.Gate.inverted,
-                IndexConstants.Gate.maxDutyCycle,
-                IndexConstants.Gate.nominalVoltage);
-        gateMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                IndexerConstants.Gate.maxCurrent,
+                IndexerConstants.Gate.idleMode,
+                IndexerConstants.Gate.inverted,
+                IndexerConstants.Gate.maxDutyCycle,
+                IndexerConstants.Gate.nominalVoltage);
+        gateMotor.configure(
+                gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); // TODO: check config apply
+
+        spindexerTarget = Optional.empty();
     }
 
     @Override
     public void periodic() {
-        Logger.logSubsystem("Indexer", this);
-        Logger.logTalonFX("Indexer", "spindexerMotor", spindexerMotor, Optional.empty());
-        Logger.logSparkMotor("Indexer", "gateMotor", gateMotor, Optional.empty());
+        Logger.logSubsystem(IndexerConstants.subsystemName, this);
+
+        Logger.logTalonFX(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor, Optional.empty());
+        Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor, Optional.empty());
+
+        Logger.logDouble(
+                IndexerConstants.subsystemName,
+                "spindexerTargetMechanismRPM",
+                spindexerTarget.map((val) -> val.getAsMechanismRPM()).orElse(Double.NaN));
+        Logger.logBool(
+                IndexerConstants.subsystemName,
+                "spindexerIsAtTarget",
+                isSpindexerAtTarget().orElse(true));
     }
 
-    public double getSpindexerRPM() {
-        return spindexerMotor.getVelocity().getValue().abs(Units.RPM); // to check velocity for spinup
+    public SpindexerVelocity getSpindexerVelocity() {
+        return SpindexerVelocity.fromMechanismVelocity(
+                spindexerMotor.getVelocity().getValue()); // to check velocity for spinup
     }
 
-    public void setSpindexerMotorVelocity(double RPM) {
-        VelocityVoltage request = new VelocityVoltage(RPM);
+    public void setSpindexerMotorVelocity(SpindexerVelocity vel) {
+        if (vel == null) {
+            Logger.reportWarning("Cannot set spindexer velocity to a null velocity", true);
+            return;
+        }
+
+        spindexerTarget = Optional.of(vel);
+
+        VelocityVoltage request = new VelocityVoltage(vel.getAsMechanismVelocity());
         spindexerMotor.setControl(request); // says that velocity controls velocity
+    }
+
+    public void stopSpindexer() {
+        spindexerTarget = Optional.empty();
+
+        spindexerMotor.stopMotor();
     }
 
     public void setGateMotorVoltage(double voltage) {
         gateMotor.setVoltage(voltage);
     }
 
-    public void stop() {
+    public void stopAll() {
         spindexerMotor.stopMotor(); // safety
         gateMotor.stopMotor();
+    }
+
+    public Optional<Boolean> isSpindexerAtTarget() {
+        if (spindexerTarget.isEmpty()) return Optional.empty();
+
+        double motorRPM = getSpindexerVelocity().getAsMechanismRPM();
+        double targetRPM = spindexerTarget.get().getAsMechanismRPM();
+        double toleranceRPM = IndexerConstants.Spindexer.targetTolerance.getAsMechanismRPM();
+
+        return Optional.of(Math.abs(targetRPM - motorRPM) <= toleranceRPM);
     }
 }
