@@ -87,6 +87,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void configureRollerMotor() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
+        motorConfig.smartCurrentLimit(IntakeConstants.currentLimit);
         rollerMotor.configure(
                 motorConfig,
                 ResetMode.kResetSafeParameters,

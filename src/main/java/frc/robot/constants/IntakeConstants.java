@@ -10,7 +10,8 @@ public class IntakeConstants {
     public static double DeployedPosition = 2000;
     public static double RetractedPosition = 0;
 
-    public static double StateTolerance = 40;
+    public static double StateTolerance = 500;
+    public static int currentLimit;
 
     public static class PivotConfig {
         public static double maxVBus = 1.00;
@@ -21,10 +22,10 @@ public class IntakeConstants {
         public static double maxPosTicks = 1;
 
         public static class pidf {
-            public static double p = 0.3;
-            public static double i = 0;
+            public static double p = 0.8;
+            public static double i = 0.3;
             public static double d = 0.02;
-            public static double f = 0;
+            public static double f = 0.2;
         }
     }
 }
