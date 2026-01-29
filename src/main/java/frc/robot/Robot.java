@@ -14,33 +14,18 @@ import frc.robot.utils.Logger;
 public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
+    private final RobotContainer m_robotContainer;
 
     public Robot() {
         Logger.init(); // DO NOT DELETE ; start logger
-        RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
+        m_robotContainer = new RobotContainer();
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
 
-        Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
-        Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
         Alerts.fmsConnected.set(DriverStation.isFMSAttached());
-
-        double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
-        Logger.logDouble("PDP", "batteryVoltage", batteryVoltage);
-
-        if (batteryVoltage <= 10) {
-            Alerts.lowBattery.set(false);
-            Alerts.criticalBattery.set(true);
-        } else if (batteryVoltage <= 11) {
-            Alerts.lowBattery.set(true);
-            Alerts.criticalBattery.set(false);
-        } else {
-            Alerts.lowBattery.set(false);
-            Alerts.criticalBattery.set(false);
-        }
     }
 
     @Override
@@ -53,13 +38,7 @@ public class Robot extends TimedRobot {
     public void disabledExit() {}
 
     @Override
-    public void autonomousInit() {
-        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
-
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
-        }
-    }
+    public void autonomousInit() {}
 
     @Override
     public void autonomousPeriodic() {}

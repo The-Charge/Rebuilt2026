@@ -28,7 +28,7 @@ public class AlignTurret extends Command {
     private Pose2d poseEstimate;
     private boolean isRed;
 
-    AnalogGyro real = new AnalogGyro(0);
+    AnalogGyro real = new AnalogGyro(1);
     AnalogGyroSim angle = new AnalogGyroSim(real);
 
     public AlignTurret(LimelightSubsystem lsub, TurretSubsystem tsub, SwerveSubsystem ssub) {
@@ -57,7 +57,7 @@ public class AlignTurret extends Command {
         // Get Detection (safe)
         if (lsub.getRawPosition().isEmpty()) {
             SmartDashboard.putString("AprilTagFound", "No apriltag :("); // replace later
-            poseEstimate = ssub.getPosition();
+            poseEstimate = ssub.getPose();
         } else {
             SmartDashboard.putString("AprilTagFound", "Found Apriltag :)");
             poseEstimate = lsub.getRawPosition().get();
@@ -74,6 +74,9 @@ public class AlignTurret extends Command {
         tsub.setTurretAngle(rotationToHub);
 
         angle.setAngle(rotationToHub.getDegrees() + Timer.getMatchTime());
+        SmartDashboard.putData("turret angle", real);
+        SmartDashboard.putNumber("turret X thingy", robotToHub.getX());
+        SmartDashboard.putNumber("turret timer thingy", Timer.getMatchTime());
     }
 
     // private AprilTagFieldLayout a;

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.vision.AlignTurret;
 import frc.robot.constants.SwerveConstants;
-import frc.robot.subsystems.LimelightSub;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.io.File;
@@ -28,8 +28,8 @@ public class RobotContainer {
     private final XboxController hid1, hid2;
 
     private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
-    private final LimelightSub reeflimelight = new LimelightSub("reef");
-    private final LimelightSub funnellimelight = new LimelightSub("funnel");
+    private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef");
+    private final LimelightSubsystem funnellimelight = new LimelightSubsystem("funnel");
 
     private SendableChooser<Command> autoChooser;
     private TeleopDrive teleopDrive;
@@ -37,7 +37,6 @@ public class RobotContainer {
     public TurretSubsystem turret;
     public LimelightSubsystem turretLimelight;
     public SwerveSubsystem swerveSubsystem;
-    public RobotContainer() {
 
     public RobotContainer() {
         driver1 = new CommandXboxController(0);
@@ -61,9 +60,10 @@ public class RobotContainer {
 
         turret = new TurretSubsystem();
         turretLimelight = new LimelightSubsystem("turret");
-        swerveSubsystem = new SwerveSubsystem();
 
-        turret.setDefaultCommand(new AlignTurret(turretLimelight, turret));
+        var comm = new AlignTurret(turretLimelight, turret, swerve);
+        turret.setDefaultCommand(comm);
+        // driver1.x().whileTrue(comm);
 
         Field2d field = new Field2d();
         SmartDashboard.putData("Field", field);
@@ -71,7 +71,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         driver1.b().onTrue(Commands.runOnce(swerve::zeroGyroWithAlliance));
-        driver1.x().whileTrue(Commands.runOnce(swerve::lock, swerve).repeatedly());
+        // driver1.x().whileTrue(Commands.runOnce(swerve::lock, swerve).repeatedly());
     }
 
     public SwerveSubsystem getSwerveSubsystem() {
