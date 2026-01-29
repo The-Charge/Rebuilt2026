@@ -11,7 +11,7 @@ public class IntakeConstants {
     public static double RetractedPosition = 0;
 
     public static double StateTolerance = 500;
-    public static int currentLimit;
+    public static int currentLimit = 20;
 
     public static class PivotConfig {
         public static double maxVBus = 1.00;
