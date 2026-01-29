@@ -7,20 +7,23 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.vision.AlignTurret;
-import frc.robot.subsystems.LimelightSub;
+import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
     public TurretSubsystem turret;
-    public LimelightSub turretLimelight;
+    public LimelightSubsystem turretLimelight;
+    public SwerveSubsystem swerveSubsystem;
 
     public RobotContainer() {
         configureBindings();
 
         turret = new TurretSubsystem();
-        turretLimelight = new LimelightSub("turret");
+        turretLimelight = new LimelightSubsystem("turret");
+        swerveSubsystem = new SwerveSubsystem();
 
-        turret.setDefaultCommand(new AlignTurret(turretLimelight, turret));
+        turret.setDefaultCommand(new AlignTurret(turretLimelight, turret, swerveSubsystem));
     }
 
     private void configureBindings() {}

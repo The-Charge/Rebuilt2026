@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 
@@ -18,5 +19,10 @@ public class SwerveSubsystem {
     public Rotation2d getHeading() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
+    }
+
+    public Pose2d getPosition() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPosition'");
     }
 }

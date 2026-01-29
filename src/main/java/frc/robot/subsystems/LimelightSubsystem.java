@@ -15,12 +15,12 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import java.util.Optional;
 
-public class LimelightSub extends SubsystemBase {
+public class LimelightSubsystem extends SubsystemBase {
     private final String name;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
-    public LimelightSub(String name) {
+    public LimelightSubsystem(String name) {
         this.name = "limelight-" + name;
     }
 

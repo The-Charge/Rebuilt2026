@@ -2,13 +2,15 @@ package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
-import frc.robot.subsystems.LimelightSub;
+import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 // commands extend the "Command" class in order to label them as commands
@@ -19,22 +21,21 @@ public class AlignTurret extends Command {
 
     // this is just a reference to the subsystem that was passed in
     // we need this so that we can use the subsystem in the other functions such as initialize and isFinished
-    private final LimelightSub lsub;
+    private final LimelightSubsystem lsub;
     private final TurretSubsystem tsub;
+    private final SwerveSubsystem ssub;
     private Pose2d poseEstimate;
     private boolean isRed;
-
-    private Pose2d robotToHub;
-    private Rotation2d rotationToHub;
 
     AnalogGyro real = new AnalogGyro(0);
     AnalogGyroSim angle = new AnalogGyroSim(real);
 
-    public AlignTurret(LimelightSub lsub, TurretSubsystem tsub) {
+    public AlignTurret(LimelightSubsystem lsub, TurretSubsystem tsub, SwerveSubsystem ssub) {
         this.lsub = lsub;
         this.tsub = tsub;
+        this.ssub = ssub;
 
-        addRequirements(lsub, tsub);
+        addRequirements(tsub);
     }
 
     @Override
@@ -54,21 +55,19 @@ public class AlignTurret extends Command {
         // Get Detection (safe)
         if (lsub.getRawPosition().isEmpty()) {
             SmartDashboard.putString("AprilTagFound", "No apriltag :("); // replace later
-            return;
+            poseEstimate = ssub.getPosition();
         } else {
             SmartDashboard.putString("AprilTagFound", "Found Apriltag :)");
+            poseEstimate = lsub.getRawPosition().get();
         }
-        this.poseEstimate = lsub.getRawPosition().get();
 
         // Get Pose2d that points from robot to hub (hub vector - robot vector)
-        if (isRed)
-            robotToHub = new Pose2d(FieldConstants.redHubPos.minus(poseEstimate).getTranslation(), new Rotation2d());
-        else
-            robotToHub =
-                    new Pose2d(FieldConstants.blueHubPos.minus(poseEstimate).getTranslation(), new Rotation2d());
+        Transform2d robotToHub;
+        if (isRed) robotToHub = FieldConstants.redHubPos.minus(poseEstimate);
+        else robotToHub = FieldConstants.blueHubPos.minus(poseEstimate);
 
         // Set turret angle to robotToHub vector
-        rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
+        Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         tsub.setTurretAngle(rotationToHub);
 
