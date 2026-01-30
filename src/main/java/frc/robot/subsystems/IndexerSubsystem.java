@@ -1,16 +1,20 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.PersistMode;
+import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.units.SpindexerVelocity;
+import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import frc.robot.utils.TalonFXUtils;
@@ -40,7 +44,10 @@ public class IndexerSubsystem extends SubsystemBase {
                 IndexerConstants.Spindexer.kD,
                 Optional.empty(),
                 Optional.empty());
-        spindexerMotor.getConfigurator().apply(spindexerConfig); // TODO: check config apply
+        if (spindexerMotor.getConfigurator().apply(spindexerConfig) != StatusCode.OK) {
+            Logger.reportError("Failed to configure spindexer motor");
+            Alerts.spindexerConfigFail.set(true);
+        }
 
         gateMotor = new SparkMax(
                 IndexerConstants.Gate.motorID,
@@ -53,8 +60,11 @@ public class IndexerSubsystem extends SubsystemBase {
                 IndexerConstants.Gate.inverted,
                 IndexerConstants.Gate.maxDutyCycle,
                 IndexerConstants.Gate.nominalVoltage);
-        gateMotor.configure(
-                gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); // TODO: check config apply
+        if (gateMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+                != REVLibError.kOk) {
+            Logger.reportError("Failed to configure gate motor");
+            Alerts.gateConfigFail.set(true);
+        }
 
         spindexerTarget = Optional.empty();
     }
@@ -64,7 +74,17 @@ public class IndexerSubsystem extends SubsystemBase {
         Logger.logSubsystem(IndexerConstants.subsystemName, this);
 
         Logger.logTalonFX(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor, Optional.empty());
+        Alerts.spindexerDisconnected.set(!spindexerMotor.isConnected());
+        Alerts.spindexerOverheating.set(
+                spindexerMotor.getDeviceTemp().getValue().abs(Units.Celsius) >= 80);
+        Alerts.spindexerFaults.set(
+                TalonFXUtils.getAllActiveFaults(spindexerMotor).hasCriticalFaults());
+
         Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor, Optional.empty());
+        Alerts.gateDisconnected.set(!SparkUtils.isConnected(gateMotor));
+        Alerts.gateOverheating.set(gateMotor.getMotorTemperature() >= 80);
+        Alerts.gateFaults.set(SparkUtils.hasCriticalFaults(gateMotor.getFaults()));
+        Alerts.gateWarnings.set(SparkUtils.hasCriticalWarnings(gateMotor.getWarnings()));
 
         Logger.logDouble(
                 IndexerConstants.subsystemName,
