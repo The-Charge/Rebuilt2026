@@ -15,10 +15,6 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
-    public TurretSubsystem turret;
-    public LimelightSubsystem turretLimelight;
-    public SwerveSubsystem swerveSubsystem;
-
     // singleton instance
     private static RobotContainer instance = null;
 
@@ -28,6 +24,9 @@ public class RobotContainer {
         return instance;
     }
 
+    public final TurretSubsystem turret;
+    public final LimelightSubsystem turretLimelight;
+    public final SwerveSubsystem swerveSubsystem;
     public final PowerDistribution pdp;
 
     public final CommandXboxController commandDriver1, commandDriver2;
@@ -41,16 +40,16 @@ public class RobotContainer {
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
 
-        configureBindings();
-
         turret = new TurretSubsystem();
         turretLimelight = new LimelightSubsystem("turret");
         swerveSubsystem = new SwerveSubsystem();
 
-        turret.setDefaultCommand(new AlignTurret(turretLimelight, turret, swerveSubsystem));
+        configureBindings();
     }
 
-    private void configureBindings() {}
+    private void configureBindings() {
+        commandDriver1.x().onTrue(new AlignTurret(turretLimelight, turret, swerveSubsystem));
+    }
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
