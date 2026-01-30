@@ -16,9 +16,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 
 public class Logger {
 
@@ -398,8 +395,7 @@ public class Logger {
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void logTalonFX(
-            String subsystem, String name, TalonFX motor, Optional<Map<String, String>> additionalData) {
+    public static void logTalonFX(String subsystem, String name, TalonFX motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -490,16 +486,9 @@ public class Logger {
                 "usingFusedCANCoderWhileUnlicensed",
                 stickyFaults.usingFusedCANCoderWhileUnlicensed());
         logBool(table, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
-    public static void logSparkMotor(
-            String subsystem, String name, SparkBase motor, Optional<Map<String, String>> additionalData) {
+    public static void logSparkMotor(String subsystem, String name, SparkBase motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -567,12 +556,6 @@ public class Logger {
         logBool(table + "/stickyWarnings", "sensor", stickyWarnings.sensor);
         logBool(table + "/stickyWarnings", "stall", stickyWarnings.stall);
         logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
     public static <T extends SubsystemBase> void logSubsystem(String subsystemName, T subsystem) {
