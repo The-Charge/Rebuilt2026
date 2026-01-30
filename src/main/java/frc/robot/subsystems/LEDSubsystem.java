@@ -13,6 +13,7 @@ public class LEDSubsystem extends SubsystemBase {
 
     private final AddressableLED led;
     private AddressableLEDBuffer buffer;
+    private LEDPattern pattern;
 
     public LEDSubsystem() {
         led = new AddressableLED(LEDConstants.port); // port number
@@ -20,31 +21,35 @@ public class LEDSubsystem extends SubsystemBase {
         led.setLength(buffer.getLength());
         led.setData(buffer);
         led.start();
+        pattern = null;
     }
 
     @Override
     public void periodic() {
         led.setData(buffer);
+        if (pattern != null) {
+            pattern.applyTo(buffer);
+        }
     }
 
     public void turnGreen() {
         for (int i = 0; i < buffer.getLength(); i++) {
-            setLEDColor(i, i % 2 == 0 ? LEDConstants.chargeGreen : LEDConstants.chargeGold); // LED color
+            setLEDColor(i, LEDConstants.chargeGreen); // LED color
         }
         led.setData(buffer); // update to led
+        pattern = null;
     }
 
     public void blink(Color color) {
-        LEDPattern blinkingColor = LEDPattern.solid(swapR_B(color)); // color of led
-        LEDPattern pattern = blinkingColor.blink(Seconds.of(LEDConstants.blinkInterval));
-        pattern.applyTo(buffer);
-        led.setData(buffer);
+        LEDPattern blinkingColor = LEDPattern.solid(swapR_G(color)); // color of led
+        pattern = blinkingColor.blink(Seconds.of(LEDConstants.blinkInterval));
     }
 
     public void turnOff() {
         for (int i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, 0, 0, 0); // off
         }
+        pattern = null;
     }
 
     private void setLEDColor(int index, Color col) {
@@ -55,7 +60,7 @@ public class LEDSubsystem extends SubsystemBase {
     /**
      * Swaps the red and green values (from RGB) and returns the new color
      */
-    private Color swapR_B(Color col) {
+    private Color swapR_G(Color col) {
         return (new Color(col.green, col.red, col.blue));
     }
 }

@@ -9,6 +9,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.guide.BlinkLED;
+import frc.robot.commands.guide.TurnGreen;
+import frc.robot.constants.LEDConstants;
+import frc.robot.subsystems.LEDSubsystem;
 
 public class RobotContainer {
 
@@ -25,6 +29,7 @@ public class RobotContainer {
 
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
+    public final LEDSubsystem ledSub;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -34,10 +39,15 @@ public class RobotContainer {
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
 
+        ledSub = new LEDSubsystem();
+
         configureBindings();
     }
 
-    private void configureBindings() {}
+    private void configureBindings() {
+        commandDriver1.a().onTrue(new TurnGreen(ledSub));
+        commandDriver1.b().onTrue(new BlinkLED(ledSub, LEDConstants.white));
+    }
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");

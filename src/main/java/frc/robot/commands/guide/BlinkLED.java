@@ -25,11 +25,11 @@ public class BlinkLED extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        ledSub.turnOff();
+        // ledSub.turnOff();
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return true;
     }
 }
