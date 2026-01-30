@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -12,23 +14,37 @@ import frc.robot.commands.intake.RetractIntake;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class RobotContainer {
-    private final CommandXboxController driver1;
-    private final CommandXboxController driver2;
+    // singleton instance
+    private static RobotContainer instance = null;
+
+    public static synchronized RobotContainer getInstance() {
+        if (instance == null) instance = new RobotContainer();
+
+        return instance;
+    }
+
+    public final PowerDistribution pdp;
+
+    public final CommandXboxController commandDriver1, commandDriver2;
+    public final XboxController hidDriver1, hidDriver2;
 
     public IntakeSubsystem intakeSystem;
 
-    public RobotContainer() {
-        intakeSystem = new IntakeSubsystem();
+    private RobotContainer() {
+        pdp = new PowerDistribution();
 
-        driver1 = new CommandXboxController(0);
-        driver2 = new CommandXboxController(1);
+        commandDriver1 = new CommandXboxController(0);
+        hidDriver1 = commandDriver1.getHID();
+        commandDriver2 = new CommandXboxController(1);
+        hidDriver2 = commandDriver2.getHID();
+        intakeSystem = new IntakeSubsystem();
 
         configureBindings();
     }
 
     private void configureBindings() {
-        driver2.a().onTrue(new DeployIntake(intakeSystem));
-        driver2.b().onTrue(new RetractIntake(intakeSystem));
+        commandDriver2.a().onTrue(new DeployIntake(intakeSystem));
+        commandDriver2.b().onTrue(new RetractIntake(intakeSystem));
     }
 
     public Command getAutonomousCommand() {
