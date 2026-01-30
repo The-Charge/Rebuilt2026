@@ -6,9 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,29 +22,35 @@ import frc.robot.subsystems.TurretSubsystem;
 import java.io.File;
 
 public class RobotContainer {
+    // singleton instance
+    private static RobotContainer instance = null;
 
-    private final CommandXboxController driver1;
-    private final CommandXboxController driver2;
-    private final XboxController hid1, hid2;
+    public static synchronized RobotContainer getInstance() {
+        if (instance == null) instance = new RobotContainer();
+
+        return instance;
+    }
 
     private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
     private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef");
     private final LimelightSubsystem funnellimelight = new LimelightSubsystem("funnel");
-
-    private SendableChooser<Command> autoChooser;
     private TeleopDrive teleopDrive;
-
     public TurretSubsystem turret;
-    public LimelightSubsystem turretLimelight;
-    public SwerveSubsystem swerveSubsystem;
 
-    public RobotContainer() {
-        driver1 = new CommandXboxController(0);
-        driver2 = new CommandXboxController(1);
-        hid1 = driver1.getHID(); // use hid objects to reduce performance impact. Using getBoolean() on the trigger from
-        // CommandXboxController causes large CPU usage
-        hid2 = driver2.getHID();
+    public final PowerDistribution pdp;
 
+    public final CommandXboxController commandDriver1, commandDriver2;
+    public final XboxController hidDriver1, hidDriver2;
+
+    private RobotContainer() {
+        pdp = new PowerDistribution();
+
+        commandDriver1 = new CommandXboxController(0);
+        hidDriver1 = commandDriver1.getHID();
+        commandDriver2 = new CommandXboxController(1);
+        hidDriver2 = commandDriver2.getHID();
+
+        turret = new TurretSubsystem();
         teleopDrive = new TeleopDrive(
                 swerve,
                 () -> -MathUtil.applyDeadband(hid1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
@@ -57,28 +63,15 @@ public class RobotContainer {
         swerve.setDefaultCommand(teleopDrive);
 
         configureBindings();
-
-        turret = new TurretSubsystem();
-        turretLimelight = new LimelightSubsystem("turret");
-
-        var comm = new AlignTurret(turretLimelight, turret, swerve);
-        turret.setDefaultCommand(comm);
-        // driver1.x().whileTrue(comm);
-
         Field2d field = new Field2d();
         SmartDashboard.putData("Field", field);
     }
 
     private void configureBindings() {
-        driver1.b().onTrue(Commands.runOnce(swerve::zeroGyroWithAlliance));
-        // driver1.x().whileTrue(Commands.runOnce(swerve::lock, swerve).repeatedly());
+        commandDriver1.x().onTrue(new AlignTurret(turretLimelight, turret, swerveSubsystem));
     }
 
-    public SwerveSubsystem getSwerveSubsystem() {
-        return swerve;
-    }
-
-    public void setTeleopDefaultCommand() {
-        swerve.setDefaultCommand(teleopDrive);
+    public Command getAutonomousCommand() {
+        return Commands.print("No autonomous command configured");
     }
 }

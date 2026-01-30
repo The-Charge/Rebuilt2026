@@ -34,7 +34,9 @@ public class SubsystemGuide extends SubsystemBase {
         exampleSparkFlexMotor = new SparkFlex(ConstantsGuide.exampleSparkFlexID, MotorType.kBrushless);
 
         // configure motors before we use them for anything
-        configureTalonFXMotor();
+        // please talk to an experienced person before doing this
+        // TalonFXUtils.configure...
+        // SparkUtils.configure ...
     }
 
     @Override
@@ -64,13 +66,5 @@ public class SubsystemGuide extends SubsystemBase {
     // example code to get the current velocity of a motor
     public double getExampleMotorRPM() {
         return exampleTalonFXMotor.getVelocity().getValue().abs(Units.RPM);
-    }
-
-    // this is a function for use only within the subsystem itself, so it is marked private
-    // this is a function to configure/setup a motor when the robot turns on
-    private void configureTalonFXMotor() {
-        // configuring motors is complex and varies a lot depending on what type of motor you are programming and what
-        //     it is being programmed for
-        // thus, I have left this function blank. Just ask somebody experienced for help once you get here
     }
 }

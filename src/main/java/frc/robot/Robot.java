@@ -25,7 +25,21 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
 
+        Logger.logPDP(RobotContainer.getInstance().pdp);
+
         Alerts.fmsConnected.set(DriverStation.isFMSAttached());
+
+        double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
+        if (batteryVoltage <= 10) {
+            Alerts.lowBattery.set(false);
+            Alerts.criticalBattery.set(true);
+        } else if (batteryVoltage <= 11) {
+            Alerts.lowBattery.set(true);
+            Alerts.criticalBattery.set(false);
+        } else {
+            Alerts.lowBattery.set(false);
+            Alerts.criticalBattery.set(false);
+        }
     }
 
     @Override
