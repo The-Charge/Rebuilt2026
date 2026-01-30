@@ -73,14 +73,14 @@ public class IndexerSubsystem extends SubsystemBase {
     public void periodic() {
         Logger.logSubsystem(IndexerConstants.subsystemName, this);
 
-        Logger.logTalonFX(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor, Optional.empty());
+        Logger.logTalonFX(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor);
         Alerts.spindexerDisconnected.set(!spindexerMotor.isConnected());
         Alerts.spindexerOverheating.set(
                 spindexerMotor.getDeviceTemp().getValue().abs(Units.Celsius) >= 80);
         Alerts.spindexerFaults.set(
                 TalonFXUtils.getAllActiveFaults(spindexerMotor).hasCriticalFaults());
 
-        Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor, Optional.empty());
+        Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor);
         Alerts.gateDisconnected.set(!SparkUtils.isConnected(gateMotor));
         Alerts.gateOverheating.set(gateMotor.getMotorTemperature() >= 80);
         Alerts.gateFaults.set(SparkUtils.hasCriticalFaults(gateMotor.getFaults()));
