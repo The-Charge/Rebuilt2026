@@ -53,22 +53,22 @@ public class RobotContainer {
         turret = new TurretSubsystem();
         teleopDrive = new TeleopDrive(
                 swerve,
-                () -> -MathUtil.applyDeadband(hid1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
-                () -> -MathUtil.applyDeadband(hid1.getLeftX(), SwerveConstants.LEFT_X_DEADBAND),
-                () -> -MathUtil.applyDeadband(hid1.getRightX(), SwerveConstants.RIGHT_X_DEADBAND),
-                () -> hid1.getPOV(),
-                () -> hid1.getLeftTriggerAxis() > SwerveConstants.TRIGGER_DEADBAND,
-                () -> hid1.getBackButton(),
-                () -> MathUtil.applyDeadband(hid1.getRightTriggerAxis(), SwerveConstants.TRIGGER_DEADBAND));
+                () -> -MathUtil.applyDeadband(hidDriver1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
+                () -> -MathUtil.applyDeadband(hidDriver1.getLeftX(), SwerveConstants.LEFT_X_DEADBAND),
+                () -> -MathUtil.applyDeadband(hidDriver1.getRightX(), SwerveConstants.RIGHT_X_DEADBAND),
+                () -> hidDriver1.getPOV(),
+                () -> hidDriver1.getLeftTriggerAxis() > SwerveConstants.TRIGGER_DEADBAND,
+                () -> hidDriver1.getBackButton(),
+                () -> MathUtil.applyDeadband(hidDriver1.getRightTriggerAxis(), SwerveConstants.TRIGGER_DEADBAND));
         swerve.setDefaultCommand(teleopDrive);
 
-        configureBindings();
         Field2d field = new Field2d();
         SmartDashboard.putData("Field", field);
+        configureBindings();
     }
 
     private void configureBindings() {
-        commandDriver1.x().onTrue(new AlignTurret(turretLimelight, turret, swerveSubsystem));
+        commandDriver1.x().onTrue(new AlignTurret(funnellimelight, turret, swerve));
     }
 
     public Command getAutonomousCommand() {

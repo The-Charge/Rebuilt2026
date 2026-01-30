@@ -25,7 +25,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public Optional<Pose2d> getRawPosition() {
         Pose2d pose = LimelightHelpers.getBotPose2d_wpiBlue(name);
-        if (pose == null) return Optional.empty();
+        if (pose.equals(new Pose2d())) return Optional.empty();
         return Optional.of(pose);
     }
 

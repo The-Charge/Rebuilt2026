@@ -14,11 +14,10 @@ import frc.robot.utils.Logger;
 public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
-    private final RobotContainer m_robotContainer;
 
     public Robot() {
         Logger.init(); // DO NOT DELETE ; start logger
-        m_robotContainer = new RobotContainer();
+        RobotContainer.getInstance();
     }
 
     @Override
