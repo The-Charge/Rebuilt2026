@@ -1,15 +1,18 @@
 package frc.robot;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.ClimberConstants;
 
 public class ClimbSubsystem extends SubsystemBase {
-    private final TalonFX climber;
-
-    public ClimbSubsystem() {
-        climber = new TalonFX(0);
+    
+        private final TalonFX climber;
+    
+        public ClimbSubsystem() {
+            climber = new TalonFX(ClimberConstants.motorID);
         configureTalonFXMotor();
     }
 
@@ -40,5 +43,12 @@ public class ClimbSubsystem extends SubsystemBase {
         // configuring motors is complex and varies a lot depending on what type of motor you are programming and what
         //     it is being programmed for
         // thus, I have left this function blank. Just ask somebody experienced for help once you get here
+        TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+        motorConfig.MotorOutput.withNeutralMode(ClimberConstants.neutralMode);
+        motorConfig.MotorOutput.Inverted = ClimberConstants.inverted;
+        
+        motorConfig.CurrentLimits.StatorCurrentLimit = ClimberConstants.maxCurrent;
+        motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
     }
 }
