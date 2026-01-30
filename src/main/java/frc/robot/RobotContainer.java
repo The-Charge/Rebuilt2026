@@ -4,16 +4,35 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.LEDSubsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
-    public final LEDSubsystem leds;
+    // singleton instance
+    private static RobotContainer instance = null;
 
-    public RobotContainer() {
-        leds = new LEDSubsystem();
+    public static synchronized RobotContainer getInstance() {
+        if (instance == null) instance = new RobotContainer();
+
+        return instance;
+    }
+
+    public final PowerDistribution pdp;
+
+    public final CommandXboxController commandDriver1, commandDriver2;
+    public final XboxController hidDriver1, hidDriver2;
+
+    private RobotContainer() {
+        pdp = new PowerDistribution();
+
+        commandDriver1 = new CommandXboxController(0);
+        hidDriver1 = commandDriver1.getHID();
+        commandDriver2 = new CommandXboxController(1);
+        hidDriver2 = commandDriver2.getHID();
 
         configureBindings();
     }
