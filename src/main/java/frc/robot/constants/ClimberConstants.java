@@ -7,6 +7,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class ClimberConstants {
 
     public static final int Position = 90;
+    public static final int PositionDown = 0;
     public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;
     public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
     public static final double maxCurrent = 20;

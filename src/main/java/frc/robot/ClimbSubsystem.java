@@ -49,6 +49,9 @@ public class ClimbSubsystem extends SubsystemBase {
         
         motorConfig.CurrentLimits.StatorCurrentLimit = ClimberConstants.maxCurrent;
         motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        climber.getConfigurator().apply(motorConfig);
+
+
 
     }
 }
