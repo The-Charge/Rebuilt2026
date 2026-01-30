@@ -8,18 +8,16 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.vision.AlignTurret;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
     public TurretSubsystem turret;
     public LimelightSubsystem turretLimelight;
     public SwerveSubsystem swerveSubsystem;
-    public RobotContainer() {
-
 
     // singleton instance
     private static RobotContainer instance = null;
