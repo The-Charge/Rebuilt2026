@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.intake.DeployIntake;
-import frc.robot.commands.intake.RetractIntake;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class RobotContainer {
@@ -44,7 +43,6 @@ public class RobotContainer {
 
     private void configureBindings() {
         commandDriver2.a().onTrue(new DeployIntake(intakeSystem));
-        commandDriver2.b().onTrue(new RetractIntake(intakeSystem));
     }
 
     public Command getAutonomousCommand() {

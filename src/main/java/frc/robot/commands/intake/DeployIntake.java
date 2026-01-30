@@ -15,15 +15,14 @@ public class DeployIntake extends Command {
     @Override
     public void initialize() {
         intake.deploy();
-    }
-
-    @Override
-    public void end(boolean interrupted) {
         intake.startRoller();
     }
 
     @Override
+    public void end(boolean interrupted) {}
+
+    @Override
     public boolean isFinished() {
-        return intake.isDeployed();
+        return true;
     }
 }
