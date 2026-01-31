@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
@@ -15,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.vision.AlignTurret;
-import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -33,7 +31,7 @@ public class RobotContainer {
 
     private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
     private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef");
-    private final LimelightSubsystem funnellimelight = new LimelightSubsystem("funnel");
+    private final LimelightSubsystem funnellimelight;
     private TeleopDrive teleopDrive;
     public TurretSubsystem turret;
 
@@ -50,17 +48,19 @@ public class RobotContainer {
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
 
+        funnellimelight = new LimelightSubsystem("funnel");
+
         turret = new TurretSubsystem();
-        teleopDrive = new TeleopDrive(
-                swerve,
-                () -> -MathUtil.applyDeadband(hidDriver1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
-                () -> -MathUtil.applyDeadband(hidDriver1.getLeftX(), SwerveConstants.LEFT_X_DEADBAND),
-                () -> -MathUtil.applyDeadband(hidDriver1.getRightX(), SwerveConstants.RIGHT_X_DEADBAND),
-                () -> hidDriver1.getPOV(),
-                () -> hidDriver1.getLeftTriggerAxis() > SwerveConstants.TRIGGER_DEADBAND,
-                () -> hidDriver1.getBackButton(),
-                () -> MathUtil.applyDeadband(hidDriver1.getRightTriggerAxis(), SwerveConstants.TRIGGER_DEADBAND));
-        swerve.setDefaultCommand(teleopDrive);
+        // teleopDrive = new TeleopDrive(
+        //         swerve,
+        //         () -> -MathUtil.applyDeadband(hidDriver1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
+        //         () -> -MathUtil.applyDeadband(hidDriver1.getLeftX(), SwerveConstants.LEFT_X_DEADBAND),
+        //         () -> -MathUtil.applyDeadband(hidDriver1.getRightX(), SwerveConstants.RIGHT_X_DEADBAND),
+        //         () -> hidDriver1.getPOV(),
+        //         () -> hidDriver1.getLeftTriggerAxis() > SwerveConstants.TRIGGER_DEADBAND,
+        //         () -> hidDriver1.getBackButton(),
+        //         () -> MathUtil.applyDeadband(hidDriver1.getRightTriggerAxis(), SwerveConstants.TRIGGER_DEADBAND));
+        // swerve.setDefaultCommand(teleopDrive);
 
         Field2d field = new Field2d();
         SmartDashboard.putData("Field", field);

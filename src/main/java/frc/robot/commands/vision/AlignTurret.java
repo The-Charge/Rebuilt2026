@@ -3,12 +3,11 @@ package frc.robot.commands.vision;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.LimelightHelpers;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -28,9 +27,6 @@ public class AlignTurret extends Command {
     private Pose2d poseEstimate;
     private boolean isRed;
 
-    AnalogGyro real = new AnalogGyro(1);
-    AnalogGyroSim angle = new AnalogGyroSim(real);
-
     public AlignTurret(LimelightSubsystem lsub, TurretSubsystem tsub, SwerveSubsystem ssub) {
         this.lsub = lsub;
         this.tsub = tsub;
@@ -46,7 +42,6 @@ public class AlignTurret extends Command {
 
         // LSUB GET POSE, set into pose
         isRed = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red);
-        SmartDashboard.putData(real);
     }
 
     @Override
@@ -72,11 +67,10 @@ public class AlignTurret extends Command {
         Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         tsub.setTurretAngle(rotationToHub);
-
-        angle.setAngle(rotationToHub.getDegrees() + Timer.getMatchTime());
-        SmartDashboard.putData("turret angle", real);
         SmartDashboard.putNumber("turret X thingy", robotToHub.getX());
+        SmartDashboard.putNumber("turret rot thingy", rotationToHub.getDegrees());
         SmartDashboard.putNumber("turret timer thingy", Timer.getMatchTime());
+        SmartDashboard.putNumber("apriltag tx", LimelightHelpers.getTX(getName()));
     }
 
     // private AprilTagFieldLayout a;

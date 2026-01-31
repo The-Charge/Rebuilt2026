@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -33,8 +32,9 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {}
 
     public void setTurretAngle(Rotation2d angle) {
-        spin.getClosedLoopController()
-                .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian, ControlType.kPosition);
+        // spin.getClosedLoopController()
+        //         .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian,
+        // ControlType.kPosition);
     }
 
     public void setHoodAngle(Rotation2d angle) {
