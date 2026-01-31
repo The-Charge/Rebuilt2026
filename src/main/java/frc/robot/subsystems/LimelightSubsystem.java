@@ -26,6 +26,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
         this.ll_name = "limelight-" + name;
+        setCameraOffset(cameraOffset);
+    }
+    public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 ll_name,
                 cameraOffset.getX(),
@@ -35,7 +38,6 @@ public class LimelightSubsystem extends SubsystemBase {
                 Degrees.convertFrom(cameraOffset.getRotation().getY(), Radians),
                 Degrees.convertFrom(cameraOffset.getRotation().getZ(), Radians));
     }
-
     public Optional<VisionMeasurement> getVisionMeasurement() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
@@ -122,4 +124,6 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
+
+
 }
