@@ -38,10 +38,6 @@ public class LimelightSubsystem extends SubsystemBase {
                 Degrees.convertFrom(cameraOffset.getRotation().getY(), Radians),
                 Degrees.convertFrom(cameraOffset.getRotation().getZ(), Radians));
     }
-    public Optional<VisionMeasurement> getVisionMeasurement() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
-    }
 
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
         boolean useMegaTag2 = true;
