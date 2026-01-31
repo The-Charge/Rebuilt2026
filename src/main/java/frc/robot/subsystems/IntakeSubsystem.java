@@ -13,7 +13,9 @@ import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
+import frc.robot.utils.ServoUtils;
 import frc.robot.utils.SparkUtils;
+import java.util.Optional;
 
 public class IntakeSubsystem extends SubsystemBase {
     private SparkMax rollerMotor;
@@ -77,10 +79,15 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.logSubsystem(IntakeConstants.name, this);
         Logger.logSparkMotor(IntakeConstants.name, "Roller", rollerMotor);
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
+        Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
 
         Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
-        Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= 80);
+        Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
         Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
+
+        Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
+        Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
+        Alerts.servoWarnings.set(ServoUtils.hasCriticalWarnings(deployerServoHub.getWarnings()));
     }
 }

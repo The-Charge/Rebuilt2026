@@ -3,11 +3,13 @@ package frc.robot.utils;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.IntakeConstants.Roller;
+import frc.robot.constants.IntakeConstants.Servo;
 
 public class Alerts {
 
     public static final Alert driver1Missing, driver2Missing, fmsConnected, lowBattery, criticalBattery;
     public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
+    public static final Alert servoDisconnected, servoFaults, servoWarnings;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -46,6 +48,20 @@ public class Alerts {
                 String.format("Potentially critical warnings are active on roller motor (CAN %d)", Roller.motorID),
                 AlertType.kWarning);
         rollerWarnings.set(false);
+
+        servoDisconnected =
+                new Alert(String.format("Missing connection to servo hub (CAN %d)", Servo.servoID), AlertType.kError);
+        servoDisconnected.set(false);
+
+        servoFaults = new Alert(
+                String.format("Potentially critical faults are active on servo hub (CAN %d)", Servo.servoID),
+                AlertType.kWarning);
+        servoFaults.set(false);
+
+        servoWarnings = new Alert(
+                String.format("Potentially critical warnings are active on servo hub (CAN %d)", Servo.servoID),
+                AlertType.kWarning);
+        servoWarnings.set(false);
     }
 
     private Alerts() {}
