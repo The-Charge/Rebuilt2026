@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.utils.Logger;
 import frc.robot.utils.TalonFXUtils;
-import java.util.Optional;
 
 public class ClimbSubsystem extends SubsystemBase {
 
@@ -21,7 +20,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.logTalonFX("Climber", "motor", climber, Optional.empty());
+        Logger.logTalonFX("Climber", "motor", climber);
     }
 
     // example code to set the closed-loop (PID) target velocity to a given value
