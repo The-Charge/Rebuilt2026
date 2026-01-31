@@ -46,6 +46,7 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         RobotContainer.getInstance().indexer.stopAll();
+        RobotContainer.getInstance().intake.stopRoller();
     }
 
     @Override

@@ -8,16 +8,11 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.indexer.SpinDownIndexer;
-import frc.robot.commands.indexer.SpinUpIndexer;
-import frc.robot.commands.indexer.StartGateIndexer;
-import frc.robot.commands.indexer.StopGateIndexer;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
 public class RobotContainer {
-
     // singleton instance
     private static RobotContainer instance = null;
 
@@ -32,6 +27,7 @@ public class RobotContainer {
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
 
+    public final IntakeSubsystem intake;
     public final IndexerSubsystem indexer; // defines instance
 
     private RobotContainer() {
@@ -40,23 +36,15 @@ public class RobotContainer {
         commandDriver1 = new CommandXboxController(0);
         hidDriver1 = commandDriver1.getHID();
         commandDriver2 = new CommandXboxController(1);
-
         hidDriver2 = commandDriver2.getHID();
 
+        intake = new IntakeSubsystem();
         indexer = new IndexerSubsystem(); // tells what instance is equal to
 
         configureBindings();
     }
 
-    private void configureBindings() {
-        commandDriver1.a().onTrue(new SpinUpIndexer(indexer, false));
-        commandDriver1.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
-        commandDriver1.x().onTrue(new SpinDownIndexer(indexer));
-
-        commandDriver2.a().onTrue(new StartGateIndexer(indexer));
-        commandDriver2.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
-        commandDriver2.x().onTrue(new StopGateIndexer(indexer));
-    }
+    private void configureBindings() {}
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
