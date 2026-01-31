@@ -88,11 +88,11 @@ public class IndexerSubsystem extends SubsystemBase {
 
         Logger.logDouble(
                 IndexerConstants.subsystemName,
-                "spindexerTargetMechanismRPM",
+                "spindexerMotor/targetMechanismRPM",
                 spindexerTarget.map((val) -> val.getAsMechanismRPM()).orElse(Double.NaN));
         Logger.logBool(
                 IndexerConstants.subsystemName,
-                "spindexerIsAtTarget",
+                "spindexerMotor/isAtTarget",
                 isSpindexerAtTarget().orElse(true));
     }
 
