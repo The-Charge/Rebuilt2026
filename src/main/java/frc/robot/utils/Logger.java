@@ -2,6 +2,9 @@ package frc.robot.utils;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.DeviceEnableValue;
+import com.revrobotics.servohub.ServoChannel;
+import com.revrobotics.servohub.ServoChannel.ChannelId;
+import com.revrobotics.servohub.ServoHub;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
@@ -16,8 +19,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 public class Logger {
@@ -398,8 +399,7 @@ public class Logger {
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void logTalonFX(
-            String subsystem, String name, TalonFX motor, Optional<Map<String, String>> additionalData) {
+    public static void logTalonFX(String subsystem, String name, TalonFX motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -490,16 +490,9 @@ public class Logger {
                 "usingFusedCANCoderWhileUnlicensed",
                 stickyFaults.usingFusedCANCoderWhileUnlicensed());
         logBool(table, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
-    public static void logSparkMotor(
-            String subsystem, String name, SparkBase motor, Optional<Map<String, String>> additionalData) {
+    public static void logSparkMotor(String subsystem, String name, SparkBase motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -567,12 +560,6 @@ public class Logger {
         logBool(table + "/stickyWarnings", "sensor", stickyWarnings.sensor);
         logBool(table + "/stickyWarnings", "stall", stickyWarnings.stall);
         logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
     public static <T extends SubsystemBase> void logSubsystem(String subsystemName, T subsystem) {
@@ -612,6 +599,7 @@ public class Logger {
         logDouble("PDP", "batteryVoltage", pdp.getVoltage());
         logDoubleArray("PDP", "currents", pdp.getAllCurrents());
         logDouble("PDP", "totalCurrent", pdp.getTotalCurrent());
+        logBool("PDP", "connected", pdp.getVoltage() != 0);
 
         PowerDistributionFaults faults = pdp.getFaults();
         String table = "PDP/faults";
@@ -675,6 +663,104 @@ public class Logger {
         logBool(table, "hardware", stickyFaults.HardwareFault);
         logBool(table, "firmware", stickyFaults.FirmwareFault);
         logBool(table, "hasReset", stickyFaults.HasReset);
+    }
+
+    public static void logServoHub(String subsystem, String name, ServoHub hub, Optional<String[]> channelNames) {
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (hub == null) {
+            reportWarning("Cannot log a null ServoHub", true);
+            return;
+        }
+
+        String table = subsystem + "/" + name;
+
+        logDouble(table, "outputCurrent", hub.getDeviceCurrent());
+        logDouble(table, "inputVolts", hub.getDeviceVoltage());
+        logDouble(table, "outputVolts", hub.getServoVoltage());
+        logBool(table, "connected", ServoUtils.isConnected(hub));
+
+        com.revrobotics.servohub.ServoHub.Faults activeFaults = hub.getFaults();
+        com.revrobotics.servohub.ServoHub.Faults stickyFaults = hub.getStickyFaults();
+        com.revrobotics.servohub.ServoHub.Warnings activeWarnings = hub.getWarnings();
+        com.revrobotics.servohub.ServoHub.Warnings stickyWarnings = hub.getWarnings();
+
+        logBool(table + "/faults", "firmware", activeFaults.firmware);
+        logBool(table + "/faults", "hardware", activeFaults.hardware);
+        logBool(table + "/faults", "lowBattery", activeFaults.lowBattery);
+        logBool(table + "/faults", "regulatorPowerGood", activeFaults.regulatorPowerGood);
+        logBool(table, "criticalFaultsActive", ServoUtils.hasCriticalFaults(activeFaults));
+
+        logBool(table + "/stickyFaults", "firmware", stickyFaults.firmware);
+        logBool(table + "/stickyFaults", "hardware", stickyFaults.hardware);
+        logBool(table + "/stickyFaults", "lowBattery", stickyFaults.lowBattery);
+        logBool(table + "/stickyFaults", "regulatorPowerGood", stickyFaults.regulatorPowerGood);
+        logBool(table, "criticalStickyFaultsActive", ServoUtils.hasCriticalFaults(stickyFaults));
+
+        logBool(table + "/warnings", "brownout", activeWarnings.brownout);
+        logBool(table + "/warnings", "canBusOff", activeWarnings.canBusOff);
+        logBool(table + "/warnings", "canWarning", activeWarnings.canWarning);
+        logBool(table + "/warnings", "channel0Overcurrent", activeWarnings.channel0Overcurrent);
+        logBool(table + "/warnings", "channel1Overcurrent", activeWarnings.channel1Overcurrent);
+        logBool(table + "/warnings", "channel2Overcurrent", activeWarnings.channel2Overcurrent);
+        logBool(table + "/warnings", "channel3Overcurrent", activeWarnings.channel3Overcurrent);
+        logBool(table + "/warnings", "channel4Overcurrent", activeWarnings.channel4Overcurrent);
+        logBool(table + "/warnings", "channel5Overcurrent", activeWarnings.channel5Overcurrent);
+        logBool(table + "/warnings", "hasReset", activeWarnings.hasReset);
+        logBool(table, "criticalWarningsActive", ServoUtils.hasCriticalWarnings(activeWarnings));
+
+        logBool(table + "/stickyWarnings", "brownout", stickyWarnings.brownout);
+        logBool(table + "/stickyWarnings", "canBusOff", stickyWarnings.canBusOff);
+        logBool(table + "/stickyWarnings", "canWarning", stickyWarnings.canWarning);
+        logBool(table + "/stickyWarnings", "channel0Overcurrent", stickyWarnings.channel0Overcurrent);
+        logBool(table + "/stickyWarnings", "channel1Overcurrent", stickyWarnings.channel1Overcurrent);
+        logBool(table + "/stickyWarnings", "channel2Overcurrent", stickyWarnings.channel2Overcurrent);
+        logBool(table + "/stickyWarnings", "channel3Overcurrent", stickyWarnings.channel3Overcurrent);
+        logBool(table + "/stickyWarnings", "channel4Overcurrent", stickyWarnings.channel4Overcurrent);
+        logBool(table + "/stickyWarnings", "channel5Overcurrent", stickyWarnings.channel5Overcurrent);
+        logBool(table + "/stickyWarnings", "hasReset", stickyWarnings.hasReset);
+        logBool(table, "criticalStickyWarningsActive", ServoUtils.hasCriticalWarnings(stickyWarnings));
+
+        String displayNames[] = {"channel0", "channel1", "channel2", "channel3", "channel4", "channel5"};
+        if (channelNames != null && channelNames.isPresent()) {
+            if (channelNames.get().length > 6) {
+                reportWarning("Provided too many channel names to logServoHub", true);
+            }
+
+            for (int i = 0; i < channelNames.get().length && i < 6; i++) {
+                String n = channelNames.get()[i];
+                if (n != null) displayNames[i] = n;
+            }
+        }
+
+        logServoChannel(subsystem, name, displayNames[0], hub.getServoChannel(ChannelId.kChannelId0));
+        logServoChannel(subsystem, name, displayNames[1], hub.getServoChannel(ChannelId.kChannelId1));
+        logServoChannel(subsystem, name, displayNames[2], hub.getServoChannel(ChannelId.kChannelId2));
+        logServoChannel(subsystem, name, displayNames[3], hub.getServoChannel(ChannelId.kChannelId3));
+        logServoChannel(subsystem, name, displayNames[4], hub.getServoChannel(ChannelId.kChannelId4));
+        logServoChannel(subsystem, name, displayNames[5], hub.getServoChannel(ChannelId.kChannelId5));
+    }
+
+    private static void logServoChannel(String subsystem, String hubName, String name, ServoChannel channel) {
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (hubName == null) hubName = "";
+        if (channel == null) {
+            reportWarning("Cannot log a null ServoChannel", true);
+            return;
+        }
+
+        String table = subsystem + "/" + hubName + "/" + name;
+
+        logDouble(table, "outputCurrent", channel.getCurrent());
+        logLong(table, "outputPulseWidthMicroseconds", channel.getPulseWidth());
+        logDouble(table, "outputNormalized", ServoUtils.getNormalizedChannelOutput(channel));
     }
 
     private static class StackTrace {
