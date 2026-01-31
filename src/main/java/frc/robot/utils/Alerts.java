@@ -10,7 +10,11 @@ public class Alerts {
     public static final Alert driver1Missing, driver2Missing, fmsConnected, lowBattery, criticalBattery;
 
     // indexer alerts
-    public static final Alert spindexerDisconnected, spindexerOverheating, spindexerFaults, spindexerConfigFail;
+    public static final Alert spindexerDisconnected,
+            spindexerOverheating,
+            spindexerFaults,
+            spindexerWarnings,
+            spindexerConfigFail;
     public static final Alert gateConfigFail, gateDisconnected, gateOverheating, gateFaults, gateWarnings;
 
     static {
@@ -45,6 +49,13 @@ public class Alerts {
                         IndexerConstants.Spindexer.motorID),
                 AlertType.kWarning);
         spindexerFaults.set(false);
+
+        spindexerWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on spindexer motor (CAN %d)",
+                        IndexerConstants.Spindexer.motorID),
+                AlertType.kWarning);
+        spindexerWarnings.set(false);
 
         spindexerConfigFail = new Alert(
                 String.format("Failed to update spindexer motor (CAN %d) config", IndexerConstants.Spindexer.motorID),
