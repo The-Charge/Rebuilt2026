@@ -4,10 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.LimelightHelpers;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -30,13 +27,12 @@ public class AlignTurret extends Command {
     public void initialize() {
         // LSUB GET POSE, set into pose
         isRed = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red);
-        SmartDashboard.putData(gyro);
     }
 
     @Override
     public void execute() {
         // Get Detection (safe)
-        poseEstimate = ssub.getPosition(); // maybe we could get position from limelights instead
+        poseEstimate = ssub.getPose(); // maybe we could get position from limelights instead
 
         // Get Pose2d that points from robot to hub (hub vector - robot vector)
         Transform2d robotToHub = (isRed ? FieldConstants.redHubPos : FieldConstants.blueHubPos).minus(poseEstimate);
@@ -45,8 +41,6 @@ public class AlignTurret extends Command {
         Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         tsub.setTurretAngle(rotationToHub);
-
-        gyroSim.setAngle(rotationToHub.getDegrees() + 1);
     }
 
     // private AprilTagFieldLayout a;

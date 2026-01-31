@@ -27,6 +27,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.ll_name = "limelight-" + name;
         setCameraOffset(cameraOffset);
     }
+
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 ll_name,
@@ -42,6 +43,7 @@ public class LimelightSubsystem extends SubsystemBase {
         boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll_name);
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
+        SmartDashboard.putNumber("limesub", poseEstimate.tagCount);
         if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance) return Optional.empty();
         final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
         final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1;
@@ -119,6 +121,4 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-
-
 }

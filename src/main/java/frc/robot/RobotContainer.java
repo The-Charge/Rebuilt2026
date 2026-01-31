@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
@@ -14,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.vision.AlignTurret;
+import frc.robot.commands.vision.LimelightCommand;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.io.File;
@@ -29,7 +32,7 @@ public class RobotContainer {
     }
 
     private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
-    private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef");
+    private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
     private final LimelightSubsystem funnellimelight;
     private TeleopDrive teleopDrive;
     public TurretSubsystem turret;
@@ -47,7 +50,7 @@ public class RobotContainer {
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
 
-        funnellimelight = new LimelightSubsystem("funnel");
+        funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
 
         turret = new TurretSubsystem();
         // teleopDrive = new TeleopDrive(
@@ -67,7 +70,8 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        commandDriver1.x().onTrue(new AlignTurret(funnellimelight, turret, swerve));
+        commandDriver1.x().onTrue(new AlignTurret(turret, swerve));
+        commandDriver1.x().onTrue(new LimelightCommand(funnellimelight, swerve));
     }
 
     public Command getAutonomousCommand() {
