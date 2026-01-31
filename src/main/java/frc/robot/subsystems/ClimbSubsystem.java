@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -6,23 +6,28 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
+import frc.robot.utils.Logger;
+import frc.robot.utils.TalonFXUtils;
+import java.util.Optional;
 
 public class ClimbSubsystem extends SubsystemBase {
-    
-        private final TalonFX climber;
-    
-        public ClimbSubsystem() {
-            climber = new TalonFX(ClimberConstants.motorID);
+
+    private final TalonFX climber;
+
+    public ClimbSubsystem() {
+        climber = new TalonFX(ClimberConstants.motorID);
         configureTalonFXMotor();
     }
 
     @Override
-    public void periodic() {}
+    public void periodic() {
+        Logger.logTalonFX("Climber", "motor", climber, Optional.empty());
+    }
 
     // example code to set the closed-loop (PID) target velocity to a given value
     // this function is public so that it can be called from commands using this subsystem
     public void setClimbMotorPosition(double Position) {
-        PositionVoltage request = new PositionVoltage(Position);
+        PositionVoltage request = new PositionVoltage(Position / 360);
         climber.setControl(request);
     }
 
@@ -34,24 +39,28 @@ public class ClimbSubsystem extends SubsystemBase {
     }
 
     public double getPosition() {
-        return climber.getPosition().getValue().abs(Units.Radian);
+        return climber.getPosition().getValue().abs(Units.Degrees);
     }
 
     // this is a function for use only within the subsystem itself, so it is marked private
     // this is a function to configure/setup a motor when the robot turns on
     private void configureTalonFXMotor() {
-        // configuring motors is complex and varies a lot depending on what type of motor you are programming and what
-        //     it is being programmed for
-        // thus, I have left this function blank. Just ask somebody experienced for help once you get here
         TalonFXConfiguration motorConfig = new TalonFXConfiguration();
-        motorConfig.MotorOutput.withNeutralMode(ClimberConstants.neutralMode);
-        motorConfig.MotorOutput.Inverted = ClimberConstants.inverted;
-        
-        motorConfig.CurrentLimits.StatorCurrentLimit = ClimberConstants.maxCurrent;
-        motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        TalonFXUtils.configureBasicSettings(
+                motorConfig,
+                ClimberConstants.maxCurrent,
+                ClimberConstants.neutralMode,
+                ClimberConstants.inverted,
+                ClimberConstants.maxDutyCycle,
+                ClimberConstants.maxVoltage);
+        TalonFXUtils.configureClosedLoopSettings(
+                motorConfig,
+                ClimberConstants.kP,
+                ClimberConstants.kI,
+                ClimberConstants.kD,
+                ClimberConstants.kG,
+                ClimberConstants.kGType);
+
         climber.getConfigurator().apply(motorConfig);
-
-
-
     }
 }

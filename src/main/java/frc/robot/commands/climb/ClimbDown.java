@@ -1,14 +1,11 @@
-package frc.robot.commands;
+package frc.robot.commands.climb;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.ClimbSubsystem;
 import frc.robot.constants.ClimberConstants;
-import frc.robot.subsystems.SubsystemGuide;
-
+import frc.robot.subsystems.ClimbSubsystem;
 
 public class ClimbDown extends Command {
 
-  
     private final ClimbSubsystem climbSubsystem;
 
     public ClimbDown(ClimbSubsystem climb) {
@@ -18,10 +15,9 @@ public class ClimbDown extends Command {
 
     @Override
     public void initialize() {
-        
+
         climbSubsystem.setClimbMotorPosition(ClimberConstants.PositionDown);
     }
-
 
     @Override
     public void end(boolean interrupted) {
