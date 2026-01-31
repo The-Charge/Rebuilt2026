@@ -1,7 +1,10 @@
 package frc.robot.commands.vision;
 
+import java.util.Optional;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.subsystems.SwerveSubsystem;
 
 public class LimelightCommand extends Command {
@@ -18,10 +21,10 @@ public class LimelightCommand extends Command {
 
     @Override
     public void execute() {
-        var estim = limelightSub.getVisionMeasurement(swerve);
-        if (estim.isEmpty()) return;
-        var exi = estim.get();
-        swerve.addvisionmeasuremant(exi.pose(), exi.timestamp(), exi.stdDevs());
+        Optional<VisionMeasurement> visionEstimateOptional = limelightSub.getVisionMeasurement(swerve);
+        if (visionEstimateOptional.isEmpty()) return;
+        VisionMeasurement visionEstimate = visionEstimateOptional.get();
+        swerve.addvisionmeasuremant(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
     @Override
