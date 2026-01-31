@@ -25,19 +25,12 @@ public class ClimbDown extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        // end is called only once, when the command ends and is exiting
-        // the "interrupted" argument is true when the command was forcibly ended and is false when the command ended
-        //     'of its own will'
-        climbSubsystem.stop();
 
-        
+        climbSubsystem.stop();
     }
 
     @Override
     public boolean isFinished() {
-        // isFinished determines when the command willing ends
-        // return true to end the command
-        // return false to keep the command running for another 'frame'
-        return climbSubsystem.getPosition() <= 90;
+        return climbSubsystem.getPosition() <= ClimberConstants.PositionDown;
     }
 }
