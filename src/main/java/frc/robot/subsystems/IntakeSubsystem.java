@@ -12,12 +12,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
-    public SparkMax rollerMotor;
+    private SparkMax rollerMotor;
 
-    public ServoHub deployerServoHub;
-    public ServoChannel deployerServoChannel;
+    private ServoHub deployerServoHub;
+    private ServoChannel deployerServoChannel;
 
-    public boolean deployed;
+    private boolean deployed;
 
     public IntakeSubsystem() {
         rollerMotor = new SparkMax(IntakeConstants.RollerMotorId, MotorType.kBrushless);
@@ -46,13 +46,17 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerMotor.set(0);
     }
 
-    public void configureRollerMotor() {
+    private void configureRollerMotor() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
         motorConfig.smartCurrentLimit(IntakeConstants.currentLimit);
         rollerMotor.configure(
                 motorConfig,
                 ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters); // TODO: I don't know if these are good params
+    }
+
+    public boolean isDeployed() {
+        return deployed;
     }
 
     @Override
