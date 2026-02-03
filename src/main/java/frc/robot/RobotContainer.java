@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ClimbDown;
+import frc.robot.commands.climb.ClimbUp;
 import frc.robot.subsystems.ClimbSubsystem;
 
 public class RobotContainer {
