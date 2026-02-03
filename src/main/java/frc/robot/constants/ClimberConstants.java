@@ -21,6 +21,6 @@ public class ClimberConstants {
     public static final Optional<Double> kG = Optional.empty();
     public static final Optional<GravityTypeValue> kGType = Optional.empty();
 
-    public static final ClimberPosition Position = ClimberPosition.fromMechanismInches(90);
-    public static final ClimberPosition PositionDown = ClimberPosition.fromMechanismInches(0);
+    public static final ClimberPosition UpPosition = ClimberPosition.fromMechanismInches(90);
+    public static final ClimberPosition DownPosition = ClimberPosition.fromMechanismInches(0);
 }

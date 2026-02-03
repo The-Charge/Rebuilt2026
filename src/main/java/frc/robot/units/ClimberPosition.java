@@ -14,10 +14,14 @@ public class ClimberPosition {
     }
 
     public static ClimberPosition fromMechanismInches(double inches) {
-        return new ClimberPosition(inches / inchesPerRotation);
+        return ClimberPosition.fromMotorRotations(inches / inchesPerRotation);
     }
 
     public double toMotorRots() {
         return motorRots;
+    }
+
+    public double toMotorDegrees() {
+        return motorRots * inchesPerRotation;
     }
 }

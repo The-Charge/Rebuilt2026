@@ -4,17 +4,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.subsystems.ClimbSubsystem;
 
-public class ClimbCommand extends Command {
+public class ClimbUp extends Command {
     private final ClimbSubsystem climbSubsystem;
 
-    public ClimbCommand(ClimbSubsystem climb) {
+    public ClimbUp(ClimbSubsystem climb) {
         climbSubsystem = climb;
         addRequirements(climbSubsystem);
     }
 
     @Override
     public void initialize() {
-        climbSubsystem.setClimbMotorPosition(ClimberConstants.Position);
+        climbSubsystem.setClimbMotorPosition(ClimberConstants.UpPosition);
     }
 
     @Override
@@ -24,6 +24,6 @@ public class ClimbCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return climbSubsystem.getPosition().toMotorRots() >= ClimberConstants.Position.toMotorRots();
+        return climbSubsystem.getPosition().toMotorRots() >= ClimberConstants.UpPosition.toMotorRots();
     }
 }
