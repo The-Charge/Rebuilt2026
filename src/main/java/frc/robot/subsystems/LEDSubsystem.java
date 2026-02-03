@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -52,8 +53,12 @@ public class LEDSubsystem extends SubsystemBase {
         pattern = null;
     }
 
+    /**
+     * swap green and red to account for incorrect LED type
+     * @param index
+     * @param col
+     */
     private void setLEDColor(int index, Color col) {
-        // swap green and red to account for incorrect LED type
         buffer.setLED(index, new Color(col.green, col.red, col.blue));
     }
 
@@ -63,4 +68,34 @@ public class LEDSubsystem extends SubsystemBase {
     private Color swapR_G(Color col) {
         return (new Color(col.green, col.red, col.blue));
     }
+
+    /**
+     * LEDs bcome rainbow colored
+     */
+    public void rainbow() {
+        // all hues at maximum saturation and half brightness
+        LEDPattern rainbow = LEDPattern.rainbow(255, 128);
+        // Create a new pattern that scrolls the rainbow pattern across the LED strip, moving at a
+        // speed of 1 meter per second.
+        LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(1), LEDConstants.kLedSpacing);
+        scrollingRainbow.applyTo(buffer);
+        led.setData(buffer);
+    }
+
+    public void idleLeds() {
+        // Create an LED pattern that displays a red-to-blue gradient, breathing at a 2 second
+        // period (0.5 Hz)
+        LEDPattern base = LEDPattern.discontinuousGradient(LEDConstants.chargeGold, LEDConstants.chargeGreen);
+        LEDPattern pattern = base.breathe(Seconds.of(2));
+
+        // Apply the LED pattern to the data buffer
+        pattern.applyTo(buffer);
+
+        // Write the data to the LED strip
+        led.setData(buffer);
+    }
+
+    public void allianceZone() {}
+
+    public void neutralZone() {}
 }

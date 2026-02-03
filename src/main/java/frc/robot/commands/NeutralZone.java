@@ -1,23 +1,19 @@
-package frc.robot.commands.guide;
+package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class BlinkLED extends Command {
+public class NeutralZone extends Command {
     LEDSubsystem ledSub;
-    Color LEDColor;
 
-    public BlinkLED(LEDSubsystem LEDSubsystem, Color color) {
+    public NeutralZone(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
-
-        LEDColor = color;
     }
 
     @Override
     public void initialize() {
-        ledSub.blink(LEDColor);
+        ledSub.neutralZone();
     }
 
     @Override
