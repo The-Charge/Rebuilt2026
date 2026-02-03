@@ -27,7 +27,7 @@ public class ClimbSubsystem extends SubsystemBase {
     // example code to set the closed-loop (PID) target velocity to a given value
     // this function is public so that it can be called from commands using this subsystem
     public void setClimbMotorPosition(ClimberPosition Position) {
-        PositionVoltage request = new PositionVoltage(Position.toMotorRots() );
+        PositionVoltage request = new PositionVoltage(Position.toMotorRots());
         climber.setControl(request);
     }
 
@@ -39,7 +39,8 @@ public class ClimbSubsystem extends SubsystemBase {
     }
 
     public ClimberPosition getPosition() {
-        return ClimberPosition.fromMotorRotations(climber.getPosition().getValue().abs(Units.Rotations));
+        return ClimberPosition.fromMotorRotations(
+                climber.getPosition().getValue().abs(Units.Rotations));
     }
 
     // this is a function for use only within the subsystem itself, so it is marked private

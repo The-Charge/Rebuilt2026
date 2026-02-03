@@ -3,9 +3,7 @@ package frc.robot.constants;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import frc.robot.units.ClimberPosition;
-
 import java.util.Optional;
 
 public class ClimberConstants {
