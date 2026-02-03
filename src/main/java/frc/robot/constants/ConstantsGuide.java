@@ -7,6 +7,4 @@ public class ConstantsGuide {
     public static final int exampleTalonFXID = 0;
     public static final int exampleSparkMaxID = 1;
     public static final int exampleSparkFlexID = 2;
-    
 }
-
