@@ -24,6 +24,6 @@ public class ClimbCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return climbSubsystem.getPosition() >= ClimberConstants.Position;
+        return climbSubsystem.getPosition().toMotorRots() >= ClimberConstants.Position.toMotorRots();
     }
 }

@@ -6,6 +6,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
+import frc.robot.units.ClimberPosition;
 import frc.robot.utils.Logger;
 import frc.robot.utils.TalonFXUtils;
 
@@ -25,8 +26,8 @@ public class ClimbSubsystem extends SubsystemBase {
 
     // example code to set the closed-loop (PID) target velocity to a given value
     // this function is public so that it can be called from commands using this subsystem
-    public void setClimbMotorPosition(double Position) {
-        PositionVoltage request = new PositionVoltage(Position / 360);
+    public void setClimbMotorPosition(ClimberPosition Position) {
+        PositionVoltage request = new PositionVoltage(Position.toMotorRots() );
         climber.setControl(request);
     }
 
@@ -37,8 +38,8 @@ public class ClimbSubsystem extends SubsystemBase {
         climber.stopMotor();
     }
 
-    public double getPosition() {
-        return climber.getPosition().getValue().abs(Units.Degrees);
+    public ClimberPosition getPosition() {
+        return ClimberPosition.fromMotorRotations(climber.getPosition().getValue().abs(Units.Rotations));
     }
 
     // this is a function for use only within the subsystem itself, so it is marked private

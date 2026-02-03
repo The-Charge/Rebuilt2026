@@ -27,6 +27,6 @@ public class ClimbDown extends Command {
 
     @Override
     public boolean isFinished() {
-        return climbSubsystem.getPosition() <= ClimberConstants.PositionDown;
+        return climbSubsystem.getPosition().toMotorRots() <= ClimberConstants.PositionDown.toMotorRots();
     }
 }
