@@ -44,8 +44,8 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        commandDriver1.a().onTrue(new ClimbUp(climbe));
-        commandDriver1.b().onTrue(new ClimbDown(climbe));
+        commandDriver1.a().onTrue(new ClimbUp(climbe, false));
+        commandDriver1.b().onTrue(new ClimbDown(climbe, false));
     }
 
     public Command getAutonomousCommand() {

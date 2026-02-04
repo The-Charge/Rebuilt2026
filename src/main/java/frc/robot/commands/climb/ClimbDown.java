@@ -7,26 +7,24 @@ import frc.robot.subsystems.ClimbSubsystem;
 public class ClimbDown extends Command {
 
     private final ClimbSubsystem climbSubsystem;
+    private final boolean wait;
 
-    public ClimbDown(ClimbSubsystem climb) {
+    public ClimbDown(ClimbSubsystem climb, boolean waitForTarget) {
         climbSubsystem = climb;
+        wait = waitForTarget;
+
         addRequirements(climbSubsystem);
     }
 
     @Override
     public void initialize() {
-
-        climbSubsystem.setClimbMotorPosition(ClimberConstants.DownPosition);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-
-        climbSubsystem.stop();
+        climbSubsystem.setPosition(ClimberConstants.downPosition);
     }
 
     @Override
     public boolean isFinished() {
-        return climbSubsystem.getPosition().toMotorRots() <= ClimberConstants.DownPosition.toMotorRots();
+        if (!wait) return true;
+
+        return climbSubsystem.isMotorAtTarget().orElse(true);
     }
 }

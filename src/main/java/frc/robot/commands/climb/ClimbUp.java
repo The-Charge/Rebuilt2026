@@ -5,25 +5,26 @@ import frc.robot.constants.ClimberConstants;
 import frc.robot.subsystems.ClimbSubsystem;
 
 public class ClimbUp extends Command {
-    private final ClimbSubsystem climbSubsystem;
 
-    public ClimbUp(ClimbSubsystem climb) {
+    private final ClimbSubsystem climbSubsystem;
+    private final boolean wait;
+
+    public ClimbUp(ClimbSubsystem climb, boolean waitForTarget) {
         climbSubsystem = climb;
+        wait = waitForTarget;
+
         addRequirements(climbSubsystem);
     }
 
     @Override
     public void initialize() {
-        climbSubsystem.setClimbMotorPosition(ClimberConstants.UpPosition);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        climbSubsystem.stop();
+        climbSubsystem.setPosition(ClimberConstants.upPosition);
     }
 
     @Override
     public boolean isFinished() {
-        return climbSubsystem.getPosition().toMotorRots() >= ClimberConstants.UpPosition.toMotorRots();
+        if (!wait) return true;
+
+        return climbSubsystem.isMotorAtTarget().orElse(true);
     }
 }
