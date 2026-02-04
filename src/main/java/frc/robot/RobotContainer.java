@@ -4,8 +4,13 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -25,21 +30,30 @@ public class RobotContainer {
 
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
-
-    private RobotContainer() {
-        pdp = new PowerDistribution();
-
-        commandDriver1 = new CommandXboxController(0);
-        hidDriver1 = commandDriver1.getHID();
-        commandDriver2 = new CommandXboxController(1);
-        hidDriver2 = commandDriver2.getHID();
-
-        configureBindings();
-    }
-
-    private void configureBindings() {}
-
-    public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
-    }
+    
+        private SendableChooser<Command> autoChooser;
+    
+        private RobotContainer() {
+            pdp = new PowerDistribution();
+    
+            commandDriver1 = new CommandXboxController(0);
+            hidDriver1 = commandDriver1.getHID();
+            commandDriver2 = new CommandXboxController(1);
+            hidDriver2 = commandDriver2.getHID();
+    
+            configureBindings();
+            configureAutonomous();
+            SmartDashboard.putData("Field", new Field2d());
+        }
+    
+        private void configureBindings() {}
+    
+        public Command getAutonomousCommand() {
+            return Commands.print("No autonomous command configured");
+        }
+        private void configureAutonomous() {
+            AutoBuilder.configure();
+            autoChooser = AutoBuilder.buildAutoChooser();
+            SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
 }
