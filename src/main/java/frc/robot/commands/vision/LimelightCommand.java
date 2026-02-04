@@ -1,5 +1,6 @@
 package frc.robot.commands.vision;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -26,6 +27,10 @@ public class LimelightCommand extends Command {
         VisionMeasurement visionEstimate = visionEstimateOptional.get();
         SmartDashboard.putNumber("limelight x pose", visionEstimate.pose().getX());
         swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        Optional<Pose3d> transformers = limelightSub.getTransformToTag(20);
+        if (transformers.isPresent()) {
+            SmartDashboard.putString("X pose to tag 20", "" + transformers.get().getX());
+        }
     }
 
     @Override

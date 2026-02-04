@@ -6,7 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 public class TurretConstants { // split into shooter, spinner, and hood
     public static final int spinMotorId = 123;
     public static final int hoodChannel = 17;
-    public static final int turretId = 82;
+    public static final int turretId = 82; // change me
     public static final double ticksPerRadian = 1000;
     public static final double radiansPerTick = 1 / ticksPerRadian;
     public static final double kP = -1;

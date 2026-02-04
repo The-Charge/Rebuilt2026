@@ -12,6 +12,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.constants.LimelightConstants;
@@ -39,6 +41,25 @@ public class LimelightSubsystem extends SubsystemBase {
                 Degrees.convertFrom(cameraOffset.getRotation().getZ(), Radians));
     }
 
+    public Optional<Pose3d> getTransformToTag(int id) {
+        // Pose3d tarpose = LimelightHelpers.getTargetPose3d_CameraSpace(ll_name);
+        // SmartDashboard.putNumber("Y pose of target", tarpose.getY());
+
+        LimelightResults results = LimelightHelpers.getLatestResults(ll_name);
+        var fiducialss = results.targets_Fiducials;
+        // SmartDashboard.putString("somethingqq", "" + results.getBotPose3d_wpiBlue().getX());
+        // SmartDashboard.putString("Number of tags", fiducialss.length + "");
+        Optional<Pose3d> ret = Optional.empty();
+        for (LimelightTarget_Fiducial i : fiducialss) {
+            // SmartDashboard.putNumber(
+            //         i.fiducialID + "# tag", i.getTargetPose_CameraSpace().getY());
+            if (i.fiducialID == id) {
+                ret = Optional.of(i.getTargetPose_CameraSpace());
+            }
+        }
+        return ret;
+    }
+
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
         boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll_name);
@@ -49,9 +70,14 @@ public class LimelightSubsystem extends SubsystemBase {
         final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1;
         final double robotSpeed = swerve.getRobotVelocity().vxMetersPerSecond; // get swerve speed from ctre
         final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1;
-        final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
-        if (!CAN_GET_GOOD_HEADING) return Optional.empty();
+        SmartDashboard.putBoolean("twoOrMoreTags", twoOrMoreTags);
+        SmartDashboard.putBoolean("closeEnough", closeEnough);
+        SmartDashboard.putBoolean("robotSpeed", movingSlowEnough);
+        // final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
+        final boolean CAN_GET_GOOD_HEADING = closeEnough;
+        // if (!CAN_GET_GOOD_HEADING) return Optional.empty();
         if (CAN_GET_GOOD_HEADING) useMegaTag2 = false;
+
         return getVisionMeasurement(swerve, useMegaTag2);
     }
 
@@ -99,6 +125,8 @@ public class LimelightSubsystem extends SubsystemBase {
         double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
+        // return Optional.of(VecBuilder.fill(0, 0, 0));
+
     }
 
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
