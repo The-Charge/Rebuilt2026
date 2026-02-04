@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
@@ -29,6 +30,7 @@ public class RobotContainer {
 
     public final IntakeSubsystem intake;
     public final IndexerSubsystem indexer; // defines instance
+    public final ClimbSubsystem climbe;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -40,6 +42,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem();
         indexer = new IndexerSubsystem(); // tells what instance is equal to
+        climbe = new ClimbSubsystem();
 
         configureBindings();
     }
