@@ -1,19 +1,19 @@
-package frc.robot.commands;
+package frc.robot.commands.leds;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class NeutralZone extends Command {
+public class AllianceZone extends Command {
     LEDSubsystem ledSub;
 
-    public NeutralZone(LEDSubsystem LEDSubsystem) {
+    public AllianceZone(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
     }
 
     @Override
     public void initialize() {
-        ledSub.neutralZone();
+        ledSub.allianceZone();
     }
 
     @Override

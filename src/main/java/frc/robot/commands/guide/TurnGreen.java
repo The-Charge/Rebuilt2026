@@ -13,7 +13,7 @@ public class TurnGreen extends Command {
 
     @Override
     public void initialize() {
-        ledSub.turnGreen();
+        ledSub.solidColor();
     }
 
     @Override
