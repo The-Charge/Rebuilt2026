@@ -1,19 +1,22 @@
 package frc.robot.commands.leds;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class Rainbow extends Command {
-    LEDSubsystem ledSub;
+public class RainbowLED extends Command {
 
-    public Rainbow(LEDSubsystem LEDSubsystem) {
+    private final LEDSubsystem ledSub;
+
+    public RainbowLED(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
     }
 
     @Override
     public void initialize() {
-        ledSub.rainbow();
+        ledSub.rainbow(MetersPerSecond.of(1));
     }
 
     @Override
@@ -24,6 +27,11 @@ public class Rainbow extends Command {
 
     @Override
     public boolean isFinished() {
+        return false;
+    }
+
+    @Override
+    public boolean runsWhenDisabled() {
         return true;
     }
 }

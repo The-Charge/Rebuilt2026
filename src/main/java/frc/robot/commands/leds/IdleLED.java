@@ -1,19 +1,23 @@
-package frc.robot.commands.guide;
+package frc.robot.commands.leds;
+
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.constants.LEDConstants;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class TurnGreen extends Command {
-    LEDSubsystem ledSub;
+public class IdleLED extends Command {
 
-    public TurnGreen(LEDSubsystem LEDSubsystem) {
+    private final LEDSubsystem ledSub;
+
+    public IdleLED(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
     }
 
     @Override
     public void initialize() {
-        ledSub.solidColor();
+        ledSub.breathe(LEDConstants.chargeGreen, Seconds.of(6));
     }
 
     @Override
@@ -26,6 +30,11 @@ public class TurnGreen extends Command {
 
     @Override
     public boolean isFinished() {
+        return false;
+    }
+
+    @Override
+    public boolean runsWhenDisabled() {
         return true;
     }
 }

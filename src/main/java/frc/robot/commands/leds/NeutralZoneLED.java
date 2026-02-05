@@ -1,23 +1,22 @@
-package frc.robot.commands.guide;
+package frc.robot.commands.leds;
 
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class Blink extends Command {
-    LEDSubsystem ledSub;
-    Color LEDColor;
+public class NeutralZoneLED extends Command {
 
-    public Blink(LEDSubsystem LEDSubsystem, Color color) {
+    private final LEDSubsystem ledSub;
+
+    public NeutralZoneLED(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
-
-        LEDColor = color;
     }
 
     @Override
     public void initialize() {
-        ledSub.blink(LEDColor);
+        // TODO: neutral zone led logic
+        ledSub.solidColor(Color.kWhite);
     }
 
     @Override
@@ -30,6 +29,11 @@ public class Blink extends Command {
 
     @Override
     public boolean isFinished() {
+        return false; // don't end unless interrupted
+    }
+
+    @Override
+    public boolean runsWhenDisabled() {
         return true;
     }
 }

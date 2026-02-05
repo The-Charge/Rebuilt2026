@@ -1,16 +1,14 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.LEDPattern.GradientType;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LEDConstants;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 
 public class LEDSubsystem extends SubsystemBase {
@@ -21,8 +19,11 @@ public class LEDSubsystem extends SubsystemBase {
 
     public LEDSubsystem() {
         led = new AddressableLED(LEDConstants.port); // port number
-        buffer = new AddressableLEDBuffer(LEDConstants.ledCount); // nuumber of LEDs
+        buffer = new AddressableLEDBuffer(LEDConstants.ledCount); // number of LEDs
+
         led.setLength(buffer.getLength());
+        led.setColorOrder(LEDConstants.colorOrder);
+
         led.setData(buffer);
         led.start();
 
@@ -31,6 +32,8 @@ public class LEDSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        Logger.logSubsystem("LED", this);
+
         if (pattern != null && pattern.isPresent()) {
             pattern.get().applyTo(buffer);
         }
@@ -39,30 +42,16 @@ public class LEDSubsystem extends SubsystemBase {
     }
 
     public void solidColor(Color col) {
-        for (int i = 0; i < buffer.getLength(); i++) {
-            buffer.setLED(i, swapR_G(col)); // LED color
-        }
-        led.setData(buffer); // update to led
-        pattern = Optional.empty();
+        pattern = Optional.of(LEDPattern.solid(col));
     }
 
     public void blink(Color color, Time onTime) {
-        LEDPattern blinkingColor = LEDPattern.solid(swapR_G(color)); // color of led
+        LEDPattern blinkingColor = LEDPattern.solid(color); // color of led
         pattern = Optional.of(blinkingColor.blink(onTime));
     }
 
     public void off() {
-        for (int i = 0; i < buffer.getLength(); i++) {
-            buffer.setRGB(i, 0, 0, 0); // off
-        }
-        pattern = Optional.empty();
-    }
-
-    /**
-     * Swaps the red and green values (from RGB) and returns the new color
-     */
-    private Color swapR_G(Color col) {
-        return new Color(col.green, col.red, col.blue);
+        pattern = Optional.of(LEDPattern.solid(Color.kBlack));
     }
 
     /**
@@ -78,18 +67,8 @@ public class LEDSubsystem extends SubsystemBase {
         pattern = Optional.of(scrollingRainbow);
     }
 
-    // TODO: relocate code, possibly replace
-    public void breathingGradient() {
-        // Create an LED pattern that displays a red-to-blue gradient, breathing at a 2 second
-        // period (0.5 Hz)
-        LEDPattern base =
-                LEDPattern.gradient(GradientType.kDiscontinuous, LEDConstants.chargeGold, LEDConstants.chargeGreen);
-        LEDPattern pattern = base.breathe(Seconds.of(2));
-
-        // Apply the LED pattern to the data buffer
-        pattern.applyTo(buffer);
-
-        // Write the data to the LED strip
-        led.setData(buffer);
+    public void breathe(Color col, Time cycleTime) {
+        LEDPattern base = LEDPattern.solid(col);
+        pattern = Optional.of(base.breathe(cycleTime));
     }
 }

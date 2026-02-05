@@ -4,14 +4,19 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.guide.Blink;
-import frc.robot.commands.guide.TurnGreen;
-import frc.robot.commands.leds.Rainbow;
+import frc.robot.commands.leds.AllianceZoneLED;
+import frc.robot.commands.leds.BlinkLED;
+import frc.robot.commands.leds.IdleLED;
+import frc.robot.commands.leds.NeutralZoneLED;
+import frc.robot.commands.leds.RainbowLED;
 import frc.robot.constants.LEDConstants;
 import frc.robot.subsystems.LEDSubsystem;
 
@@ -41,14 +46,17 @@ public class RobotContainer {
         hidDriver2 = commandDriver2.getHID();
 
         ledSub = new LEDSubsystem();
+        ledSub.setDefaultCommand(new IdleLED(ledSub));
 
         configureBindings();
     }
 
     private void configureBindings() {
-        commandDriver1.a().onTrue(new TurnGreen(ledSub));
-        commandDriver1.b().onTrue(new Blink(ledSub, LEDConstants.white));
-        commandDriver1.x().onTrue(new Rainbow(ledSub));
+        commandDriver1.b().onTrue(new BlinkLED(ledSub, Color.kRed));
+        commandDriver1.x().onTrue(new RainbowLED(ledSub));
+        commandDriver1.y().onTrue(new AllianceZoneLED(ledSub));
+        commandDriver1.leftBumper().onTrue(new NeutralZoneLED(ledSub));
+        commandDriver1.rightBumper().onTrue(new BlinkLED(ledSub, LEDConstants.orange, Seconds.of(2)));
     }
 
     public Command getAutonomousCommand() {
