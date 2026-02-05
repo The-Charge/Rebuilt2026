@@ -9,9 +9,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.leds.IdleLED;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LEDSubsystem;
 
 public class RobotContainer {
     // singleton instance
@@ -31,6 +33,7 @@ public class RobotContainer {
     public final IntakeSubsystem intake;
     public final IndexerSubsystem indexer; // defines instance
     public final ClimbSubsystem climbe;
+    public final LEDSubsystem ledSub;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -43,6 +46,9 @@ public class RobotContainer {
         intake = new IntakeSubsystem();
         indexer = new IndexerSubsystem(); // tells what instance is equal to
         climbe = new ClimbSubsystem();
+        ledSub = new LEDSubsystem();
+
+        ledSub.setDefaultCommand(new IdleLED(ledSub));
 
         configureBindings();
     }
