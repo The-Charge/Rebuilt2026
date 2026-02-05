@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.ShootTurret;
+import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
@@ -26,6 +28,8 @@ public class RobotContainer {
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
 
+    public final TurretSubsystem turretSub;
+
     private RobotContainer() {
         pdp = new PowerDistribution();
 
@@ -34,11 +38,13 @@ public class RobotContainer {
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
 
+        turretSub = new TurretSubsystem();
+
         configureBindings();
     }
 
     private void configureBindings() {
-        // commandDriver1.x().onTrue(new PointAndS)
+        commandDriver1.x().onTrue(new ShootTurret(turretSub));
     }
 
     public Command getAutonomousCommand() {

@@ -17,5 +17,4 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final IdleMode idleMode = IdleMode.fromId(-1);
     public static final int currentLimit = -1;
     public static final boolean inverted = false;
-
 }
