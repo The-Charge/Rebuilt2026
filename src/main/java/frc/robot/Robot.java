@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 
 public class Robot extends TimedRobot {
@@ -18,6 +19,15 @@ public class Robot extends TimedRobot {
     public Robot() {
         Logger.init(); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
+
+        CANMonitor.setConnectionChangeCallback((id, connected) -> {
+            if (connected == true) {
+                Logger.println(String.format("Reconnected to CAN device %d", id));
+                return;
+            }
+
+            Logger.reportWarning(String.format("Lost connection to CAN device %d", id), false);
+        });
     }
 
     @Override
@@ -25,6 +35,10 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
+        CANMonitor.logCANDeviceStatus(
+                "PDP",
+                RobotContainer.getInstance().pdp.getModule(),
+                CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
 
         Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
         Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
