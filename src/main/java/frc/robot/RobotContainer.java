@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.vision.AlignTurret;
 import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -33,9 +32,9 @@ public class RobotContainer {
     }
 
     private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
-    private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
+    // private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
     private final LimelightSubsystem funnellimelight;
-    private TeleopDrive teleopDrive;
+    // private TeleopDrive teleopDrive;
     public TurretSubsystem turret;
 
     public final PowerDistribution pdp;

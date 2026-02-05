@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -11,6 +14,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.utils.Logger;
 
 // shoot angle, turret
 public class TurretSubsystem extends SubsystemBase {
@@ -29,12 +33,14 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {}
+    public void periodic() {
+        Logger.logSparkMotor("Turret", "angleing", shooter, Optional.empty());
+    }
 
     public void setTurretAngle(Rotation2d angle) {
-        // spin.getClosedLoopController()
-        //         .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian,
-        // ControlType.kPosition);
+        spin.getClosedLoopController()
+                .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian,
+        ControlType.kPosition);
     }
 
     public void setHoodAngle(Rotation2d angle) {

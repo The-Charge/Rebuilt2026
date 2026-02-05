@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -52,10 +53,9 @@ public class AlignTurret extends Command {
         // Set turret angle to robotToHub vector
         Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
+        SmartDashboard.putNumber("rotation given to turret", rotationToHub.getRadians());
         tsub.setTurretAngle(rotationToHub);
     }
-
-    // private AprilTagFieldLayout a;
 
     @Override
     public void end(boolean interrupted) {}
