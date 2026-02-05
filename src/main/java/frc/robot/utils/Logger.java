@@ -599,7 +599,7 @@ public class Logger {
         logDouble("PDP", "batteryVoltage", pdp.getVoltage());
         logDoubleArray("PDP", "currents", pdp.getAllCurrents());
         logDouble("PDP", "totalCurrent", pdp.getTotalCurrent());
-        logBool("PDP", "connected", pdp.getVoltage() != 0);
+        logBool("PDP", "connected", CANMonitor.isPDPConnected(pdp));
 
         PowerDistributionFaults faults = pdp.getFaults();
         String table = "PDP/faults";
