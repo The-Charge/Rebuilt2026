@@ -17,7 +17,11 @@ public class Alerts {
     public static final Alert servoDisconnected, servoFaults, servoWarnings;
 
     // indexer alerts
-    public static final Alert spindexerDisconnected, spindexerOverheating, spindexerFaults, spindexerConfigFail;
+    public static final Alert spindexerDisconnected,
+            spindexerOverheating,
+            spindexerFaults,
+            spindexerWarnings,
+            spindexerConfigFail;
     public static final Alert gateConfigFail, gateDisconnected, gateOverheating, gateFaults, gateWarnings;
 
     // climber alerts
@@ -91,6 +95,13 @@ public class Alerts {
                         IndexerConstants.Spindexer.motorID),
                 AlertType.kWarning);
         spindexerFaults.set(false);
+
+        spindexerWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on spindexer motor (CAN %d)",
+                        IndexerConstants.Spindexer.motorID),
+                AlertType.kWarning);
+        spindexerWarnings.set(false);
 
         spindexerConfigFail = new Alert(
                 String.format("Failed to update spindexer motor (CAN %d) config", IndexerConstants.Spindexer.motorID),
