@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.leds.BlinkLED;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
@@ -27,6 +31,8 @@ public class Robot extends TimedRobot {
             }
 
             Logger.reportWarning(String.format("Lost connection to CAN device %d", id), false);
+            CommandScheduler.getInstance()
+                    .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2)));
         });
     }
 

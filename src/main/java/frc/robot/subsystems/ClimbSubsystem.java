@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.units.ClimberPosition;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 import frc.robot.utils.TalonFXUtils;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class ClimbSubsystem extends SubsystemBase {
         Logger.logSubsystem(ClimberConstants.subsystemName, this);
 
         Logger.logTalonFX(ClimberConstants.subsystemName, "motor", motor);
+        CANMonitor.logCANDeviceStatus("motor", ClimberConstants.motorID, motor.isConnected());
         Alerts.climberDisconnected.set(!motor.isConnected());
         Alerts.climberOverheating.set(motor.getDeviceTemp().getValue().abs(Units.Celsius) >= 80);
         Alerts.climberFaults.set(TalonFXUtils.getAllActiveFaults(motor).hasCriticalFaults());

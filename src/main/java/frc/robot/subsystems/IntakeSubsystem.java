@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 import frc.robot.utils.ServoUtils;
 import frc.robot.utils.SparkUtils;
@@ -77,17 +78,21 @@ public class IntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(IntakeConstants.name, this);
-        Logger.logSparkMotor(IntakeConstants.name, "Roller", rollerMotor);
-        Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
-        Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
 
+        Logger.logSparkMotor(IntakeConstants.name, "Roller", rollerMotor);
+        CANMonitor.logCANDeviceStatus("Roller", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
         Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
         Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
         Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
 
+        Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
+        CANMonitor.logCANDeviceStatus(
+                "ServoHub", IntakeConstants.Servo.servoID, ServoUtils.isConnected(deployerServoHub));
         Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
         Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
         Alerts.servoWarnings.set(ServoUtils.hasCriticalWarnings(deployerServoHub.getWarnings()));
+
+        Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
     }
 }

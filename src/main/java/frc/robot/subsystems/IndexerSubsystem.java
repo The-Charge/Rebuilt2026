@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.units.SpindexerVelocity;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import java.util.Optional;
@@ -74,12 +75,15 @@ public class IndexerSubsystem extends SubsystemBase {
         Logger.logSubsystem(IndexerConstants.subsystemName, this);
 
         Logger.logSparkMotor(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor);
+        CANMonitor.logCANDeviceStatus(
+                "spindexerMotor", IndexerConstants.Spindexer.motorID, SparkUtils.isConnected(spindexerMotor));
         Alerts.spindexerDisconnected.set(!SparkUtils.isConnected(spindexerMotor));
         Alerts.spindexerOverheating.set(spindexerMotor.getMotorTemperature() >= 80);
         Alerts.spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
         Alerts.spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
 
         Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor);
+        CANMonitor.logCANDeviceStatus("gateMotor", IndexerConstants.Gate.motorID, SparkUtils.isConnected(gateMotor));
         Alerts.gateDisconnected.set(!SparkUtils.isConnected(gateMotor));
         Alerts.gateOverheating.set(gateMotor.getMotorTemperature() >= 80);
         Alerts.gateFaults.set(SparkUtils.hasCriticalFaults(gateMotor.getFaults()));
