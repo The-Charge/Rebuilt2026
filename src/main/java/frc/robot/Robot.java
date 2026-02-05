@@ -4,69 +4,90 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.Alerts;
+import frc.robot.utils.Logger;
 
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
 
-  private final RobotContainer m_robotContainer;
+    private Command m_autonomousCommand;
 
-  public Robot() {
-    m_robotContainer = new RobotContainer();
-  }
-
-  @Override
-  public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-  }
-
-  @Override
-  public void disabledInit() {}
-
-  @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void disabledExit() {}
-
-  @Override
-  public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+    public Robot() {
+        Logger.init(); // DO NOT DELETE ; start logger
+        RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
     }
-  }
 
-  @Override
-  public void autonomousPeriodic() {}
+    @Override
+    public void robotPeriodic() {
+        CommandScheduler.getInstance().run();
 
-  @Override
-  public void autonomousExit() {}
+        Logger.logPDP(RobotContainer.getInstance().pdp);
 
-  @Override
-  public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+        Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
+        Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
+        Alerts.fmsConnected.set(DriverStation.isFMSAttached());
+
+        double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
+        if (batteryVoltage <= 10) {
+            Alerts.lowBattery.set(false);
+            Alerts.criticalBattery.set(true);
+        } else if (batteryVoltage <= 11) {
+            Alerts.lowBattery.set(true);
+            Alerts.criticalBattery.set(false);
+        } else {
+            Alerts.lowBattery.set(false);
+            Alerts.criticalBattery.set(false);
+        }
     }
-  }
 
-  @Override
-  public void teleopPeriodic() {}
+    @Override
+    public void disabledInit() {}
 
-  @Override
-  public void teleopExit() {}
+    @Override
+    public void disabledPeriodic() {}
 
-  @Override
-  public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
-  }
+    @Override
+    public void disabledExit() {}
 
-  @Override
-  public void testPeriodic() {}
+    @Override
+    public void autonomousInit() {
+        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
 
-  @Override
-  public void testExit() {}
+        if (m_autonomousCommand != null) {
+            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        }
+    }
+
+    @Override
+    public void autonomousPeriodic() {}
+
+    @Override
+    public void autonomousExit() {}
+
+    @Override
+    public void teleopInit() {
+        if (m_autonomousCommand != null) {
+            m_autonomousCommand.cancel();
+        }
+    }
+
+    @Override
+    public void teleopPeriodic() {}
+
+    @Override
+    public void teleopExit() {}
+
+    @Override
+    public void testInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
+
+    @Override
+    public void testPeriodic() {}
+
+    @Override
+    public void testExit() {}
 }

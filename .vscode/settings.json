@@ -57,5 +57,20 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "java.dependency.enableDependencyCheckup": false
+  "java.dependency.enableDependencyCheckup": false,
+  "[java]": {
+    "spotlessGradle.format.enable": true,
+    "spotlessGradle.diagnostics.enable": false,
+    "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.spotlessGradle": "always"
+  },
+  "java.format.enabled": true,
+  "files.trimTrailingWhitespace": false,
+  "files.trimFinalNewlines": false,
+  "files.insertFinalNewline": false,
+  "editor.wordWrapColumn": 120,
+  "editor.wordWrap": "bounded",
+  "editor.wrappingIndent": "indent",
 }
