@@ -6,19 +6,25 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
+import frc.robot.utils.FieldZone;
 import frc.robot.utils.Logger;
+import java.util.Optional;
 
 public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
+    private Optional<Pose2d> lastRobotPose;
 
     public Robot() {
         Logger.init(); // DO NOT DELETE ; start logger
@@ -34,6 +40,8 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance()
                     .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2)));
         });
+
+        lastRobotPose = Optional.empty();
     }
 
     @Override
@@ -69,6 +77,9 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.stopAll();
         RobotContainer.getInstance().intake.stopRoller();
         RobotContainer.getInstance().climber.stopAll();
+
+        RobotContainer.getInstance().ledSub.setDefaultCommand(RobotContainer.getInstance().idleLEDCommand);
+        lastRobotPose = Optional.empty();
     }
 
     @Override
@@ -76,6 +87,47 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledExit() {}
+
+    public void enabledPeriodic() {
+        Pose2d robotPose = Pose2d.kZero; // TODO: replace with value from odo
+
+        FieldZone currentZone = FieldZone.fromRobotPose(robotPose);
+        Optional<FieldZone> lastZone = lastRobotPose.map((val) -> FieldZone.fromRobotPose(val));
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+        if (lastZone.isEmpty() || lastZone.get() != currentZone) {
+            // spotless:off
+            if (
+                currentZone == FieldZone.BLUE && alliance == Alliance.Blue
+                ||
+                currentZone == FieldZone.RED && alliance == Alliance.Red
+            ) {
+            // spotless:on
+                RobotContainer.getInstance()
+                        .ledSub
+                        .setDefaultCommand(RobotContainer.getInstance().friendlyZoneLEDCommand);
+
+                CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinUpIndexerCommand);
+                // TODO: aim turret at hub
+            } else if (currentZone == FieldZone.NEUTRAL) {
+                RobotContainer.getInstance()
+                        .ledSub
+                        .setDefaultCommand(RobotContainer.getInstance().neutralZoneLEDCommand);
+
+                CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinDownIndexerCommand);
+                // TODO: aim turret at nearest gap to friendly alliance zone
+            } else {
+                RobotContainer.getInstance()
+                        .ledSub
+                        .setDefaultCommand(RobotContainer.getInstance().opposingZoneLEDCommand);
+
+                CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinDownIndexerCommand);
+                // TODO: recenter turret
+            }
+        }
+
+        lastRobotPose = Optional.of(robotPose);
+    }
 
     @Override
     public void autonomousInit() {
@@ -87,7 +139,9 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        enabledPeriodic();
+    }
 
     @Override
     public void autonomousExit() {}
@@ -97,6 +151,8 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
+
+        CommandScheduler.getInstance().schedule(new DeployIntake(RobotContainer.getInstance().intake));
     }
 
     @Override
