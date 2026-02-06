@@ -45,6 +45,7 @@ public class Robot extends TimedRobot {
                 "PDP",
                 RobotContainer.getInstance().pdp.getModule(),
                 CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
+        Alerts.pdpDisconnected.set(!CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
 
         Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
         Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
@@ -67,7 +68,7 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         RobotContainer.getInstance().indexer.stopAll();
         RobotContainer.getInstance().intake.stopRoller();
-        RobotContainer.getInstance().climbe.stopAll();
+        RobotContainer.getInstance().climber.stopAll();
     }
 
     @Override

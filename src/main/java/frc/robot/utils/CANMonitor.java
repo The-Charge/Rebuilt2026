@@ -21,12 +21,14 @@ public class CANMonitor {
     public static void logCANDeviceStatus(String name, int id, boolean connected) {
         if (name == null || name.isEmpty()) name = "Unnamed";
 
-        statuses.put(id, connected);
-        Logger.logBool("CAN", String.format("%d_%s", id, name), connected);
-
-        if (connected != statuses.get(id) && connectionChangeCallback != null && connectionChangeCallback.isPresent()) {
+        if ((!statuses.containsKey(id) || connected != statuses.get(id))
+                && connectionChangeCallback != null
+                && connectionChangeCallback.isPresent()) {
             connectionChangeCallback.get().accept(id, connected);
         }
+
+        statuses.put(id, connected);
+        Logger.logBool("CAN", String.format("%d_%s", id, name), connected);
     }
 
     public static Optional<Boolean> getCANDeviceStatus(int id) {

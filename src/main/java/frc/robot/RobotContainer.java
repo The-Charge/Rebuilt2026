@@ -31,8 +31,8 @@ public class RobotContainer {
     public final XboxController hidDriver1, hidDriver2;
 
     public final IntakeSubsystem intake;
-    public final IndexerSubsystem indexer; // defines instance
-    public final ClimbSubsystem climbe;
+    public final IndexerSubsystem indexer;
+    public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
 
     private RobotContainer() {
@@ -44,8 +44,8 @@ public class RobotContainer {
         hidDriver2 = commandDriver2.getHID();
 
         intake = new IntakeSubsystem();
-        indexer = new IndexerSubsystem(); // tells what instance is equal to
-        climbe = new ClimbSubsystem();
+        indexer = new IndexerSubsystem();
+        climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
 
         ledSub.setDefaultCommand(new IdleLED(ledSub));

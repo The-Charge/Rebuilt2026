@@ -10,7 +10,12 @@ import frc.robot.constants.IntakeConstants.Servo;
 public class Alerts {
 
     // general alerts
-    public static final Alert driver1Missing, driver2Missing, fmsConnected, lowBattery, criticalBattery;
+    public static final Alert driver1Missing,
+            driver2Missing,
+            fmsConnected,
+            lowBattery,
+            criticalBattery,
+            pdpDisconnected;
 
     // intake alerts
     public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
@@ -42,6 +47,9 @@ public class Alerts {
 
         criticalBattery = new Alert("Very low battery", AlertType.kError);
         criticalBattery.set(false);
+
+        pdpDisconnected = new Alert("Missing connection to PDP", AlertType.kError);
+        pdpDisconnected.set(false);
 
         rollerConfigFail = new Alert(
                 String.format("Failed to update roller motor (CAN %d) config", Roller.motorID), AlertType.kError);
