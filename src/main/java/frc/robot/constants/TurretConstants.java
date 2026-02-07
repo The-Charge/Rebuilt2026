@@ -18,4 +18,5 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final boolean inverted = false;
 
     public static final double rangeThreshold = -1;
+    public static final String subsystemName = "Turret";
 }

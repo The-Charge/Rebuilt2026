@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
-
     public static Rotation2d upAngle;
     public static Rotation2d downAngle;
 
@@ -42,4 +41,6 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         distanceToRPMPlot.put(0.0, 0.0);
         distanceToRPMPlot.put(99.0, 99.0);
     }
+
+    public static final String subsystemName = "Shooter";
 }
