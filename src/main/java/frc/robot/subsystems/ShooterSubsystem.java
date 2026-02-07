@@ -91,7 +91,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
         Logger.logSubsystem(ShooterConstants.subsystemName, this);
 
         Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
@@ -107,5 +106,7 @@ public class ShooterSubsystem extends SubsystemBase {
         Alerts.hoodOverheating.set(hoodMotor.getMotorTemperature() >= 80);
         Alerts.hoodWarnings.set(SparkUtils.hasCriticalWarnings(hoodMotor.getWarnings()));
         Alerts.hoodFaults.set(SparkUtils.hasCriticalFaults(hoodMotor.getFaults()));
+
+        Logger.logString(ShooterConstants.subsystemName, "hood/angle state", hoodPos == HoodPos.UP ? "Up" : "Down");
     }
 }
