@@ -1,55 +1,62 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RPM;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.constants.TurretConstants;
+import frc.robot.constants.ShooterConstants.HoodConfig;
+import frc.robot.constants.ShooterConstants.ShootConfig;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final SparkFlex shoot;
+    private final SparkFlex shootMotor;
     // private final Servo hood; // this will likely be a motor, not a servo
-    private SparkMax hood;
+    private SparkMax hoodMotor;
 
     private HoodPos hoodPos;
-    
-        public ShooterSubsystem() {
-            shoot = new SparkFlex(ShooterConstants.shooterId, MotorType.kBrushless);
-            hood = new SparkMax(ShooterConstants.hoodId, MotorType.kBrushless);
-    
-            hoodPos = HoodPos.DOWN;
-    
-            configureMotor();
-        }
-    
-        @Override
-        public void periodic() {}
-    
-        public void setHoodPos(HoodPos hp) {
-            
-            hoodPos = hp;
-            // move the hood with whatever actuator
-            if (hp == HoodPos.UP)
-            hood.getClosedLoopController().setSetpoint(ShooterConstants.upAngle.getRadians() * ShooterConstants.hoodTicksPerRadian, ControlType.kPosition);
-            else
-            hood.getClosedLoopController().setSetpoint(ShooterConstants.downAngle.getRadians() * ShooterConstants.hoodTicksPerRadian, ControlType.kPosition);
+
+    public ShooterSubsystem() {
+        shootMotor = new SparkFlex(ShootConfig.ID, MotorType.kBrushless);
+        hoodMotor = new SparkMax(HoodConfig.ID, MotorType.kBrushless);
+
+        hoodPos = HoodPos.DOWN;
+
+        configureMotor();
     }
 
-    public void shoot() {
-        shoot.set(ShooterConstants.shootSpeed);
+    @Override
+    public void periodic() {}
+
+    public void setHoodPos(HoodPos hp) {
+
+        hoodPos = hp;
+        // move the hood with whatever actuator
+        if (hp == HoodPos.UP)
+            hoodMotor
+                    .getClosedLoopController()
+                    .setSetpoint(
+                            ShooterConstants.upAngle.getRadians() * HoodConfig.ticksPerRadian, ControlType.kPosition);
+        else
+            hoodMotor
+                    .getClosedLoopController()
+                    .setSetpoint(
+                            ShooterConstants.downAngle.getRadians() * HoodConfig.ticksPerRadian, ControlType.kPosition);
+    }
+
+    public void shoot(AngularVelocity speed) {
+        shootMotor.getClosedLoopController().setSetpoint(speed.abs(RPM), ControlType.kVelocity);
     }
 
     public void stopShoot() {
-        shoot.set(0);
+        shootMotor.set(0);
     }
 
     public HoodPos getHoodPos() {
@@ -58,29 +65,32 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void configureMotor() {
         // shoot
-        SparkFlexConfig config1 = new SparkFlexConfig();
-        config1.idleMode(ShooterConstants.idleMode);
-        config1.smartCurrentLimit(ShooterConstants.currentLimit);
-        config1.inverted(ShooterConstants.shootInverted);
 
-        shoot.configure(config1, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkFlexConfig shootConfig = new SparkFlexConfig();
+
+        shootConfig.closedLoop.pid(ShootConfig.p, ShootConfig.i, ShootConfig.d);
+
+        shootConfig.idleMode(ShootConfig.idleMode);
+        shootConfig.smartCurrentLimit(ShootConfig.currentLimit);
+        shootConfig.inverted(ShootConfig.inverted);
+
+        shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // hood
-        
-        SparkMaxConfig config2 = new SparkMaxConfig();
 
-        config2.closedLoop.pid(ShooterConstants.shootkP, ShooterConstants.shootkI, ShooterConstants.shootkD);
+        SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
-        config2.idleMode(ShooterConstants.idleMode);
-        config2.smartCurrentLimit(ShooterConstants.currentLimit);
-        config2.inverted(ShooterConstants.hoodInverted);
+        hoodConfig.closedLoop.pid(HoodConfig.p, HoodConfig.i, HoodConfig.d);
 
+        hoodConfig.idleMode(HoodConfig.idleMode);
+        hoodConfig.smartCurrentLimit(HoodConfig.currentLimit);
+        hoodConfig.inverted(HoodConfig.inverted);
 
-        hood.configure(config2, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public enum HoodPos {
         UP,
-        DOWN
+        DOWN,
     }
 }
