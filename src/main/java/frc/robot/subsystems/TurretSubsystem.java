@@ -4,11 +4,8 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -72,8 +69,7 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.of(angle);
 
         double request = angle.getRadians();
-        turret.getClosedLoopController()
-                .setSetpoint(request, ControlType.kPosition);
+        turret.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
     public void stop() {
@@ -84,13 +80,7 @@ public class TurretSubsystem extends SubsystemBase {
         return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
     }
 
-    private void configureMotor() {
-        SparkMaxConfig config = new SparkMaxConfig();
-        config.closedLoop.pid(TurretConstants.Spin.kP, TurretConstants.Spin.kI, TurretConstants.Spin.kD);
-        config.idleMode(TurretConstants.idleMode);
-        config.smartCurrentLimit(TurretConstants.currentLimit);
-        config.inverted(TurretConstants.inverted);
-
-        turret.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public Optional<Rotation2d> getTargetAngle() {
+        return targetAngle;
     }
 }

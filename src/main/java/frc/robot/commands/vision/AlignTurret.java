@@ -1,18 +1,15 @@
 package frc.robot.commands.vision;
 
-import java.util.Optional;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import java.util.Optional;
 
 public class AlignTurret extends Command {
 
@@ -39,14 +36,14 @@ public class AlignTurret extends Command {
     @Override
     public void execute() {
         // Get Detection (safe)
-        Optional<Pose3d> position = lsub.getTransformToTag(20);
+        Optional<Pose3d> position = lsub.getTransformToTag(20); // change based on which alliance
         Transform2d robotToHub;
         if (position.isPresent()) {
             Pose3d qfe = position.get();
             robotToHub =
                     new Transform2d(qfe.getX(), qfe.getY(), qfe.getRotation().toRotation2d());
         } else {
-            return;
+            return; // don't use swerve for testing
 
             // Pose2d poseEstimate = ssub.getPose(); // maybe we could get position from limelights instead
 

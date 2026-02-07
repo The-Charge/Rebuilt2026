@@ -1,7 +1,6 @@
 package frc.robot.constants;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
@@ -19,5 +18,4 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     public static double hoodTicksPerRadian;
     public static Rotation2d downAngle;
     public static double shootSpeed;
-
 }
