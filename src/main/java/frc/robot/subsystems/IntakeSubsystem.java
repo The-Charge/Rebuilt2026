@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
-import com.revrobotics.servohub.ServoChannel;
-import com.revrobotics.servohub.ServoHub;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -14,15 +12,13 @@ import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
-import frc.robot.utils.ServoUtils;
 import frc.robot.utils.SparkUtils;
-import java.util.Optional;
 
 public class IntakeSubsystem extends SubsystemBase {
     private SparkMax rollerMotor;
 
-    private ServoHub deployerServoHub;
-    private ServoChannel deployerServoChannel;
+    // private ServoHub deployerServoHub;
+    // private ServoChannel deployerServoChannel;
 
     private boolean deployed;
 
@@ -31,17 +27,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
         deployed = false;
 
-        deployerServoHub = new ServoHub(IntakeConstants.Servo.servoID);
-        deployerServoChannel = deployerServoHub.getServoChannel(IntakeConstants.Servo.channelId);
+        // deployerServoHub = new ServoHub(IntakeConstants.Servo.servoID);
+        // deployerServoChannel = deployerServoHub.getServoChannel(IntakeConstants.Servo.channelId);
 
         configureRollerMotor();
     }
 
     public void deploy() {
-        deployerServoChannel.setPowered(true);
-        deployerServoChannel.setEnabled(true);
+        // deployerServoChannel.setPowered(true);
+        // deployerServoChannel.setEnabled(true);
 
-        deployerServoChannel.setPulseWidth(IntakeConstants.Servo.deployedPulseWidth);
+        // deployerServoChannel.setPulseWidth(IntakeConstants.Servo.deployedPulseWidth);
         deployed = true;
     }
 
@@ -86,12 +82,12 @@ public class IntakeSubsystem extends SubsystemBase {
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
         Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
 
-        Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
-        CANMonitor.logCANDeviceStatus(
-                "ServoHub", IntakeConstants.Servo.servoID, ServoUtils.isConnected(deployerServoHub));
-        Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
-        Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
-        Alerts.servoWarnings.set(ServoUtils.hasCriticalWarnings(deployerServoHub.getWarnings()));
+        // Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
+        // CANMonitor.logCANDeviceStatus(
+        //         "ServoHub", IntakeConstants.Servo.servoID, ServoUtils.isConnected(deployerServoHub));
+        // Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
+        // Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
+        // Alerts.servoWarnings.set(ServoUtils.hasCriticalWarnings(deployerServoHub.getWarnings()));
 
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
     }

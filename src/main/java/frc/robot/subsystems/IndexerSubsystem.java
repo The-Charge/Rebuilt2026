@@ -19,7 +19,7 @@ import java.util.Optional;
 public class IndexerSubsystem extends SubsystemBase {
 
     private final SparkMax spindexerMotor; // MAKES MOTOR
-    private final SparkMax gateMotor;
+    private final SparkMax exchangeMotor;
 
     private Optional<SpindexerVelocity> spindexerTarget;
 
@@ -50,21 +50,21 @@ public class IndexerSubsystem extends SubsystemBase {
             Alerts.spindexerConfigFail.set(true);
         }
 
-        gateMotor = new SparkMax(
-                IndexerConstants.Gate.motorID,
+        exchangeMotor = new SparkMax(
+                IndexerConstants.Exchange.motorID,
                 MotorType.kBrushless); // port number in IndexerConstants; defines the motor as brushless
         SparkMaxConfig gateConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 gateConfig,
-                IndexerConstants.Gate.maxCurrent,
-                IndexerConstants.Gate.idleMode,
-                IndexerConstants.Gate.inverted,
-                IndexerConstants.Gate.maxDutyCycle,
-                IndexerConstants.Gate.nominalVoltage);
-        if (gateMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+                IndexerConstants.Exchange.maxCurrent,
+                IndexerConstants.Exchange.idleMode,
+                IndexerConstants.Exchange.inverted,
+                IndexerConstants.Exchange.maxDutyCycle,
+                IndexerConstants.Exchange.nominalVoltage);
+        if (exchangeMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure gate motor");
-            Alerts.gateConfigFail.set(true);
+            Logger.reportError("Failed to configure exchange motor");
+            Alerts.exchangeConfigFail.set(true);
         }
 
         spindexerTarget = Optional.empty();
@@ -82,12 +82,13 @@ public class IndexerSubsystem extends SubsystemBase {
         Alerts.spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
         Alerts.spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
 
-        Logger.logSparkMotor(IndexerConstants.subsystemName, "gateMotor", gateMotor);
-        CANMonitor.logCANDeviceStatus("gateMotor", IndexerConstants.Gate.motorID, SparkUtils.isConnected(gateMotor));
-        Alerts.gateDisconnected.set(!SparkUtils.isConnected(gateMotor));
-        Alerts.gateOverheating.set(gateMotor.getMotorTemperature() >= 80);
-        Alerts.gateFaults.set(SparkUtils.hasCriticalFaults(gateMotor.getFaults()));
-        Alerts.gateWarnings.set(SparkUtils.hasCriticalWarnings(gateMotor.getWarnings()));
+        Logger.logSparkMotor(IndexerConstants.subsystemName, "exchangeMotor", exchangeMotor);
+        CANMonitor.logCANDeviceStatus(
+                "exchangeMotor", IndexerConstants.Exchange.motorID, SparkUtils.isConnected(exchangeMotor));
+        Alerts.exchangeDisconnected.set(!SparkUtils.isConnected(exchangeMotor));
+        Alerts.exchangeOverheating.set(exchangeMotor.getMotorTemperature() >= 80);
+        Alerts.exchangeFaults.set(SparkUtils.hasCriticalFaults(exchangeMotor.getFaults()));
+        Alerts.exchangeWarnings.set(SparkUtils.hasCriticalWarnings(exchangeMotor.getWarnings()));
 
         Logger.logDouble(
                 IndexerConstants.subsystemName,
@@ -124,13 +125,13 @@ public class IndexerSubsystem extends SubsystemBase {
         spindexerMotor.stopMotor();
     }
 
-    public void setGateMotorVoltage(double voltage) {
-        gateMotor.setVoltage(voltage);
+    public void setExchangeMotorVoltage(double voltage) {
+        exchangeMotor.setVoltage(voltage);
     }
 
     public void stopAll() {
         spindexerMotor.stopMotor(); // safety
-        gateMotor.stopMotor();
+        exchangeMotor.stopMotor();
     }
 
     public Optional<Boolean> isSpindexerAtTarget() {
