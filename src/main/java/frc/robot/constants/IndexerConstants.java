@@ -9,7 +9,7 @@ public class IndexerConstants {
     public static final String subsystemName = "Indexer";
 
     public static class Spindexer {
-        public static final int motorID = 5;
+        public static final int motorID = 13;
         public static final double gearRatio = 40d / 1;
 
         public static final int maxCurrent = 20;
@@ -30,7 +30,7 @@ public class IndexerConstants {
     }
 
     public static class Gate {
-        public static final int motorID = 9;
+        public static final int motorID = 11;
 
         public static final int maxCurrent = 20;
         public static final IdleMode idleMode = IdleMode.kCoast;

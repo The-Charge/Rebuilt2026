@@ -15,8 +15,7 @@ public class OpposingZoneLED extends Command {
 
     @Override
     public void initialize() {
-        // TODO: opposing zone led logic
-        ledSub.solidColor(Color.kPurple);
+        ledSub.solidColor(Color.kWhite);
     }
 
     @Override
@@ -34,6 +33,6 @@ public class OpposingZoneLED extends Command {
 
     @Override
     public boolean runsWhenDisabled() {
-        return true;
+        return false;
     }
 }

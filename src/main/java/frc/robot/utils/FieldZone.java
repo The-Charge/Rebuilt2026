@@ -25,7 +25,7 @@ public enum FieldZone {
          */
         if (xInches < 182.11) {
             return BLUE;
-        } else if (xInches <= 469.11) {
+        } else if (xInches <= 182.11 + 143.5 * 2) {
             return NEUTRAL;
         } else {
             return RED;

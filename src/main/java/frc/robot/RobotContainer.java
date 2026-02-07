@@ -6,14 +6,18 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.indexer.SpinDownIndexer;
 import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.intake.RunRoller;
+import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.NeutralZoneLED;
@@ -43,7 +47,8 @@ public class RobotContainer {
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
 
-    public final FriendlyZoneLED friendlyZoneLEDCommand;
+    public final FriendlyZoneLED activeFriendlyZoneLEDCommand;
+    public final FriendlyZoneLED inactiveFriendlyZoneLEDCommand;
     public final NeutralZoneLED neutralZoneLEDCommand;
     public final OpposingZoneLED opposingZoneLEDCommand;
     public final IdleLED idleLEDCommand;
@@ -63,7 +68,8 @@ public class RobotContainer {
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
 
-        friendlyZoneLEDCommand = new FriendlyZoneLED(ledSub);
+        activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
+        inactiveFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, false);
         neutralZoneLEDCommand = new NeutralZoneLED(ledSub);
         opposingZoneLEDCommand = new OpposingZoneLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
@@ -76,7 +82,11 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        commandDriver2.leftTrigger().whileTrue(new RunRoller(intake));
+        // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
+        commandDriver2
+                .leftTrigger()
+                .whileTrue(new ParallelCommandGroup(
+                        new RunRoller(intake), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
     }

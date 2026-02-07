@@ -17,7 +17,7 @@ public class IdleLED extends Command {
 
     @Override
     public void initialize() {
-        ledSub.breathe(LEDConstants.chargeGreen, Seconds.of(6));
+        ledSub.breathe(LEDConstants.chargeGold, Seconds.of(6));
     }
 
     @Override

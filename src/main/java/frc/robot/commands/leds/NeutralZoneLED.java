@@ -15,7 +15,6 @@ public class NeutralZoneLED extends Command {
 
     @Override
     public void initialize() {
-        // TODO: neutral zone led logic
         ledSub.solidColor(Color.kWhite);
     }
 
@@ -34,6 +33,6 @@ public class NeutralZoneLED extends Command {
 
     @Override
     public boolean runsWhenDisabled() {
-        return true;
+        return false;
     }
 }
