@@ -1,4 +1,4 @@
-package frc.robot.commands.vision;
+package frc.robot.commands.turret;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -55,7 +55,7 @@ public class AlignTurret extends Command {
         Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         SmartDashboard.putNumber("rotation given to turret", rotationToHub.getRadians());
-        tsub.setTurretAngle(rotationToHub.plus(new Rotation2d(Math.PI)));
+        tsub.setTurretAngleRobotRelative(rotationToHub.plus(new Rotation2d(Math.PI)));
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 import frc.robot.utils.Logger;
@@ -20,7 +21,7 @@ public class TurretSubsystem extends SubsystemBase {
     // private final SparkFlex shooter;
     // private final Servo hood;
 
-    private Rotation2d offset = new Rotation2d();
+    private Rotation2d offset = new Rotation2d(Math.PI);
     private Optional<Rotation2d> targetAngle;
 
     public TurretSubsystem() {
@@ -58,9 +59,13 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSparkMotor("Turret", "angleing", turret);
+        if (targetAngle.isPresent()) {
+            SmartDashboard.putNumber("target rotation", targetAngle.get().getRadians());
+        }
+        SmartDashboard.putNumber("turret rotation", getTurretRawAngle().getRadians());
     }
 
-    public void setTurretAngle(Rotation2d angle) {
+    public void setTurretAngleRobotRelative(Rotation2d angle) {
         if (angle == null) {
             Logger.reportWarning("Cannot set spindexer velocity to a null velocity", true);
             return;
@@ -68,7 +73,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        double request = angle.getRadians();
+        double request = angle.plus(offset).getRadians() * 10;
         turret.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
@@ -76,8 +81,9 @@ public class TurretSubsystem extends SubsystemBase {
         turret.set(0);
     }
 
-    public Rotation2d getTurretAngle() {
-        return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
+    public Rotation2d getTurretRawAngle() {
+        // return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
+        return new Rotation2d(turret.getEncoder().getPosition());
     }
 
     public Optional<Rotation2d> getTargetAngle() {

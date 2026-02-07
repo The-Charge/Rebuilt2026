@@ -4,8 +4,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
-    public static final int shooterId = -1;
-    public static final int hoodId = -1;
+    public static final int shooterId = 72;
+    public static final int hoodId = 73;
     public static final IdleMode idleMode = IdleMode.fromId(-1);
     public static final int currentLimit = -1;
     public static final double hoodPosThreshold = 3;

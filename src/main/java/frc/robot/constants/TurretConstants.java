@@ -20,9 +20,9 @@ public class TurretConstants { // split into shooter, spinner, and hood
         public static final int maxCurrent = 10;
         public static final IdleMode idleMode = IdleMode.kCoast;
         public static final boolean inverted = false;
-        public static final double maxDutyCycle = .5;
+        public static final double maxDutyCycle = .1;
         public static final Optional<Double> nominalVoltage = Optional.empty();
-        public static final double kP = 0.2;
+        public static final double kP = 0.25;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final Optional<Double> kStaticG = Optional.empty();
