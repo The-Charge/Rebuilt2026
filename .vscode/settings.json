@@ -71,6 +71,6 @@
   "files.trimFinalNewlines": false,
   "files.insertFinalNewline": false,
   "editor.wordWrapColumn": 120,
-  "editor.wordWrap": "bounded",
+  "editor.wordWrap": "off",
   "editor.wrappingIndent": "indent",
 }

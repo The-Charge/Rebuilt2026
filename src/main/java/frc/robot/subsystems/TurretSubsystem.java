@@ -7,9 +7,10 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 import frc.robot.utils.Logger;
@@ -18,7 +19,7 @@ import java.util.Optional;
 
 // shoot angle, turret
 public class TurretSubsystem extends SubsystemBase {
-    private final SparkMax spin;
+    private final SparkMax turret;
     // private final SparkFlex shooter;
     // private final Servo hood;
 
@@ -26,7 +27,7 @@ public class TurretSubsystem extends SubsystemBase {
     private Optional<Rotation2d> targetAngle;
 
     public TurretSubsystem() {
-        spin = new SparkMax(TurretConstants.Spin.motorID, MotorType.kBrushless); // port number under IndexerConstants
+        turret = new SparkMax(TurretConstants.Spin.motorID, MotorType.kBrushless); // port number under IndexerConstants
         SparkMaxConfig spindexerConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 spindexerConfig,
@@ -45,7 +46,7 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.Spin.kS,
                 TurretConstants.Spin.kV,
                 TurretConstants.Spin.kA);
-        if (spin.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        if (turret.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
             Logger.reportError("Failed to configure spindexer motor");
             // Alerts.spindexerConfigFail.set(true);
@@ -59,7 +60,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.logSparkMotor("Turret", "angleing", spin);
+        Logger.logSparkMotor("Turret", "angleing", turret);
     }
 
     public void setTurretAngle(Rotation2d angle) {
@@ -71,38 +72,25 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.of(angle);
 
         double request = angle.getRadians();
-        spin.getClosedLoopController()
+        turret.getClosedLoopController()
                 .setSetpoint(request, ControlType.kPosition);
     }
 
-    public void setHoodAngle(Rotation2d angle) {
-        // IDK some map from angle to servo position
-    }
-
-    public void setHoodPos(double val) {
-        // hood.set(val);
-    }
-
-    public void shoot(double speed) {
-        // shooter.set(speed); // dumb
-    }
-
     public void stop() {
-        spin.set(0);
-        // shooter.set(0);
-        // stop the hood servo too
+        turret.set(0);
     }
 
     public Rotation2d getTurretAngle() {
-        return new Rotation2d(spin.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
+        return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
     }
 
-    public Rotation2d getHoodAngle() {
-        // the reverse of the previos map
-        return null;
-    }
+    private void configureMotor() {
+        SparkMaxConfig config = new SparkMaxConfig();
+        config.closedLoop.pid(TurretConstants.Spin.kP, TurretConstants.Spin.kI, TurretConstants.Spin.kD);
+        config.idleMode(TurretConstants.idleMode);
+        config.smartCurrentLimit(TurretConstants.currentLimit);
+        config.inverted(TurretConstants.inverted);
 
-    // public double getHoodPos() {
-    //     return hood.get();
-    // }
+        turret.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    }
 }

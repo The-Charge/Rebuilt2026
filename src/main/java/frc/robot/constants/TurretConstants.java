@@ -34,4 +34,6 @@ public class TurretConstants { // split into shooter, spinner, and hood
         public static final double ticksPerRadian = 3;
         public static final double radiansPerTick = 1 / ticksPerRadian;
     }
+
+    public static final double rangeThreshold = -1;
 }
