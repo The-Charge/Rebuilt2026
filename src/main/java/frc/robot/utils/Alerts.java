@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants.Roller;
-import frc.robot.constants.IntakeConstants.Servo;
 
 public class Alerts {
 
@@ -19,7 +18,6 @@ public class Alerts {
 
     // intake alerts
     public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
-    public static final Alert servoDisconnected, servoFaults, servoWarnings;
 
     // indexer alerts
     public static final Alert spindexerDisconnected,
@@ -76,20 +74,6 @@ public class Alerts {
                 String.format("Potentially critical warnings are active on roller motor (CAN %d)", Roller.motorID),
                 AlertType.kWarning);
         rollerWarnings.set(false);
-
-        servoDisconnected =
-                new Alert(String.format("Missing connection to servo hub (CAN %d)", Servo.servoID), AlertType.kError);
-        servoDisconnected.set(false);
-
-        servoFaults = new Alert(
-                String.format("Potentially critical faults are active on servo hub (CAN %d)", Servo.servoID),
-                AlertType.kWarning);
-        servoFaults.set(false);
-
-        servoWarnings = new Alert(
-                String.format("Potentially critical warnings are active on servo hub (CAN %d)", Servo.servoID),
-                AlertType.kWarning);
-        servoWarnings.set(false);
 
         spindexerDisconnected = new Alert(
                 String.format("Missing connection to spindexer motor (CAN %d)", IndexerConstants.Spindexer.motorID),

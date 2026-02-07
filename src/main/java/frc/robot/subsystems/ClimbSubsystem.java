@@ -50,7 +50,7 @@ public class ClimbSubsystem extends SubsystemBase {
         Logger.logSubsystem(ClimberConstants.subsystemName, this);
 
         Logger.logTalonFX(ClimberConstants.subsystemName, "motor", motor);
-        CANMonitor.logCANDeviceStatus("motor", ClimberConstants.motorID, motor.isConnected());
+        CANMonitor.logCANDeviceStatus("climbMotor", ClimberConstants.motorID, motor.isConnected());
         Alerts.climberDisconnected.set(!motor.isConnected());
         Alerts.climberOverheating.set(motor.getDeviceTemp().getValue().abs(Units.Celsius) >= 80);
         Alerts.climberFaults.set(TalonFXUtils.getAllActiveFaults(motor).hasCriticalFaults());

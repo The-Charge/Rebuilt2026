@@ -6,6 +6,7 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.IntakeConstants.Roller;
@@ -17,27 +18,21 @@ import frc.robot.utils.SparkUtils;
 public class IntakeSubsystem extends SubsystemBase {
     private SparkMax rollerMotor;
 
-    // private ServoHub deployerServoHub;
-    // private ServoChannel deployerServoChannel;
+    private Servo deployerServo;
 
     private boolean deployed;
 
     public IntakeSubsystem() {
         rollerMotor = new SparkMax(IntakeConstants.Roller.motorID, MotorType.kBrushless);
+        deployerServo = new Servo(IntakeConstants.Servo.port);
 
         deployed = false;
-
-        // deployerServoHub = new ServoHub(IntakeConstants.Servo.servoID);
-        // deployerServoChannel = deployerServoHub.getServoChannel(IntakeConstants.Servo.channelId);
 
         configureRollerMotor();
     }
 
     public void deploy() {
-        // deployerServoChannel.setPowered(true);
-        // deployerServoChannel.setEnabled(true);
-
-        // deployerServoChannel.setPulseWidth(IntakeConstants.Servo.deployedPulseWidth);
+        deployerServo.set(IntakeConstants.Servo.deployedPosition);
         deployed = true;
     }
 
@@ -75,19 +70,14 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         Logger.logSubsystem(IntakeConstants.name, this);
 
-        Logger.logSparkMotor(IntakeConstants.name, "Roller", rollerMotor);
-        CANMonitor.logCANDeviceStatus("Roller", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
+        Logger.logSparkMotor(IntakeConstants.name, "roller", rollerMotor);
+        CANMonitor.logCANDeviceStatus("roller", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
         Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
         Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
         Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
 
-        // Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
-        // CANMonitor.logCANDeviceStatus(
-        //         "ServoHub", IntakeConstants.Servo.servoID, ServoUtils.isConnected(deployerServoHub));
-        // Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
-        // Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
-        // Alerts.servoWarnings.set(ServoUtils.hasCriticalWarnings(deployerServoHub.getWarnings()));
+        Logger.logServo(IntakeConstants.name, "deployerServo", deployerServo);
 
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
     }
