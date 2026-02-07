@@ -2,12 +2,16 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.ShooterConstants.HoodConfig;
 import frc.robot.constants.TurretConstants;
 
 public class Alerts {
 
     public static final Alert driver1Missing, driver2Missing, fmsConnected, lowBattery, criticalBattery;
     public static final Alert turretDisconnected, turretOverheating, turretWarnings, turretFaults;
+    public static final Alert shooterDisconnected, shooterOverheating, shooterWarnings, shooterFaults;
+    public static final Alert hoodDisconnected, hoodOverheating, hoodWarnings, hoodFaults;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -45,6 +49,48 @@ public class Alerts {
                         "Potentially critical faults are active on turret motor (CAN %d)", TurretConstants.turretId),
                 AlertType.kWarning);
         turretFaults.set(false);
+
+        shooterDisconnected = new Alert(
+                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.ShootConfig.ID),
+                AlertType.kError);
+        shooterDisconnected.set(false);
+
+        shooterOverheating = new Alert(
+                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterOverheating.set(false);
+
+        shooterWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on shooter motor (CAN %d)",
+                        ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterWarnings.set(false);
+
+        shooterFaults = new Alert(
+                String.format(
+                        "Potentially critical faults are active on shooter motor (CAN %d)",
+                        ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterFaults.set(false);
+
+        hoodDisconnected =
+                new Alert(String.format("Missing connection to hood motor (CAN %d)", HoodConfig.ID), AlertType.kError);
+        hoodDisconnected.set(false);
+
+        hoodOverheating =
+                new Alert(String.format("Hood motor (CAN %d) is overheating", HoodConfig.ID), AlertType.kWarning);
+        hoodOverheating.set(false);
+
+        hoodWarnings = new Alert(
+                String.format("Potentially critical warnings are active on hood motor (CAN %d)", HoodConfig.ID),
+                AlertType.kWarning);
+        hoodWarnings.set(false);
+
+        hoodFaults = new Alert(
+                String.format("Potentially critical faults are active on hood motor (CAN %d)", HoodConfig.ID),
+                AlertType.kWarning);
+        hoodFaults.set(false);
     }
 
     private Alerts() {}

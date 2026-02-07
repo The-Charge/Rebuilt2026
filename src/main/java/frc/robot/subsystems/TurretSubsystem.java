@@ -57,10 +57,5 @@ public class TurretSubsystem extends SubsystemBase {
         Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
         Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
         Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
-
-        Logger.logDouble(
-                TurretConstants.subsystemName,
-                "motor/angle (deg)",
-                getTurretAngle().getDegrees());
     }
 }

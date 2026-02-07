@@ -10,16 +10,25 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.ShooterConstants.HoodConfig;
 import frc.robot.constants.ShooterConstants.ShootConfig;
+import frc.robot.utils.Alerts;
+import frc.robot.utils.Logger;
+import frc.robot.utils.SparkUtils;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final SparkFlex shootMotor;
     // private final Servo hood; // this will likely be a motor, not a servo
     private SparkMax hoodMotor;
+
+    public enum HoodPos {
+        UP,
+        DOWN,
+    }
 
     private HoodPos hoodPos;
 
@@ -32,23 +41,14 @@ public class ShooterSubsystem extends SubsystemBase {
         configureMotor();
     }
 
-    @Override
-    public void periodic() {}
-
     public void setHoodPos(HoodPos hp) {
-
         hoodPos = hp;
-        // move the hood with whatever actuator
-        if (hp == HoodPos.UP)
-            hoodMotor
-                    .getClosedLoopController()
-                    .setSetpoint(
-                            ShooterConstants.upAngle.getRadians() * HoodConfig.ticksPerRadian, ControlType.kPosition);
-        else
-            hoodMotor
-                    .getClosedLoopController()
-                    .setSetpoint(
-                            ShooterConstants.downAngle.getRadians() * HoodConfig.ticksPerRadian, ControlType.kPosition);
+
+        Rotation2d angle = hoodPos == HoodPos.UP ? ShooterConstants.upAngle : ShooterConstants.downAngle;
+
+        hoodMotor
+                .getClosedLoopController()
+                .setSetpoint(angle.getRadians() * HoodConfig.ticksPerRadian, ControlType.kPosition);
     }
 
     public void shoot(AngularVelocity speed) {
@@ -89,8 +89,23 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    public enum HoodPos {
-        UP,
-        DOWN,
+    @Override
+    public void periodic() {
+
+        Logger.logSubsystem(ShooterConstants.subsystemName, this);
+
+        Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
+
+        Alerts.shooterDisconnected.set(!SparkUtils.isConnected(shootMotor));
+        Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
+        Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
+        Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
+
+        Logger.logSparkMotor(ShooterConstants.subsystemName, "hood", hoodMotor);
+
+        Alerts.hoodDisconnected.set(!SparkUtils.isConnected(hoodMotor));
+        Alerts.hoodOverheating.set(hoodMotor.getMotorTemperature() >= 80);
+        Alerts.hoodWarnings.set(SparkUtils.hasCriticalWarnings(hoodMotor.getWarnings()));
+        Alerts.hoodFaults.set(SparkUtils.hasCriticalFaults(hoodMotor.getFaults()));
     }
 }
