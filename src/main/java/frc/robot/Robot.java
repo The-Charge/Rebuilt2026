@@ -24,7 +24,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
 
-        Logger.logPDP(RobotContainer.getInstance().pdp);
+        // Logger.logPDP(RobotContainer.getInstance().pdp);
 
         Alerts.fmsConnected.set(DriverStation.isFMSAttached());
 

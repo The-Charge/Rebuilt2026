@@ -138,8 +138,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         double transStdDev = StdDevConstants.MegaTag2.kInitialValue;
 
-        if (poseEstimate.tagCount > 1)
-            transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
+        if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
         transStdDev += swerve.getRobotVelocity().vxMetersPerSecond * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
