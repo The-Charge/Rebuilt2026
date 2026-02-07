@@ -9,27 +9,27 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     public static Rotation2d downAngle;
 
     public static class ShootConfig {
-        public static int ID;
+        public static int ID = -1;
 
-        public static double p;
-        public static double i;
-        public static double d;
+        public static double p = 0;
+        public static double i = 0;
+        public static double d = 0;
 
-        public static boolean inverted;
-        public static int currentLimit;
-        public static IdleMode idleMode;
+        public static boolean inverted = false;
+        public static int currentLimit = 0;
+        public static IdleMode idleMode = IdleMode.kCoast;
     }
 
     public static class HoodConfig {
-        public static int ID;
+        public static int ID = 9;
 
-        public static double p;
-        public static double i;
-        public static double d;
+        public static double p = 0;
+        public static double i = 0;
+        public static double d = 0;
 
-        public static boolean inverted;
-        public static int currentLimit;
-        public static IdleMode idleMode;
+        public static boolean inverted = false;
+        public static int currentLimit = 0;
+        public static IdleMode idleMode = IdleMode.kBrake;
 
         public static double ticksPerRadian;
     }
