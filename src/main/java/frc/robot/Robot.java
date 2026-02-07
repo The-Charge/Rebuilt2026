@@ -236,7 +236,7 @@ public class Robot extends TimedRobot {
             hasPhaseChanged = true;
         }
 
-        if (hasZoneChanged || hasHubStateChanged && isInFriendlyZone) {
+        if ((hasZoneChanged || hasHubStateChanged) && isInFriendlyZone) {
             enterFriendlyZone(isHubActive);
         } else if (hasZoneChanged && isInNeutralZone) {
             enterNeutralZone();
@@ -341,7 +341,7 @@ public class Robot extends TimedRobot {
 
         if (currentDefault != null
                 && currentCommand != null
-                && currentDefault.getClass().equals(currentDefault.getClass())) {
+                && currentDefault.getClass().equals(currentCommand.getClass())) {
             currentCommand.cancel();
         }
         sub.setDefaultCommand(newDefault);
