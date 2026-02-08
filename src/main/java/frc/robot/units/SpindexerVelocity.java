@@ -23,7 +23,7 @@ public class SpindexerVelocity {
             return new SpindexerVelocity(0);
         }
 
-        return fromMotorRPM(vel.abs(Units.RPM));
+        return fromMotorRPM(vel.in(Units.RPM));
     }
 
     public static SpindexerVelocity fromMechanismRPM(double rpm) {
@@ -36,7 +36,7 @@ public class SpindexerVelocity {
             return new SpindexerVelocity(0);
         }
 
-        return fromMechanismRPM(vel.abs(Units.RPM));
+        return fromMechanismRPM(vel.in(Units.RPM));
     }
 
     public double getAsMotorRPM() {

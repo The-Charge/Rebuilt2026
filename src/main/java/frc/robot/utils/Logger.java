@@ -412,18 +412,18 @@ public class Logger {
         TalonFXFaults activeFaults = TalonFXUtils.getAllActiveFaults(motor);
         TalonFXFaults stickyFaults = TalonFXUtils.getAllStickyFaults(motor);
 
-        logDouble(table, "positionRots", motor.getPosition().getValue().abs(Units.Rotations));
-        logDouble(table, "velocityRPM", motor.getVelocity().getValue().abs(Units.RPM));
-        logDouble(table, "tempC", motor.getDeviceTemp().getValue().abs(Units.Celsius));
+        logDouble(table, "positionRots", motor.getPosition().getValue().in(Units.Rotations));
+        logDouble(table, "velocityRPM", motor.getVelocity().getValue().in(Units.RPM));
+        logDouble(table, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
         logDouble(table, "dutyCycle", motor.get());
-        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().abs(Units.Volts));
-        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().abs(Units.Volts));
+        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().in(Units.Volts));
+        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
         logBool(table, "hardStopForward", activeFaults.forwardHardLimit());
         logBool(table, "hardStopReverse", activeFaults.reverseHardLimit());
         logBool(table, "softStopForward", activeFaults.forwardSoftLimit());
         logBool(table, "softStopReverse", activeFaults.reverseSoftLimit());
-        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().abs(Units.Amps));
-        logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().abs(Units.Amps));
+        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
+        logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().in(Units.Amps));
         logEnum(table, "controlMode", motor.getControlMode().getValue());
         logDouble(table, "targetRots", motor.getClosedLoopReference().getValue().doubleValue());
         logBool(table, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);

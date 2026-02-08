@@ -16,7 +16,7 @@ public enum FieldZone {
             return NEUTRAL;
         }
 
-        double xInches = robotXPose.abs(Inches);
+        double xInches = robotXPose.in(Inches);
         /*
          * Numbers from field manual:
          * Blue alliance zone is from [0, 182.11)

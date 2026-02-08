@@ -106,7 +106,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().intake.stopRoller();
         RobotContainer.getInstance().climber.stopAll();
 
-        RobotContainer.getInstance().ledSub.setDefaultCommand(RobotContainer.getInstance().idleLEDCommand);
+        changeSubsystemDefaultCommand(RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand);
 
         ControllerUtil.cancelControllerRumbles(0);
         ControllerUtil.cancelControllerRumbles(1);
@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
 
-        RobotContainer.getInstance().ledSub.setDefaultCommand(RobotContainer.getInstance().idleLEDCommand);
+        changeSubsystemDefaultCommand(RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand);
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -197,8 +197,8 @@ public class Robot extends TimedRobot {
         boolean hasReachedPrePhaseChange = false;
         if (timeLeftInPhase.isPresent()) {
             double prevSecsLeft =
-                    lastTimeLeftInPhase.map((val) -> val.abs(Seconds)).orElse(140.0);
-            if (timeLeftInPhase.get().abs(Seconds) <= 3
+                    lastTimeLeftInPhase.map((val) -> val.in(Seconds)).orElse(140.0);
+            if (timeLeftInPhase.get().in(Seconds) <= 3
                     && prevSecsLeft > 3
                     && teleopPhase.get() != TeleopPhase.ENDGAME) {
                 hasReachedPrePhaseChange = true;
@@ -275,7 +275,7 @@ public class Robot extends TimedRobot {
         Logger.logDouble(
                 "",
                 "secsLeftInTeleopPhase",
-                timeLeftInPhase.map((val) -> val.abs(Seconds)).orElse(Double.NaN));
+                timeLeftInPhase.map((val) -> val.in(Seconds)).orElse(Double.NaN));
         Logger.logBool("", "isFriendlyHubActive", isHubActive);
 
         lastRobotPose = Optional.of(robotPose);
@@ -339,6 +339,7 @@ public class Robot extends TimedRobot {
         Command currentDefault = sub.getDefaultCommand();
         Command currentCommand = sub.getCurrentCommand();
 
+        // only cancel current command if it is the previous default command
         if (currentDefault != null
                 && currentCommand != null
                 && currentDefault.getClass().equals(currentCommand.getClass())) {
