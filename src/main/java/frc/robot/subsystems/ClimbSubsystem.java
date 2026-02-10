@@ -56,7 +56,7 @@ public class ClimbSubsystem extends SubsystemBase {
         Logger.logDouble(
                 ClimberConstants.subsystemName,
                 "motor/targetMotorRots",
-                motorTarget.map((val) -> val.asMotorRotations()).orElse(Double.NaN));
+                motorTarget.map(target -> target.asMotorRotations()).orElse(Double.NaN));
         Logger.logBool(
                 ClimberConstants.subsystemName,
                 "motor/isAtTarget",
@@ -85,6 +85,7 @@ public class ClimbSubsystem extends SubsystemBase {
         return ClimberPosition.fromMotorRotations(motor.getPosition().getValue().abs(Units.Rotations));
     }
 
+    // Returns empty if there is no set motor target
     public Optional<Boolean> isMotorAtTarget() {
         if (motorTarget.isEmpty()) return Optional.empty();
 
