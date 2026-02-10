@@ -30,23 +30,26 @@ public class Alerts {
         criticalBattery.set(false);
 
         turretDisconnected = new Alert(
-                String.format("Missing connection to turret motor (CAN %d)", TurretConstants.turretId),
+                String.format("Missing connection to turret motor (CAN %d)", TurretConstants.Spin.motorID),
                 AlertType.kError);
         turretDisconnected.set(false);
 
         turretOverheating = new Alert(
-                String.format("Turret motor (CAN %d) is overheating", TurretConstants.turretId), AlertType.kWarning);
+                String.format("Turret motor (CAN %d) is overheating", TurretConstants.Spin.motorID),
+                AlertType.kWarning);
         turretOverheating.set(false);
 
         turretWarnings = new Alert(
                 String.format(
-                        "Potentially critical warnings are active on turret motor (CAN %d)", TurretConstants.turretId),
+                        "Potentially critical warnings are active on turret motor (CAN %d)",
+                        TurretConstants.Spin.motorID),
                 AlertType.kWarning);
         turretWarnings.set(false);
 
         turretFaults = new Alert(
                 String.format(
-                        "Potentially critical faults are active on turret motor (CAN %d)", TurretConstants.turretId),
+                        "Potentially critical faults are active on turret motor (CAN %d)",
+                        TurretConstants.Spin.motorID),
                 AlertType.kWarning);
         turretFaults.set(false);
 
