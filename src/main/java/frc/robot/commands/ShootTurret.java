@@ -5,18 +5,14 @@ import static edu.wpi.first.units.Units.RPM;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.TurretSubsystem;
 
 public class ShootTurret extends Command {
-    private TurretSubsystem turretSub;
-    private ShooterSubsystem shooterSub;
+    private final ShooterSubsystem shooterSub;
 
-    public ShootTurret(TurretSubsystem turretSubsystem, ShooterSubsystem shooterSubsystem) {
-        this.turretSub = turretSubsystem;
-        this.shooterSub = shooterSubsystem;
+    public ShootTurret(ShooterSubsystem shooterSubsystem) {
+        shooterSub = shooterSubsystem;
 
-        addRequirements(turretSubsystem);
-        addRequirements(shooterSubsystem);
+        addRequirements(shooterSub);
     }
 
     @Override

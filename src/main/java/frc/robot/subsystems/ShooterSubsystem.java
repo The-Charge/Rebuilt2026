@@ -19,11 +19,12 @@ import frc.robot.constants.ShooterConstants.ShootConfig;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
+import java.util.Optional;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final SparkFlex shootMotor;
     // private final Servo hood; // this will likely be a motor, not a servo
-    private SparkMax hoodMotor;
+    private final SparkMax hoodMotor;
 
     public enum HoodPos {
         UP,
@@ -68,11 +69,24 @@ public class ShooterSubsystem extends SubsystemBase {
 
         SparkFlexConfig shootConfig = new SparkFlexConfig();
 
-        shootConfig.closedLoop.pid(ShootConfig.p, ShootConfig.i, ShootConfig.d);
+        SparkUtils.configureBasicSettings(
+                shootConfig,
+                ShootConfig.currentLimit,
+                ShootConfig.idleMode,
+                ShootConfig.inverted,
+                ShootConfig.maxDutyCycle,
+                Optional.empty());
 
-        shootConfig.idleMode(ShootConfig.idleMode);
-        shootConfig.smartCurrentLimit(ShootConfig.currentLimit);
-        shootConfig.inverted(ShootConfig.inverted);
+        SparkUtils.configureClosedLoopSettings(
+                shootConfig,
+                ShootConfig.p,
+                ShootConfig.i,
+                ShootConfig.d,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
 
         shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

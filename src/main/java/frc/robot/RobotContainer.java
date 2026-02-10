@@ -47,7 +47,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        commandDriver1.x().onTrue(new ShootTurret(turretSub, shootSub));
+        commandDriver1.x().onTrue(new ShootTurret(shootSub));
     }
 
     public Command getAutonomousCommand() {
