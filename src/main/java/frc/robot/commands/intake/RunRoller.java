@@ -5,7 +5,7 @@ import frc.robot.constants.IntakeConstants;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class RunRoller extends Command {
-    private IntakeSubsystem intake;
+    private final IntakeSubsystem intake;
 
     public RunRoller(IntakeSubsystem intake) {
         this.intake = intake;

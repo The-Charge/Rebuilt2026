@@ -18,10 +18,10 @@ import frc.robot.utils.SparkUtils;
 import java.util.Optional;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private SparkMax rollerMotor;
+    private final SparkMax rollerMotor;
 
-    private ServoHub deployerServoHub;
-    private ServoChannel deployerServoChannel;
+    private final ServoHub deployerServoHub;
+    private final ServoChannel deployerServoChannel;
 
     private boolean deployed;
 

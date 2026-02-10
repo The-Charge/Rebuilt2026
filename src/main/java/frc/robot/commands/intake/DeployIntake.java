@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class DeployIntake extends Command {
-    private IntakeSubsystem intake;
+    private final IntakeSubsystem intake;
 
     public DeployIntake(IntakeSubsystem intake) {
         this.intake = intake;
