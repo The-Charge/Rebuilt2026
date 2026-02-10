@@ -39,10 +39,25 @@ public class TurretSubsystem extends SubsystemBase {
 
     private void configureMotor() {
         SparkMaxConfig config = new SparkMaxConfig();
-        config.closedLoop.pid(TurretConstants.kP, TurretConstants.kI, TurretConstants.kD);
-        config.idleMode(TurretConstants.idleMode);
-        config.smartCurrentLimit(TurretConstants.currentLimit);
-        config.inverted(TurretConstants.inverted);
+
+        SparkUtils.configureBasicSettings(
+                config,
+                TurretConstants.currentLimit,
+                TurretConstants.idleMode,
+                TurretConstants.inverted,
+                TurretConstants.maxDutyCycle,
+                TurretConstants.nominalVoltage);
+
+        SparkUtils.configureClosedLoopSettings(
+                config,
+                TurretConstants.kP,
+                TurretConstants.kP,
+                TurretConstants.kD,
+                TurretConstants.kStaticG,
+                TurretConstants.kCos,
+                TurretConstants.kS,
+                TurretConstants.kV,
+                TurretConstants.kA);
 
         turretMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }

@@ -19,7 +19,6 @@ import frc.robot.constants.ShooterConstants.ShootConfig;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
-import java.util.Optional;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final SparkFlex shootMotor;
@@ -75,23 +74,24 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShootConfig.idleMode,
                 ShootConfig.inverted,
                 ShootConfig.maxDutyCycle,
-                Optional.empty());
+                ShootConfig.nominalVoltage);
 
         SparkUtils.configureClosedLoopSettings(
                 shootConfig,
-                ShootConfig.p,
-                ShootConfig.i,
-                ShootConfig.d,
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty());
+                ShootConfig.kP,
+                ShootConfig.kI,
+                ShootConfig.kD,
+                ShootConfig.kStaticG,
+                ShootConfig.kCos,
+                ShootConfig.kS,
+                ShootConfig.kV,
+                ShootConfig.kA);
 
         shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // hood
 
+        // I'm not going to configure this properly yet as I don't know if we will even have a motor for this
         SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
         hoodConfig.closedLoop.pid(HoodConfig.p, HoodConfig.i, HoodConfig.d);
