@@ -30,7 +30,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     }
 
     public static class HoodConfig {
-        public static int ID = 9;
+        public static int ID = 1000;
 
         public static double p = 0;
         public static double i = 0;

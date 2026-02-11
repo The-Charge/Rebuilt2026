@@ -55,6 +55,7 @@ public class LimelightSubsystem extends SubsystemBase {
             //         i.fiducialID + "# tag", i.getTargetPose_CameraSpace().getY());
             if (i.fiducialID == id) {
                 ret = Optional.of(i.getTargetPose_CameraSpace());
+                SmartDashboard.putNumber("ret", Math.atan2(ret.get().getY(), ret.get().getX()));
             }
         }
         return ret;

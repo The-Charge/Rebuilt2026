@@ -44,7 +44,7 @@ public class RobotContainer {
     public final XboxController hidDriver1, hidDriver2;
 
     public final TurretSubsystem turretSub;
-    public final ShooterSubsystem shootSub;
+    // public final ShooterSubsystem shootSub;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -56,7 +56,7 @@ public class RobotContainer {
 
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
         turretSub = new TurretSubsystem();
-        shootSub = new ShooterSubsystem();
+        // shootSub = new ShooterSubsystem();
 
         // teleopDrive = new TeleopDrive(
         //         swerve,
@@ -77,7 +77,7 @@ public class RobotContainer {
     private void configureBindings() {
         commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight));
         CommandScheduler.getInstance().schedule(new LimelightCommand(funnellimelight, swerve));
-        commandDriver1.x().onTrue(new ShootTurret(shootSub, funnellimelight));
+        // commandDriver1.x().onTrue(new ShootTurret(shootSub, funnellimelight));
     }
 
     public Command getAutonomousCommand() {
