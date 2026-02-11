@@ -37,13 +37,14 @@ public class RobotContainer {
     // private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
     private final LimelightSubsystem funnellimelight;
     // private TeleopDrive teleopDrive;
-    public final TurretSubsystem turret;
-    public final ShooterSubsystem shooter;
 
     public final PowerDistribution pdp;
 
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
+
+    public final TurretSubsystem turretSub;
+    public final ShooterSubsystem shootSub;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -54,9 +55,9 @@ public class RobotContainer {
         hidDriver2 = commandDriver2.getHID();
 
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
-        shooter = new ShooterSubsystem();
+        turretSub = new TurretSubsystem();
+        shootSub = new ShooterSubsystem();
 
-        turret = new TurretSubsystem();
         // teleopDrive = new TeleopDrive(
         //         swerve,
         //         () -> -MathUtil.applyDeadband(hidDriver1.getLeftY(), SwerveConstants.LEFT_Y_DEADBAND),
@@ -74,11 +75,9 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        // commandDriver1.x().onTrue(new AlignTurret(turret, swerve, funnellimelight));
-        // commandDriver1.x().onTrue(new ShootTurret(shooter, funnellimelight));
+        commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight));
         CommandScheduler.getInstance().schedule(new LimelightCommand(funnellimelight, swerve));
-        commandDriver1.x().onTrue(new PointAtPose(turret, swerve, FieldConstants.blueAllianceLeft));
-        commandDriver1.b().onTrue(new PointAtPose(turret, swerve, FieldConstants.blueAllianceRight));
+        commandDriver1.x().onTrue(new ShootTurret(shootSub, funnellimelight));
     }
 
     public Command getAutonomousCommand() {

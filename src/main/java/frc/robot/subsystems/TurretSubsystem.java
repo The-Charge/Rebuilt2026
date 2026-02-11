@@ -8,16 +8,15 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import java.util.Optional;
 
 // shoot angle, turret
 public class TurretSubsystem extends SubsystemBase {
-    private final SparkMax turret;
     // private final SparkFlex shooter;
     // private final Servo hood;
 
@@ -25,17 +24,19 @@ public class TurretSubsystem extends SubsystemBase {
     private Optional<Rotation2d> targetAngle;
 
     public TurretSubsystem() {
-        turret = new SparkMax(TurretConstants.Spin.motorID, MotorType.kBrushless); // port number under IndexerConstants
-        SparkMaxConfig spindexerConfig = new SparkMaxConfig();
+        turretMotor =
+                new SparkMax(TurretConstants.Spin.motorID, MotorType.kBrushless); // port number under IndexerConstants
+        SparkMaxConfig turretConfig = new SparkMaxConfig();
+
         SparkUtils.configureBasicSettings(
-                spindexerConfig,
+                turretConfig,
                 TurretConstants.Spin.maxCurrent,
                 TurretConstants.Spin.idleMode,
                 TurretConstants.Spin.inverted,
                 TurretConstants.Spin.maxDutyCycle,
                 TurretConstants.Spin.nominalVoltage);
         SparkUtils.configureClosedLoopSettings(
-                spindexerConfig,
+                turretConfig,
                 TurretConstants.Spin.kP,
                 TurretConstants.Spin.kI,
                 TurretConstants.Spin.kD,
@@ -44,9 +45,10 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.Spin.kS,
                 TurretConstants.Spin.kV,
                 TurretConstants.Spin.kA);
-        if (turret.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+
+        if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure spindexer motor");
+            Logger.reportError("Failed to configure turret motor");
             // Alerts.spindexerConfigFail.set(true);
         }
 
@@ -56,16 +58,7 @@ public class TurretSubsystem extends SubsystemBase {
         // hood = new Servo(TurretConstants.hoodChannel);
     }
 
-    @Override
-    public void periodic() {
-        Logger.logSparkMotor("Turret", "angleing", turret);
-        if (targetAngle.isPresent()) {
-            SmartDashboard.putNumber("target rotation", targetAngle.get().getRadians());
-        }
-        SmartDashboard.putNumber("turret rotation", getTurretRawAngle().getRadians());
-    }
-
-    public void setTurretAngleRobotRelative(Rotation2d angle) {
+    public void setTurretAngle(Rotation2d angle) {
         if (angle == null) {
             Logger.reportWarning("Cannot set spindexer velocity to a null velocity", true);
             return;
@@ -74,19 +67,33 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.of(angle);
 
         double request = angle.plus(offset).getRadians() * 10;
-        turret.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
+        turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
+    private final SparkMax turretMotor;
+
     public void stop() {
-        turret.set(0);
+        turretMotor.set(0);
     }
 
     public Rotation2d getTurretRawAngle() {
         // return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
-        return new Rotation2d(turret.getEncoder().getPosition());
+        return new Rotation2d(turretMotor.getEncoder().getPosition());
     }
 
     public Optional<Rotation2d> getTargetAngle() {
         return targetAngle;
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(TurretConstants.subsystemName, this);
+
+        Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
+
+        Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
+        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
     }
 }
