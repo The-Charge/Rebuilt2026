@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
@@ -79,6 +80,7 @@ public class RobotContainer {
         ledSub.setDefaultCommand(idleLEDCommand);
 
         configureBindings();
+        addNamedCommands();
     }
 
     private void configureBindings() {
@@ -89,6 +91,14 @@ public class RobotContainer {
                         new RunRoller(intake), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
+    }
+
+    private void addNamedCommands() {
+        NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
+        NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
+        NamedCommands.registerCommand("PrepShooter", Commands.print("PrepShooter Command not implemented"));
+        NamedCommands.registerCommand("Shoot", Commands.print("Shoot Command not implemented"));
+        NamedCommands.registerCommand("HaltShooter", Commands.print("HaltShooter COmmand not implemented"));
     }
 
     public Command getAutonomousCommand() {
