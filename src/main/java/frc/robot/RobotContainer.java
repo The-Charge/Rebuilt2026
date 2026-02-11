@@ -4,17 +4,21 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.FeetPerSecond;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Pounds;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PathFollowingController;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -42,6 +46,8 @@ import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.utils.AutoDisplayHelper;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 
 public class RobotContainer {
@@ -99,7 +105,6 @@ public class RobotContainer {
 
         configureBindings();
         configureAutonomous();
-        SmartDashboard.putData("Field", new Field2d());
         addNamedCommands();
     }
 
@@ -126,41 +131,32 @@ public class RobotContainer {
     }
 
     private void configureAutonomous() {
+        // TODO: add pathplanner configs to swerve
+        RobotConfig config;
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            Logger.reportWarning("Failed to load pathplanner gui settings.json", false);
+            config = new RobotConfig(
+                    Pounds.of(115),
+                    KilogramSquareMeters.of(3),
+                    new ModuleConfig(Inches.of(2), FeetPerSecond.of(14), 0, null, Amps.of(60), 4));
+        }
+
         AutoBuilder.configure(
                 () -> new Pose2d(),
                 pose -> {},
                 () -> new ChassisSpeeds(),
                 (ChassisSpeeds cs, DriveFeedforwards dff) -> {},
-                new PathFollowingController() {
-                    @Override
-                    public boolean isHolonomic() {
-                        // TODO Auto-generated method stub
-                        return false;
-                    }
-
-                    @Override
-                    public void reset(Pose2d currentPose, ChassisSpeeds currentSpeeds) {
-                        // TODO Auto-generated method stub
-
-                    }
-
-                    @Override
-                    public ChassisSpeeds calculateRobotRelativeSpeeds(
-                            Pose2d currentPose, PathPlannerTrajectoryState targetState) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
-                },
-                new RobotConfig(
-                        10, 10, new ModuleConfig(3, 3, 3, new DCMotor(0, 0, 0, 0, 0, 0), 3, 4), new Translation2d[] {
-                            new Translation2d(), new Translation2d(), new Translation2d(), new Translation2d()
-                        }),
+                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+                config,
                 () -> false); // fix this with real swerve stuff
 
         autoChooser = AutoBuilder.buildAutoChooser();
         setupAutoDisplay();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
+        SmartDashboard.putData("Field", new Field2d());
     }
 
     private void setupAutoDisplay() {
