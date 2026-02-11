@@ -33,4 +33,9 @@ public class SwerveSubsystem {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addvisionmeasuremant'");
     }
+
+    public void addVisionReading(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addVisionReading'");
+    }
 }

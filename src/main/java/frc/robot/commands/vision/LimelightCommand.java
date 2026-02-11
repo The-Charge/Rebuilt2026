@@ -2,6 +2,7 @@ package frc.robot.commands.vision;
 
 import java.util.Optional;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
@@ -24,7 +25,8 @@ public class LimelightCommand extends Command {
         Optional<VisionMeasurement> visionEstimateOptional = limelightSub.getVisionMeasurement(swerve);
         if (visionEstimateOptional.isEmpty()) return;
         VisionMeasurement visionEstimate = visionEstimateOptional.get();
-        swerve.addvisionmeasuremant(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        SmartDashboard.putNumber("limelight x pose", visionEstimate.pose().getX());
+        swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
     @Override

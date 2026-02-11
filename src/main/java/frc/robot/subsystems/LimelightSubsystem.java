@@ -13,6 +13,8 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.constants.LimelightConstants;
@@ -28,6 +30,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.ll_name = "limelight-" + name;
         setCameraOffset(cameraOffset);
     }
+
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 ll_name,
@@ -37,6 +40,18 @@ public class LimelightSubsystem extends SubsystemBase {
                 Degrees.convertFrom(cameraOffset.getRotation().getX(), Radians),
                 Degrees.convertFrom(cameraOffset.getRotation().getY(), Radians),
                 Degrees.convertFrom(cameraOffset.getRotation().getZ(), Radians));
+    }
+
+    public Optional<Pose3d> getTransformToTag(int id) {
+        LimelightResults results = LimelightHelpers.getLatestResults(ll_name);
+        var fiducials = results.targets_Fiducials;
+        Optional<Pose3d> transform = Optional.empty();
+        for (LimelightTarget_Fiducial i : fiducials) {
+            if (i.fiducialID == id) {
+                transform = Optional.of(i.getTargetPose_CameraSpace());
+            }
+        }
+        return transform;
     }
 
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
@@ -120,6 +135,4 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-
-
 }
