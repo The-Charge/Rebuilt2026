@@ -45,7 +45,7 @@ public class AlignTurret extends Command {
         } else {
             return; // don't use swerve for testing
 
-            // Pose2d poseEstimate = ssub.getPose(); // maybe we could get position from limelights instead
+            // Pose2d poseEstimate = ssub.getPose();
 
             // // Get Pose2d that points from robot to hub (hub vector - robot vector)
             // robotToHub = (isRed ? FieldConstants.redHubPos : FieldConstants.blueHubPos).minus(poseEstimate);
@@ -55,7 +55,7 @@ public class AlignTurret extends Command {
         Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
 
         SmartDashboard.putNumber("rotation given to turret", rotationToHub.getRadians());
-        tsub.setTurretAngleRobotRelative(rotationToHub.plus(new Rotation2d(Math.PI)));
+        tsub.setTurretAngle(rotationToHub.plus(new Rotation2d(Math.PI)));
     }
 
     @Override

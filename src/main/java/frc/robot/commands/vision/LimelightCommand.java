@@ -18,7 +18,10 @@ public class LimelightCommand extends Command {
     }
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+        // SmartDashboard.putNumber("Swerve X", 0);
+        // SmartDashboard.putNumber("Swerve Y", 0);
+    }
 
     @Override
     public void execute() {
@@ -31,6 +34,13 @@ public class LimelightCommand extends Command {
         if (transformers.isPresent()) {
             SmartDashboard.putString("X pose to tag 20", "" + transformers.get().getX());
         }
+
+        // swerve.addVisionReading(
+        //         new Pose2d(
+        //                 SmartDashboard.getNumber("Swerve X", 0),
+        //                 SmartDashboard.getNumber("Swerve Y", 0),
+        //                 new Rotation2d()),
+        //         visionEstimate.timestamp());
     }
 
     @Override

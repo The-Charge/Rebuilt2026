@@ -26,8 +26,8 @@ public class PointAtPose extends Command {
     public void execute() {
         Pose2d robotPose = swerve.getPose();
         Transform2d vectorDifference = pose.minus(robotPose);
-        double angleFieldRelative = Math.atan2(vectorDifference.getY(), vectorDifference.getY());
-        turret.setTurretAngleRobotRelative(new Rotation2d(angleFieldRelative).plus(robotPose.getRotation()));
+        double angleFieldRelative = Math.atan2(vectorDifference.getY(), vectorDifference.getX());
+        turret.setTurretAngle(new Rotation2d(angleFieldRelative).plus(robotPose.getRotation()));
     }
 
     @Override
