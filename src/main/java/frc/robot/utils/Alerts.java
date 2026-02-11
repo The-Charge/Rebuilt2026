@@ -8,7 +8,7 @@ import frc.robot.constants.IntakeConstants.Servo;
 public class Alerts {
 
     public static final Alert driver1Missing, driver2Missing, fmsConnected, lowBattery, criticalBattery;
-    public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
+    public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerStickyFaults;
     public static final Alert servoDisconnected, servoFaults, servoWarnings;
 
     static {
@@ -44,10 +44,10 @@ public class Alerts {
                 AlertType.kWarning);
         rollerFaults.set(false);
 
-        rollerWarnings = new Alert(
-                String.format("Potentially critical warnings are active on roller motor (CAN %d)", Roller.motorID),
+        rollerStickyFaults = new Alert(
+                String.format("Potentially critical sticky faults are active on roller motor (CAN %d)", Roller.motorID),
                 AlertType.kWarning);
-        rollerWarnings.set(false);
+        rollerStickyFaults.set(false);
 
         servoDisconnected =
                 new Alert(String.format("Missing connection to servo hub (CAN %d)", Servo.servoID), AlertType.kError);

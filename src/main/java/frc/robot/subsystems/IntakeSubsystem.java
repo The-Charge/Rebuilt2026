@@ -1,24 +1,23 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
+import static edu.wpi.first.units.Units.Celsius;
+
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.servohub.ServoChannel;
 import com.revrobotics.servohub.ServoHub;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.ServoUtils;
-import frc.robot.utils.SparkUtils;
+import frc.robot.utils.TalonFXUtils;
 import java.util.Optional;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final SparkMax rollerMotor;
+    private final TalonFX rollerMotor;
 
     private final ServoHub deployerServoHub;
     private final ServoChannel deployerServoChannel;
@@ -26,7 +25,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private boolean deployed;
 
     public IntakeSubsystem() {
-        rollerMotor = new SparkMax(IntakeConstants.Roller.motorID, MotorType.kBrushless);
+        rollerMotor = new TalonFX(IntakeConstants.Roller.motorID);
 
         deployed = false;
 
@@ -53,18 +52,17 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     private void configureRollerMotor() {
-        SparkMaxConfig motorConfig = new SparkMaxConfig();
+        TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-        SparkUtils.configureBasicSettings(
+        TalonFXUtils.configureBasicSettings(
                 motorConfig,
                 Roller.currentLimit,
-                Roller.idleMode,
+                Roller.neutralMode,
                 Roller.inverted,
                 Roller.maxDutyCycle,
-                Roller.nominalVoltage);
+                Roller.voltageLimit);
 
-        if (rollerMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
+        if (rollerMotor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
             Logger.reportError("Failed to configure roller motor");
             Alerts.rollerConfigFail.set(true);
         }
@@ -77,14 +75,15 @@ public class IntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(IntakeConstants.name, this);
-        Logger.logSparkMotor(IntakeConstants.name, "Roller", rollerMotor);
+        Logger.logTalonFX(IntakeConstants.name, "Roller", rollerMotor);
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
         Logger.logServoHub(IntakeConstants.name, "ServoHub", deployerServoHub, Optional.empty());
 
-        Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
-        Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
-        Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
-        Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
+        Alerts.rollerDisconnected.set(!rollerMotor.isConnected());
+        Alerts.rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().abs(Celsius) >= Roller.overheatingTemp);
+        Alerts.rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
+        Alerts.rollerStickyFaults.set(
+                TalonFXUtils.getAllStickyFaults(rollerMotor).hasCriticalFaults());
 
         Alerts.servoDisconnected.set(!ServoUtils.isConnected(deployerServoHub));
         Alerts.servoFaults.set(ServoUtils.hasCriticalFaults(deployerServoHub.getFaults()));
