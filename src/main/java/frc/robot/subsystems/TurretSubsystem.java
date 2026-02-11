@@ -20,7 +20,7 @@ public class TurretSubsystem extends SubsystemBase {
     // private final SparkFlex shooter;
     // private final Servo hood;
 
-    private Rotation2d offset = new Rotation2d();
+    private Rotation2d offset = new Rotation2d(Math.PI);
     private Optional<Rotation2d> targetAngle;
 
     public TurretSubsystem() {
@@ -66,7 +66,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        double request = angle.getRadians();
+        double request = angle.plus(offset).getRadians() * 10;
         turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
@@ -76,9 +76,9 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.set(0);
     }
 
-    public Rotation2d getTurretAngle() {
-        return new Rotation2d(turretMotor.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick)
-                .plus(offset);
+    public Rotation2d getTurretRawAngle() {
+        // return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
+        return new Rotation2d(turretMotor.getEncoder().getPosition());
     }
 
     public Optional<Rotation2d> getTargetAngle() {

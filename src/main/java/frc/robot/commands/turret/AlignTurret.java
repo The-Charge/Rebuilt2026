@@ -1,4 +1,4 @@
-package frc.robot.commands.vision;
+package frc.robot.commands.turret;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -45,7 +45,7 @@ public class AlignTurret extends Command {
         } else {
             return; // don't use swerve for testing
 
-            // Pose2d poseEstimate = ssub.getPose(); // maybe we could get position from limelights instead
+            // Pose2d poseEstimate = ssub.getPose();
 
             // // Get Pose2d that points from robot to hub (hub vector - robot vector)
             // robotToHub = (isRed ? FieldConstants.redHubPos : FieldConstants.blueHubPos).minus(poseEstimate);

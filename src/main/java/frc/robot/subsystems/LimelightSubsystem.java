@@ -74,8 +74,8 @@ public class LimelightSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("twoOrMoreTags", twoOrMoreTags);
         SmartDashboard.putBoolean("closeEnough", closeEnough);
         SmartDashboard.putBoolean("robotSpeed", movingSlowEnough);
-        // final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
-        final boolean CAN_GET_GOOD_HEADING = closeEnough;
+        final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
+        // final boolean CAN_GET_GOOD_HEADING = closeEnough;
         // if (!CAN_GET_GOOD_HEADING) return Optional.empty();
         if (CAN_GET_GOOD_HEADING) useMegaTag2 = false;
 
