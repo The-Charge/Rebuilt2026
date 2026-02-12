@@ -27,6 +27,7 @@ import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 
 public class RobotContainer {
     // singleton instance
@@ -38,6 +39,7 @@ public class RobotContainer {
         return instance;
     }
 
+    public final SwerveSubsystem swerveSubsystem;
     public final PowerDistribution pdp;
 
     public final CommandXboxController commandDriver1, commandDriver2;
@@ -76,6 +78,7 @@ public class RobotContainer {
         idleLEDCommand = new IdleLED(ledSub);
         spinUpIndexerCommand = new SpinUpIndexer(indexer, false);
         spinDownIndexerCommand = new SpinDownIndexer(indexer);
+        swerveSubsystem = new SwerveSubsystem();
 
         ledSub.setDefaultCommand(idleLEDCommand);
 
