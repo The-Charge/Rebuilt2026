@@ -107,7 +107,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().intake.stopRoller();
         RobotContainer.getInstance().climber.stopAll();
 
-        changeSubsystemDefaultCommand(RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand);
+        changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);
 
         ControllerUtil.cancelControllerRumbles(0);
         ControllerUtil.cancelControllerRumbles(1);
@@ -123,7 +124,8 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
 
-        changeSubsystemDefaultCommand(RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand);
+        changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -293,7 +295,8 @@ public class Robot extends TimedRobot {
                 RobotContainer.getInstance().ledSub,
                 isHubActive
                         ? RobotContainer.getInstance().activeFriendlyZoneLEDCommand
-                        : RobotContainer.getInstance().inactiveFriendlyZoneLEDCommand);
+                        : RobotContainer.getInstance().inactiveFriendlyZoneLEDCommand,
+                false);
 
         // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinUpIndexerCommand);
         // TODO: aim turret at hub
@@ -301,7 +304,7 @@ public class Robot extends TimedRobot {
 
     private void enterNeutralZone() {
         changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().neutralZoneLEDCommand);
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().neutralZoneLEDCommand, false);
 
         // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinDownIndexerCommand);
         // TODO: aim turret at nearest gap to friendly alliance zone
@@ -309,7 +312,7 @@ public class Robot extends TimedRobot {
 
     private void enterOpposingZone() {
         changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().opposingZoneLEDCommand);
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().opposingZoneLEDCommand, false);
 
         // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinDownIndexerCommand);
         // TODO: recenter turret
@@ -337,17 +340,19 @@ public class Robot extends TimedRobot {
         }
     }
 
-    private void changeSubsystemDefaultCommand(Subsystem sub, Command newDefault) {
+    private void changeSubsystemDefaultCommand(Subsystem sub, Command newDefault, boolean force) {
         if (sub == null) return;
 
         Command currentDefault = sub.getDefaultCommand();
         Command currentCommand = sub.getCurrentCommand();
 
-        // only cancel current command if it is the previous default command
-        if (currentDefault != null
-                && currentCommand != null
-                && currentDefault.getClass().equals(currentCommand.getClass())) {
-            currentCommand.cancel();
+        if (currentCommand != null) {
+            if (force) {
+                currentCommand.cancel();
+            } else if (currentDefault != null && currentDefault.getClass().equals(currentCommand.getClass())) {
+                // only cancel current command if it is the previous default command
+                currentCommand.cancel();
+            }
         }
         sub.setDefaultCommand(newDefault);
     }

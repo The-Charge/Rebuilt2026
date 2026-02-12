@@ -13,9 +13,10 @@ public class DualBlinkLED extends Command {
     private final Color color1, color2;
     private final Optional<Time> expiration;
 
-    private Timer timer;
+    private Timer blinkTimer;
     private int blinkIncrement;
     private int lastBlinkIncrement;
+    private Timer endTimer;
 
     public DualBlinkLED(LEDSubsystem LEDSubsystem, Color col1, Color col2) {
         ledSub = LEDSubsystem;
@@ -37,15 +38,18 @@ public class DualBlinkLED extends Command {
 
     @Override
     public void initialize() {
-        timer = new Timer();
-        timer.start();
+        blinkTimer = new Timer();
+        blinkTimer.start();
         blinkIncrement = 0;
         lastBlinkIncrement = -1;
+
+        endTimer = new Timer();
+        endTimer.start();
     }
 
     @Override
     public void execute() {
-        while (timer.advanceIfElapsed(1.0 / 6)) blinkIncrement++;
+        while (blinkTimer.advanceIfElapsed(1.0 / 6)) blinkIncrement++;
 
         if (blinkIncrement != lastBlinkIncrement) {
             if (blinkIncrement % 2 == 0) {
@@ -67,7 +71,7 @@ public class DualBlinkLED extends Command {
     public boolean isFinished() {
         if (expiration.isEmpty()) return false;
 
-        return timer.hasElapsed(expiration.get());
+        return endTimer.hasElapsed(expiration.get());
     }
 
     @Override
