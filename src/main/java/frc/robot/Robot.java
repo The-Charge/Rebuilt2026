@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -56,7 +57,8 @@ public class Robot extends TimedRobot {
 
             Logger.reportWarning(String.format("Lost connection to CAN device %d", id), false);
             CommandScheduler.getInstance()
-                    .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2)));
+                    .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2))
+                            .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         });
 
         lastRobotPose = Optional.empty();
@@ -99,6 +101,7 @@ public class Robot extends TimedRobot {
                 "",
                 "autoWinningAlliance",
                 autoWinner.map((val) -> val.toString()).orElse("None"));
+        Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
     }
 
     @Override
@@ -177,6 +180,8 @@ public class Robot extends TimedRobot {
         if (autoWinner == null || autoWinner.isEmpty()) {
             // https://docs.wpilib.org/en/stable/docs/yearly-overview/2026-game-data.html
             String gameMessage = DriverStation.getGameSpecificMessage();
+            Logger.logString("", "gameSpecificMessage", gameMessage);
+
             if (gameMessage != null && !gameMessage.isEmpty()) {
                 if (gameMessage.charAt(0) == 'R') {
                     autoWinner = Optional.of(Alliance.Red);
