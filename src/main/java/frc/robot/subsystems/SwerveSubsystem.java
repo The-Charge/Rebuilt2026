@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.measure.MutAngularVelocity;
 
 public class SwerveSubsystem {
 
@@ -14,7 +13,7 @@ public class SwerveSubsystem {
         throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
     }
 
-    public MutAngularVelocity getAngularVelocity() {
+    public double getAngularVelocity() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getAngularVelocity'");
     }

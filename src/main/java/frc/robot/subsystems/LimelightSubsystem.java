@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -9,7 +12,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
@@ -22,18 +24,18 @@ import frc.robot.constants.LimelightConstants.StdDevConstants;
 import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
-    private final String ll_name;
+    private final String cameraName;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
-        this.ll_name = "limelight-" + name;
+        this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
     }
 
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
-                ll_name,
+                cameraName,
                 cameraOffset.getX(),
                 cameraOffset.getY(),
                 cameraOffset.getZ(),
@@ -43,26 +45,36 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public Optional<Pose3d> getTransformToTag(int id) {
-        LimelightResults results = LimelightHelpers.getLatestResults(ll_name);
-        var fiducials = results.targets_Fiducials;
-        Optional<Pose3d> transform = Optional.empty();
-        for (LimelightTarget_Fiducial i : fiducials) {
-            if (i.fiducialID == id) {
-                transform = Optional.of(i.getTargetPose_CameraSpace());
+        LimelightResults results = LimelightHelpers.getLatestResults(cameraName);
+        LimelightTarget_Fiducial[] targetFiducials = results.targets_Fiducials;
+
+        for (LimelightTarget_Fiducial targetFiducial : targetFiducials) {
+            if (targetFiducial.fiducialID == id) {
+                Pose3d pose = targetFiducial.getTargetPose_CameraSpace();
+                SmartDashboard.putNumber("ret", Math.atan2(pose.getY(), pose.getX()));
+                return Optional.of(pose);
             }
         }
-        return transform;
+
+        return Optional.empty();
     }
 
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
         boolean useMegaTag2 = true;
-        final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll_name);
+        final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
-        if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance) return Optional.empty();
+
+        if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance.in(Meters)) return Optional.empty();
+
         final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
-        final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1;
+        final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1.in(Meters);
         final double robotSpeed = swerve.getSpeed(); // get swerve speed from ctre
-        final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1;
+        final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1.in(MetersPerSecond);
+
+        SmartDashboard.putBoolean("twoOrMoreTags", twoOrMoreTags);
+        SmartDashboard.putBoolean("closeEnough", closeEnough);
+        SmartDashboard.putBoolean("robotSpeed", movingSlowEnough);
+
         final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
         if (!CAN_GET_GOOD_HEADING) return Optional.empty();
         if (CAN_GET_GOOD_HEADING) useMegaTag2 = false;
@@ -72,14 +84,16 @@ public class LimelightSubsystem extends SubsystemBase {
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
         PoseEstimate poseEstimate;
         Optional<Matrix<N3, N1>> stdDevs;
+
         if (!useMegaTag2) {
-            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll_name);
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
             stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         } else {
-            LimelightHelpers.SetRobotOrientation(ll_name, swerve.getHeading().getDegrees(), 0, 0, 0, 0, 0);
-            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll_name);
+            LimelightHelpers.SetRobotOrientation(cameraName, swerve.getHeading().getDegrees(), 0, 0, 0, 0, 0);
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
             stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         }
+
         if (stdDevs.isEmpty()) {
             return Optional.empty();
         } else {
@@ -90,36 +104,45 @@ public class LimelightSubsystem extends SubsystemBase {
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
             LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
-        double transStdDev = StdDevConstants.MegaTag1.kInitialValue;
+
+        double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
 
         if (poseEstimate.tagCount == 1
                 && poseEstimate.rawFiducials.length == 1) { // single tag TODO: why are two checks needed?
             RawFiducial singleTag = poseEstimate.rawFiducials[0];
-            if (LimelightConstants.kVisionDiagnostics)
+
+            if (LimelightConstants.isLoggingVisionDiagnostics) {
                 SmartDashboard.putNumber(
-                        "VisionDiagnostics/" + ll_name + "/single tag pose ambiguity", singleTag.ambiguity);
+                        "VisionDiagnostics/" + cameraName + "/single tag pose ambiguity", singleTag.ambiguity);
+            }
+
             if (singleTag.ambiguity > 0.7 || singleTag.distToCamera > 5) {
                 return Optional.empty(); // don't trust if too ambiguous or too far
             }
-            transStdDev +=
-                    StdDevConstants.MegaTag1.kSingleTagPunishment; // megatag1 performs much worse with only one tag
-        }
-        transStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
-        transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
-        transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
-        transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
+            // megatag1 performs much worse with only one tag
+            translationalStdDev += StdDevConstants.MegaTag1.kSingleTagPunishment;
+        }
+        translationalStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
+        translationalStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
+        translationalStdDev += swerve.getSpeed() * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
+
+        // make sure we aren't putting all our trust in vision
+        translationalStdDev = Math.max(translationalStdDev, 0.05);
 
         double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
 
-        return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
+        return Optional.of(VecBuilder.fill(translationalStdDev, translationalStdDev, rotStdDev));
     }
 
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
             LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
-        if (swerve.getAngularVelocity().abs(Units.DegreesPerSecond) > LimelightConstants.kMaxAngularSpeed)
-            return Optional.empty(); // don't trust if turning too fast
+
+        boolean isGoingTooFast =
+                Math.abs(swerve.getAngularVelocity()) > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
+        if (isGoingTooFast) return Optional.empty();
+
         if (poseEstimate.avgTagDist > 8) return Optional.empty();
 
         double transStdDev = StdDevConstants.MegaTag2.kInitialValue;
