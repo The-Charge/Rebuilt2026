@@ -1,12 +1,11 @@
 package frc.robot.commands.vision;
 
-import java.util.Optional;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.subsystems.SwerveSubsystem;
+import java.util.Optional;
 
 public class LimelightCommand extends Command {
     private final LimelightSubsystem limelightSub;
