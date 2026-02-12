@@ -11,7 +11,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
 
-public class AlignTurret extends Command {
+public class HubTagAlign extends Command {
 
     private final TurretSubsystem tsub;
     private final SwerveSubsystem ssub;
@@ -19,7 +19,7 @@ public class AlignTurret extends Command {
     // private Pose2d poseEstimate;
     private boolean isRed;
 
-    public AlignTurret(TurretSubsystem tsub, SwerveSubsystem ssub, LimelightSubsystem lsub) {
+    public HubTagAlign(TurretSubsystem tsub, SwerveSubsystem ssub, LimelightSubsystem lsub) {
         this.tsub = tsub;
         this.ssub = ssub;
         this.lsub = lsub;
@@ -37,22 +37,13 @@ public class AlignTurret extends Command {
     public void execute() {
         // Get Detection (safe)
         Optional<Pose3d> position = lsub.getTransformToTag(20); // change based on which alliance
-        Transform2d robotToHub;
-        if (position.isPresent()) {
-            Pose3d qfe = position.get();
-            robotToHub =
-                    new Transform2d(qfe.getX(), qfe.getY(), qfe.getRotation().toRotation2d());
-        } else {
-            return; // don't use swerve for testing
 
-            // Pose2d poseEstimate = ssub.getPose();
-
-            // // Get Pose2d that points from robot to hub (hub vector - robot vector)
-            // robotToHub = (isRed ? FieldConstants.redHubPos : FieldConstants.blueHubPos).minus(poseEstimate);
-        }
+        // Gets actual pose (safe)
+        if (position.isEmpty()) return;
+        Pose3d pose = position.get();
 
         // Set turret angle to robotToHub vector
-        Rotation2d rotationToHub = new Rotation2d(robotToHub.getX(), robotToHub.getY());
+        Rotation2d rotationToHub = new Rotation2d(pose.getX(), pose.getY());
 
         SmartDashboard.putNumber("rotation given to turret", rotationToHub.getRadians());
         tsub.setTurretAngle(rotationToHub.plus(new Rotation2d(Math.PI)));

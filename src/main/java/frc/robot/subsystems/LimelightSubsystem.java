@@ -32,7 +32,9 @@ public class LimelightSubsystem extends SubsystemBase {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
     }
-
+    public Pose3d botPose3d() {
+        return LimelightHelpers.getBotPose3d(cameraName);
+    }
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 cameraName,

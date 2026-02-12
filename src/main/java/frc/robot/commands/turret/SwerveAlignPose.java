@@ -7,12 +7,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 
-public class PointAtPose extends Command {
+public class SwerveAlignPose extends Command {
     private final SwerveSubsystem swerve;
     private final TurretSubsystem turret;
     private final Pose2d pose;
 
-    public PointAtPose(TurretSubsystem _turret, SwerveSubsystem _swerve, Pose2d _pose) {
+    public SwerveAlignPose(TurretSubsystem _turret, SwerveSubsystem _swerve, Pose2d _pose) {
         swerve = _swerve;
         turret = _turret;
         pose = _pose;

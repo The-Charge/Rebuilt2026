@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.turret.PointAtPose;
+import frc.robot.commands.turret.SwerveAlignPose;
 import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -78,7 +78,7 @@ public class RobotContainer {
         // commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight));
         CommandScheduler.getInstance().schedule(new LimelightCommand(funnellimelight, swerve));
         // commandDriver1.b().onTrue(new ShootTurret(shootSub, funnellimelight));
-        commandDriver1.x().whileTrue(new PointAtPose(turretSub, swerve, FieldConstants.blueAllianceLeft));
+        commandDriver1.x().whileTrue(new SwerveAlignPose(turretSub, swerve, FieldConstants.blueAllianceLeft));
     }
 
     public Command getAutonomousCommand() {
