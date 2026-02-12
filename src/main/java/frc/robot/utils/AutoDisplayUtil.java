@@ -8,16 +8,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AutoDisplayHelper {
+public class AutoDisplayUtil {
 
-    private AutoDisplayHelper() {}
+    private AutoDisplayUtil() {}
 
     public static void displayAutoPath(Command autoCommand, boolean isRedAlliance) {
         // The name is "InstantCommand" when Command.none() is passed
@@ -50,8 +49,7 @@ public class AutoDisplayHelper {
         }
 
         if (mergedTraj == null) {
-            DriverStation.reportWarning(
-                    "AutoDisplayHelper::displayAutoPath -> Auto has no paths, redirecting to clearAutoPath", false);
+            Logger.reportWarning("Auto has no paths, redirecting to clearAutoPath", false);
             clearAutoPath();
             return;
         }
@@ -95,14 +93,16 @@ public class AutoDisplayHelper {
 
             Rotation2d rot;
             if (i == 0) {
-                if (pathPoints.size() > 1)
+                if (pathPoints.size() > 1) {
                     rot = calculatePoseRotation(
                             pp, pathPoints.get(i + 1)); // For the first point, use the heading towards the second point
-                else rot = new Rotation2d(); // If there's only one point, use a default rotation
-            } else if (i == pathPoints.size() - 1)
+                } else {
+                    rot = new Rotation2d(); // If there's only one point, use a default rotation
+                }
+            } else if (i == pathPoints.size() - 1) {
                 rot = calculatePoseRotation(
                         pathPoints.get(i - 1), pp); // For the last point, use the heading from the second-to-last point
-            else {
+            } else {
                 // For intermediate points, calculate the heading as the average of the direction to the next and
                 // previous points
                 Rotation2d toNext = calculatePoseRotation(pp, pathPoints.get(i + 1));

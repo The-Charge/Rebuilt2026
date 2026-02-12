@@ -24,6 +24,7 @@ import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.DualBlinkLED;
 import frc.robot.commands.leds.RainbowLED;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.FieldZone;
@@ -127,6 +128,8 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
+
+        RobotContainer.getInstance().displayAuto();
     }
 
     @Override
@@ -150,6 +153,7 @@ public class Robot extends TimedRobot {
         lastHubActive = Optional.empty();
 
         CommandScheduler.getInstance().schedule(new DeployIntake(RobotContainer.getInstance().intake));
+        AutoDisplayUtil.clearAutoPath();
     }
 
     @Override

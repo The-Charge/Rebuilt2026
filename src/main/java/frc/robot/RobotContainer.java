@@ -5,9 +5,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -18,7 +19,9 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -46,9 +49,12 @@ import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
-import frc.robot.utils.AutoDisplayHelper;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
-import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class RobotContainer {
     // singleton instance
@@ -123,7 +129,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
         NamedCommands.registerCommand("PrepShooter", Commands.print("PrepShooter Command not implemented"));
         NamedCommands.registerCommand("Shoot", Commands.print("Shoot Command not implemented"));
-        NamedCommands.registerCommand("HaltShooter", Commands.print("HaltShooter COmmand not implemented"));
+        NamedCommands.registerCommand("HaltShooter", Commands.print("HaltShooter Command not implemented"));
     }
 
     public Command getAutonomousCommand() {
@@ -136,21 +142,38 @@ public class RobotContainer {
         try {
             config = RobotConfig.fromGUISettings();
         } catch (Exception e) {
-            Logger.reportWarning("Failed to load pathplanner gui settings.json", false);
+            Logger.reportWarning("Failed to load pathplanner gui settings.json, using backup config", false);
             config = new RobotConfig(
-                    Pounds.of(115),
-                    KilogramSquareMeters.of(3),
-                    new ModuleConfig(Inches.of(2), FeetPerSecond.of(14), 0, null, Amps.of(60), 4));
+                    Pounds.of(125), // 110 lbs + ~15 lbs for bumpers and battery
+                    KilogramSquareMeters.of(6.883),
+                    new ModuleConfig(
+                            Inches.of(2), MetersPerSecond.of(5.45), 1.2, DCMotor.getKrakenX60(1), Amps.of(60), 4),
+                    new Translation2d[] {
+                        new Translation2d(Meters.of(0.276), Meters.of(0.276)),
+                        new Translation2d(Meters.of(0.276), Meters.of(-0.276)),
+                        new Translation2d(Meters.of(-0.276), Meters.of(0.276)),
+                        new Translation2d(Meters.of(-0.276), Meters.of(-0.276))
+                    });
         }
 
+        final Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
+        final Consumer<Pose2d> poseReset = (pose) -> {};
+        final Supplier<ChassisSpeeds> robotRelativeSpeedsSupplier = () -> new ChassisSpeeds(0, 0, 0);
+        final BiConsumer<ChassisSpeeds, DriveFeedforwards> outputConsumer = (speeds, ff) -> {};
+        final BooleanSupplier shouldFlipSupplier = () ->
+                DriverStation.getAlliance().map((val) -> val == Alliance.Red).orElse(false);
+        final PIDConstants translationPID = new PIDConstants(0);
+        final PIDConstants rotationPID = new PIDConstants(0);
+
         AutoBuilder.configure(
-                () -> new Pose2d(),
-                pose -> {},
-                () -> new ChassisSpeeds(),
-                (ChassisSpeeds cs, DriveFeedforwards dff) -> {},
-                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+                poseSupplier,
+                poseReset,
+                robotRelativeSpeedsSupplier,
+                outputConsumer,
+                new PPHolonomicDriveController(translationPID, rotationPID),
                 config,
-                () -> false); // fix this with real swerve stuff
+                shouldFlipSupplier /*,
+                                   swerve*/);
 
         autoChooser = AutoBuilder.buildAutoChooser();
         setupAutoDisplay();
@@ -162,25 +185,24 @@ public class RobotContainer {
     private void setupAutoDisplay() {
         // update the displayed auto path in smartdashboard when ever the selection is changed
         // display is cleared in teleopInit
-        if (autoChooser.getSelected() != null) {
+        if (autoChooser.getSelected() != null
+                && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+            Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+        } else {
+            Logger.logString("", "selectedAuto", "None");
         }
-        // LoggingManager.logValue("SelectedAuto", autoChooser.getSelected().getName());
-        else {
-        }
-        // LoggingManager.logValue("SelectedAuto", "Null");
 
         autoChooser.onChange((selected) -> {
-            if (DriverStation.isTeleopEnabled()) // don't display auton path in teleop
-            return;
+            if (DriverStation.isTeleopEnabled()) return;
 
             displayAuto();
 
-            if (autoChooser.getSelected() != null) {
+            if (autoChooser.getSelected() != null
+                    && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+                Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+            } else {
+                Logger.logString("", "selectedAuto", "None");
             }
-            // LoggingManager.logValue("SelectedAuto", autoChooser.getSelected().getName());
-            else {
-            }
-            // LoggingManager.logValue("SelectedAuto", "Null");
         });
 
         /*
@@ -191,18 +213,14 @@ public class RobotContainer {
 
     public void displayAuto() {
         Command auto = autoChooser.getSelected();
-        System.out.println(auto.getName());
 
-        if (auto.getName().equals("InstantCommand")) {
-            AutoDisplayHelper.clearAutoPath();
+        if (auto == null || auto.getName().equals("InstantCommand")) {
+            AutoDisplayUtil.clearAutoPath();
             return;
         }
 
-        boolean isRed = false;
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-
-        if (alliance.isPresent() && alliance.get() == Alliance.Red) isRed = true;
-
-        AutoDisplayHelper.displayAutoPath(auto, isRed);
+        boolean isRed =
+                DriverStation.getAlliance().map((val) -> val == Alliance.Red).orElse(false);
+        AutoDisplayUtil.displayAutoPath(auto, isRed);
     }
 }
