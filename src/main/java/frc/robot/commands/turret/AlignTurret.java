@@ -32,8 +32,6 @@ public class AlignTurret extends Command {
         this.isRed = Optional.empty();
 
         addRequirements(turret);
-        addRequirements(swerve);
-        addRequirements(limelight);
     }
 
     // Align the turret to a specific hub if we can see the tags
@@ -48,8 +46,6 @@ public class AlignTurret extends Command {
         this.targetPose = Optional.empty();
 
         addRequirements(turret);
-        addRequirements(swerve);
-        addRequirements(limelight);
     }
 
     @Override
