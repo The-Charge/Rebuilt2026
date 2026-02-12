@@ -42,10 +42,11 @@ public class FieldVisionAlign extends Command {
 
     @Override
     public void execute() {
-
         // Gets Robot pose field relative, subtracts from HubPos to get Robot to Hub vector (vectorDifference), 
         // then sets the turret angle to robot rotation + angle.
-        Pose2d robotPose = lsub.botPose3d().toPose2d();
+        Optional<Pose2d> robotPoseOptional = lsub.getVisionMeasurementMegaTag1();
+        if (robotPoseOptional.isEmpty()) return;
+        Pose2d robotPose = robotPoseOptional.get();
         Transform2d vectorDifference = (isRed ? FieldConstants.redHubPos : FieldConstants.blueHubPos).minus(robotPose);
         double angleFieldRelative = Math.atan2(vectorDifference.getY(), vectorDifference.getX());
         turret.setTurretAngle(new Rotation2d(angleFieldRelative).plus(robotPose.getRotation()));

@@ -32,9 +32,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
     }
-    public Pose3d botPose3d() {
-        return LimelightHelpers.getBotPose3d(cameraName);
-    }
+
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 cameraName,
@@ -66,6 +64,13 @@ public class LimelightSubsystem extends SubsystemBase {
         }
 
         return Optional.empty();
+    }
+
+    public Optional<Pose2d> getVisionMeasurementMegaTag1() {
+        PoseEstimate poseEstimate;
+        poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
+        if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
+        return Optional.of(poseEstimate.pose);
     }
 
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
