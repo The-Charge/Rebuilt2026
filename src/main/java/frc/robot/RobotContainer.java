@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
@@ -14,11 +15,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.turret.SwerveAlignPose;
+import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.io.File;
@@ -78,7 +78,10 @@ public class RobotContainer {
         // commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight));
         CommandScheduler.getInstance().schedule(new LimelightCommand(funnellimelight, swerve));
         // commandDriver1.b().onTrue(new ShootTurret(shootSub, funnellimelight));
-        commandDriver1.x().whileTrue(new SwerveAlignPose(turretSub, swerve, FieldConstants.blueAllianceLeft));
+        commandDriver1
+                .x()
+                .whileTrue(new AlignTurret(turretSub, swerve, funnellimelight, FieldConstants.blueAllianceLeft));
+        commandDriver1.b().whileTrue(new AlignTurret(turretSub, swerve, funnellimelight, Alliance.Blue));
     }
 
     public Command getAutonomousCommand() {

@@ -22,4 +22,7 @@ public class FieldConstants {
             Meters.convertFrom(182.11 / 2, Inches), Meters.convertFrom(316.64 - 158.32 / 2, Inches), new Rotation2d());
     public static final Pose2d blueAllianceRight = new Pose2d(
             Meters.convertFrom(182.11 / 2, Inches), Meters.convertFrom(158.32 / 2, Inches), new Rotation2d());
+
+    public static final int redHubTag = 10;
+    public static final int blueHubTag = 26;
 }
