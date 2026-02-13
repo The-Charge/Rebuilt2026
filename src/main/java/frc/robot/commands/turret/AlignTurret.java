@@ -54,9 +54,12 @@ public class AlignTurret extends Command {
     @Override
     public void execute() {
         if (isRed.isPresent()) {
-            if (hubTagAlign(isRed.get())) {
-                return;
+            boolean succeeded = hubTagAlign(isRed.get());
+
+            if (!succeeded) {
+                swerveAlign(isRed.get() ? FieldConstants.redHubPos : FieldConstants.blueHubPos);
             }
+            return;
         }
 
         // TODO: if hub failed, get the hub pose manually
