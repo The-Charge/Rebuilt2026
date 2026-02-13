@@ -11,11 +11,9 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.ShooterSubsystem.HoodPos;
+import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
-
-import org.dyn4j.geometry.Transform;
 
 public class ShootTurret extends Command {
 
@@ -25,6 +23,7 @@ public class ShootTurret extends Command {
     private final LimelightSubsystem vSub;
     private final SwerveSubsystem swerveSub;
     private final boolean isRed;
+
     public ShootTurret(ShooterSubsystem shootSub, LimelightSubsystem vSub, SwerveSubsystem swerveSub, boolean isRed) {
         this.shooterSub = shootSub;
         this.vSub = vSub;
@@ -41,17 +40,16 @@ public class ShootTurret extends Command {
         Pose2d poseToHub;
 
         // Use HubTag directly for distance
-        Optional<Pose3d> hubTagPose = vSub.getTransformToTag(20);
+        Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
         // Otherwise use swerve positioning
         if (!hubTagPose.isEmpty()) {
             poseToHub = hubTagPose.get().toPose2d();
-        }
-        else {
+        } else {
             // Get Swerve Distance to Hub
-            
+
             // Hub Pose - Robot Swerve Pose
-            Transform2d poseToHubTransform = isRed ? FieldConstants.redHubPos.minus(swerveSub.getPose()) : FieldConstants.blueHubPos.minus(swerveSub.getPose());
+            Transform2d poseToHubTransform = FieldConstants.getHubPos(isRed).minus(swerveSub.getPose());
             // Transform2d -> Pose2d
             poseToHub = new Pose2d(poseToHubTransform.getX(), poseToHubTransform.getY(), new Rotation2d());
             return;
@@ -66,7 +64,7 @@ public class ShootTurret extends Command {
             // if close, shoot high
             shooterSub.setHoodPos(HoodPos.UP);
         }
-        
+
         shooterSub.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distance))); // Used to be: RPM.of(10)
     }
 

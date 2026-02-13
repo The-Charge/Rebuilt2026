@@ -57,7 +57,7 @@ public class AlignTurret extends Command {
             boolean succeeded = hubTagAlign(isRed.get());
 
             if (!succeeded) {
-                swerveAlign(isRed.get() ? FieldConstants.redHubPos : FieldConstants.blueHubPos);
+                swerveAlign(FieldConstants.getHubPos(isRed.get()));
             }
             return;
         }
@@ -74,7 +74,7 @@ public class AlignTurret extends Command {
         // Get Detection (safe)
         // change based on which alliance
         Optional<Pose3d> poseOpt =
-                limelightSub.getTransformToTag(isRed ? FieldConstants.redHubTag : FieldConstants.blueHubTag);
+                limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
         // Gets actual pose (safe)
         if (poseOpt.isEmpty()) return false; // TODO: log that this failed
