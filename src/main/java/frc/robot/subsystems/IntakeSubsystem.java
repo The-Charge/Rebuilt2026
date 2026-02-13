@@ -70,8 +70,9 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         Logger.logSubsystem(IntakeConstants.name, this);
 
-        Logger.logSparkMotor(IntakeConstants.name, "roller", rollerMotor);
-        CANMonitor.logCANDeviceStatus("roller", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
+        Logger.logSparkMotor(IntakeConstants.name, "rollerMotor", rollerMotor);
+        CANMonitor.logCANDeviceStatus(
+                "rollerMotor", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
         Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
         Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));

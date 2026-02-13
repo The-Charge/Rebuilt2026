@@ -37,8 +37,6 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
-import frc.robot.commands.indexer.SpinDownIndexer;
-import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.FriendlyZoneLED;
@@ -67,7 +65,6 @@ public class RobotContainer {
         return instance;
     }
 
-    public final SwerveSubsystem swerveSubsystem;
     public final PowerDistribution pdp;
 
     public final CommandXboxController commandDriver1, commandDriver2;
@@ -79,14 +76,13 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
+    public final SwerveSubsystem swerveSubsystem;
 
     public final FriendlyZoneLED activeFriendlyZoneLEDCommand;
     public final FriendlyZoneLED inactiveFriendlyZoneLEDCommand;
     public final NeutralZoneLED neutralZoneLEDCommand;
     public final OpposingZoneLED opposingZoneLEDCommand;
     public final IdleLED idleLEDCommand;
-    public final SpinUpIndexer spinUpIndexerCommand;
-    public final SpinDownIndexer spinDownIndexerCommand;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -100,15 +96,13 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
+        swerveSubsystem = new SwerveSubsystem();
 
         activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
         inactiveFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, false);
         neutralZoneLEDCommand = new NeutralZoneLED(ledSub);
         opposingZoneLEDCommand = new OpposingZoneLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
-        spinUpIndexerCommand = new SpinUpIndexer(indexer, false);
-        spinDownIndexerCommand = new SpinDownIndexer(indexer);
-        swerveSubsystem = new SwerveSubsystem();
 
         ledSub.setDefaultCommand(idleLEDCommand);
 

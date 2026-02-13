@@ -14,7 +14,8 @@ public class Alerts {
             fmsConnected,
             lowBattery,
             criticalBattery,
-            pdpDisconnected;
+            pdpDisconnected,
+            notLoggingToFlashdrive;
 
     // intake alerts
     public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
@@ -52,6 +53,11 @@ public class Alerts {
 
         pdpDisconnected = new Alert("Missing connection to PDP", AlertType.kError);
         pdpDisconnected.set(false);
+
+        notLoggingToFlashdrive = new Alert(
+                "Logger is not logging to a flash drive. Please confirm that the flash drive is securely plugged in and was plugged in before the robot was turned on",
+                AlertType.kError);
+        notLoggingToFlashdrive.set(false);
 
         rollerConfigFail = new Alert(
                 String.format("Failed to update roller motor (CAN %d) config", Roller.motorID), AlertType.kError);

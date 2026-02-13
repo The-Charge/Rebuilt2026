@@ -46,6 +46,13 @@ public class Logger {
         println("Logging started");
 
         hasInited = true;
+
+        String logDir = DataLogManager.getLogDir();
+        logString("Logger", "loggingDirectory", logDir);
+
+        boolean loggingToFlash = logDir == null ? false : logDir.toLowerCase().startsWith("/u");
+        logBool("Logger", "loggingToFlashdrive", loggingToFlash);
+        Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
     }
 
     /**
