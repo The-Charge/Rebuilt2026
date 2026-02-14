@@ -35,6 +35,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.indexer.SpinDownIndexer;
+import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.intake.RunRoller;
@@ -112,6 +114,9 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
+        commandDriver1.a().onTrue(new SpinUpIndexer(indexer, false));
+        commandDriver1.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
+        commandDriver1.x().onTrue(new SpinDownIndexer(indexer));
         // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
         commandDriver2
                 .leftTrigger()
