@@ -14,7 +14,7 @@ public class SpinDownIndexer extends Command {
 
     @Override
     public void initialize() {
-        indexer.stopSpindexer();
+        indexer.stopAll();
     }
 
     @Override

@@ -20,6 +20,7 @@ public class SpinUpIndexer extends Command {
     public void initialize() {
         indexer.setSpindexerMotorVelocity(
                 IndexerConstants.spindexerMotorVelocity); // in this instance set velocity to ...
+        indexer.setGateMotorVoltage(IndexerConstants.gateToShooterVoltage);
     }
 
     @Override
