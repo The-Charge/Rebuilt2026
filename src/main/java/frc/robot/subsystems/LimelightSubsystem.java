@@ -21,8 +21,6 @@ import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
-
-import java.util.ArrayList;
 import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
@@ -113,11 +111,8 @@ public class LimelightSubsystem extends SubsystemBase {
             stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         }
 
-        if (stdDevs.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new VisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, stdDevs.get()));
-        }
+        return stdDevs.map(
+                _stdDevs -> new VisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, _stdDevs));
     }
 
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
