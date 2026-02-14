@@ -60,6 +60,7 @@ public class AlignTurret extends Command {
     public void execute() {
         // double angle = SmartDashboard.getNumber("turretAngleDeg", 60);
         // turretSub.setTurretAngle(Degrees.of(angle));
+        // turretSub.setTurretAngle(Degrees.of(timer.get() * 120));
         // if (true) return;
 
         if (isRed.isPresent()) {
@@ -92,7 +93,7 @@ public class AlignTurret extends Command {
         Angle rotationToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
 
         SmartDashboard.putNumber("rotation given to turret", rotationToHub.in(Radians));
-        turretSub.setTurretAngle(rotationToHub.plus(Degrees.of(90)));
+        turretSub.setTurretAngle(rotationToHub);
 
         return true;
     }

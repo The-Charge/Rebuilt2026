@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.constants.TurretConstants.IllegalAngle;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
@@ -65,11 +66,17 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void setTurretAngle(Angle angle) {
         if (angle == null) {
-            Logger.reportWarning("Cannot set spindexer velocity to a null velocity", true);
+            Logger.reportWarning("Cannot set turret angle to a null angle", true);
             return;
         }
 
         targetAngle = Optional.of(angle);
+
+        if (IllegalAngle.isIllegal(angle)) {
+            return;
+        }
+
+        angle = IllegalAngle.toContinuousAngle(angle);
 
         double request = angle.plus(offset).in(Rotations) * TurretConstants.ticksPerRotation;
         // double request = angle.in(Rotations) * SmartDashboard.getNumber("gearRatio", 27);
@@ -78,6 +85,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void stop() {
         turretMotor.set(0);
+        targetAngle = Optional.empty();
     }
 
     public Angle getTurretRawAngle() {
