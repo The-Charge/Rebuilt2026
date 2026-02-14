@@ -10,7 +10,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
-import frc.robot.constants.TurretConstants.Spin;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
@@ -26,27 +25,26 @@ public class TurretSubsystem extends SubsystemBase {
     private final SparkMax turretMotor;
 
     public TurretSubsystem() {
-        turretMotor =
-                new SparkMax(TurretConstants.Spin.motorID, MotorType.kBrushless); // port number under IndexerConstants
+        turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless); // port number under IndexerConstants
         SparkMaxConfig turretConfig = new SparkMaxConfig();
 
         SparkUtils.configureBasicSettings(
                 turretConfig,
-                TurretConstants.Spin.maxCurrent,
-                TurretConstants.Spin.idleMode,
-                TurretConstants.Spin.inverted,
-                TurretConstants.Spin.maxDutyCycle,
-                TurretConstants.Spin.nominalVoltage);
+                TurretConstants.maxCurrent,
+                TurretConstants.idleMode,
+                TurretConstants.inverted,
+                TurretConstants.maxDutyCycle,
+                TurretConstants.nominalVoltage);
         SparkUtils.configureClosedLoopSettings(
                 turretConfig,
-                TurretConstants.Spin.kP,
-                TurretConstants.Spin.kI,
-                TurretConstants.Spin.kD,
-                TurretConstants.Spin.kStaticG,
-                TurretConstants.Spin.kCos,
-                TurretConstants.Spin.kS,
-                TurretConstants.Spin.kV,
-                TurretConstants.Spin.kA);
+                TurretConstants.kP,
+                TurretConstants.kI,
+                TurretConstants.kD,
+                TurretConstants.kStaticG,
+                TurretConstants.kCos,
+                TurretConstants.kS,
+                TurretConstants.kV,
+                TurretConstants.kA);
 
         if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
@@ -68,7 +66,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        double request = angle.plus(offset).getRotations() * Spin.ticksPerRotation;
+        double request = angle.plus(offset).getRotations() * TurretConstants.ticksPerRotation;
         turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
