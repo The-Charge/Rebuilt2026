@@ -73,8 +73,7 @@ public class AlignTurret extends Command {
     public boolean hubTagAlign(boolean isRed) {
         // Get Detection (safe)
         // change based on which alliance
-        Optional<Pose3d> poseOpt =
-                limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
+        Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
         // Gets actual pose (safe)
         if (poseOpt.isEmpty()) return false; // TODO: log that this failed

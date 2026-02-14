@@ -78,9 +78,7 @@ public class RobotContainer {
         // commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight));
         CommandScheduler.getInstance().schedule(new LimelightCommand(funnellimelight, swerve));
         // commandDriver1.b().onTrue(new ShootTurret(shootSub, funnellimelight));
-        commandDriver1
-                .x()
-                .onTrue(new AlignTurret(turretSub, swerve, funnellimelight, FieldConstants.blueAllianceLeft));
+        commandDriver1.x().onTrue(new AlignTurret(turretSub, swerve, funnellimelight, FieldConstants.blueAllianceLeft));
         commandDriver1.b().onTrue(new AlignTurret(turretSub, swerve, funnellimelight, Alliance.Blue));
     }
 

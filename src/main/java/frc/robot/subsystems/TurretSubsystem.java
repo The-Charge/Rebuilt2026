@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.constants.TurretConstants.Spin;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
@@ -22,6 +23,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     private Rotation2d offset = new Rotation2d(Math.PI);
     private Optional<Rotation2d> targetAngle;
+    private final SparkMax turretMotor;
 
     public TurretSubsystem() {
         turretMotor =
@@ -66,11 +68,9 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        double request = angle.plus(offset).getRadians() * 10;
+        double request = angle.plus(offset).getRotations() * Spin.ticksPerRotation;
         turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
-
-    private final SparkMax turretMotor;
 
     public void stop() {
         turretMotor.set(0);
