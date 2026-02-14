@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
@@ -7,7 +10,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 import frc.robot.utils.Alerts;
@@ -20,8 +23,8 @@ public class TurretSubsystem extends SubsystemBase {
     // private final SparkFlex shooter;
     // private final Servo hood;
 
-    private Rotation2d offset = new Rotation2d(Math.PI);
-    private Optional<Rotation2d> targetAngle;
+    private Angle offset = Radians.of(Math.PI);
+    private Optional<Angle> targetAngle;
     private final SparkMax turretMotor;
 
     public TurretSubsystem() {
@@ -54,11 +57,13 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.empty();
 
+        // SmartDashboard.putNumber("gearRatio", 27);
+
         // shooter = new SparkFlex(TurretConstants.shooterId, MotorType.kBrushless);
         // hood = new Servo(TurretConstants.hoodChannel);
     }
 
-    public void setTurretAngle(Rotation2d angle) {
+    public void setTurretAngle(Angle angle) {
         if (angle == null) {
             Logger.reportWarning("Cannot set spindexer velocity to a null velocity", true);
             return;
@@ -66,7 +71,8 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        double request = angle.plus(offset).getRotations() * TurretConstants.ticksPerRotation;
+        double request = angle.plus(offset).in(Rotations) * TurretConstants.ticksPerRotation;
+        // double request = angle.in(Rotations) * SmartDashboard.getNumber("gearRatio", 27);
         turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
@@ -74,12 +80,12 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.set(0);
     }
 
-    public Rotation2d getTurretRawAngle() {
+    public Angle getTurretRawAngle() {
         // return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
-        return new Rotation2d(turretMotor.getEncoder().getPosition());
+        return Rotations.of(turretMotor.getEncoder().getPosition());
     }
 
-    public Optional<Rotation2d> getTargetAngle() {
+    public Optional<Angle> getTargetAngle() {
         return targetAngle;
     }
 

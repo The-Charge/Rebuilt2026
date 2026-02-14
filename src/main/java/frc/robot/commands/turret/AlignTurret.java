@@ -1,9 +1,12 @@
 package frc.robot.commands.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,10 +52,16 @@ public class AlignTurret extends Command {
     }
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+        // SmartDashboard.putNumber("turretAngleDeg", 60);
+    }
 
     @Override
     public void execute() {
+        // double angle = SmartDashboard.getNumber("turretAngleDeg", 60);
+        // turretSub.setTurretAngle(Degrees.of(angle));
+        // if (true) return;
+
         if (isRed.isPresent()) {
             boolean succeeded = hubTagAlign(isRed.get());
 
@@ -80,10 +89,10 @@ public class AlignTurret extends Command {
         Pose3d pose = poseOpt.get();
 
         // Set turret angle to robotToHub vector
-        Rotation2d rotationToHub = new Rotation2d(pose.getX(), pose.getY());
+        Angle rotationToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
 
-        SmartDashboard.putNumber("rotation given to turret", rotationToHub.getRadians());
-        turretSub.setTurretAngle(rotationToHub.plus(new Rotation2d(Math.PI)));
+        SmartDashboard.putNumber("rotation given to turret", rotationToHub.in(Radians));
+        turretSub.setTurretAngle(rotationToHub.plus(Degrees.of(90)));
 
         return true;
     }
@@ -91,8 +100,10 @@ public class AlignTurret extends Command {
     public void swerveAlign(Pose2d targetPose) {
         Pose2d robotPose = swerveSub.getPose();
         Transform2d vectorDifference = targetPose.minus(robotPose);
-        double angleFieldRelative = Math.atan2(vectorDifference.getY(), vectorDifference.getX());
-        turretSub.setTurretAngle(new Rotation2d(angleFieldRelative).plus(robotPose.getRotation()));
+        Angle angleFieldRelative = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
+        Angle absoluteAngle =
+                angleFieldRelative.plus(Degrees.of(robotPose.getRotation().getDegrees()));
+        turretSub.setTurretAngle(absoluteAngle);
     }
 
     @Override
