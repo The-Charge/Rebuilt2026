@@ -15,7 +15,11 @@ public class Alerts {
             spindexerFaults,
             spindexerWarnings,
             spindexerConfigFail;
-    public static final Alert gateConfigFail, gateDisconnected, gateOverheating, gateFaults, gateWarnings;
+    public static final Alert exchangeConfigFail,
+            exchangeDisconnected,
+            exchangeOverheating,
+            exchangeFaults,
+            exchangeWarnings;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -62,32 +66,34 @@ public class Alerts {
                 AlertType.kError);
         spindexerConfigFail.set(false);
 
-        gateConfigFail = new Alert(
-                String.format("Failed to update gate motor (CAN %d) config", IndexerConstants.Gate.motorID),
+        exchangeConfigFail = new Alert(
+                String.format("Failed to update exchange motor (CAN %d) config", IndexerConstants.Exchange.motorID),
                 AlertType.kError);
-        gateConfigFail.set(false);
+        exchangeConfigFail.set(false);
 
-        gateDisconnected = new Alert(
-                String.format("Missing connection to gate motor (CAN %d)", IndexerConstants.Gate.motorID),
+        exchangeDisconnected = new Alert(
+                String.format("Missing connection to exchange motor (CAN %d)", IndexerConstants.Exchange.motorID),
                 AlertType.kError);
-        gateDisconnected.set(false);
+        exchangeDisconnected.set(false);
 
-        gateOverheating = new Alert(
-                String.format("Gate motor (CAN %d) is overheating", IndexerConstants.Gate.motorID), AlertType.kWarning);
-        gateOverheating.set(false);
-
-        gateFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on gate motor (CAN %d)", IndexerConstants.Gate.motorID),
+        exchangeOverheating = new Alert(
+                String.format("Exchange motor (CAN %d) is overheating", IndexerConstants.Exchange.motorID),
                 AlertType.kWarning);
-        gateFaults.set(false);
+        exchangeOverheating.set(false);
 
-        gateWarnings = new Alert(
+        exchangeFaults = new Alert(
                 String.format(
-                        "Potentially critical warnings are active on gate motor (CAN %d)",
-                        IndexerConstants.Gate.motorID),
+                        "Potentially critical faults are active on exchange motor (CAN %d)",
+                        IndexerConstants.Exchange.motorID),
                 AlertType.kWarning);
-        gateWarnings.set(false);
+        exchangeFaults.set(false);
+
+        exchangeWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on exchange motor (CAN %d)",
+                        IndexerConstants.Exchange.motorID),
+                AlertType.kWarning);
+        exchangeWarnings.set(false);
     }
 
     private Alerts() {}

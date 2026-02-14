@@ -29,8 +29,8 @@ public class IndexerConstants {
         public static final SpindexerVelocity targetTolerance = SpindexerVelocity.fromMotorRPM(20);
     }
 
-    public static class Gate {
-        public static final int motorID = 9;
+    public static class Exchange {
+        public static final int motorID = 11;
 
         public static final int maxCurrent = 20;
         public static final IdleMode idleMode = IdleMode.kCoast;
@@ -39,6 +39,6 @@ public class IndexerConstants {
         public static final Optional<Double> nominalVoltage = Optional.empty();
     }
 
-    public static final SpindexerVelocity spindexerMotorVelocity = SpindexerVelocity.fromMechanismRPM(3000);
-    public static final double gateToShooterVoltage = 12;
+    public static final SpindexerVelocity spindexerVelocity = SpindexerVelocity.fromMechanismRPM(3000);
+    public static final double exchangeVoltage = 12;
 }
