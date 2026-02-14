@@ -1,19 +1,24 @@
 package frc.robot.commands.vision;
 
-import java.util.Optional;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.subsystems.SwerveSubsystem;
+import java.util.Optional;
 
 public class LimelightCommand extends Command {
-    private final LimelightSubsystem limelightSub;
+    private final LimelightSubsystem turretLimelight;
+    private final LimelightSubsystem sideLimelight;
     private final SwerveSubsystem swerve;
 
-    public LimelightCommand(LimelightSubsystem limelightSubsystem, SwerveSubsystem swerveSub) {
-        limelightSub = limelightSubsystem;
+    public LimelightCommand(
+            LimelightSubsystem turretLimelightSubsystem,
+            LimelightSubsystem sideLimelightSubsystem,
+            SwerveSubsystem swerveSub) {
+        turretLimelight = turretLimelightSubsystem;
+        sideLimelight = sideLimelightSubsystem;
         swerve = swerveSub;
     }
 
@@ -22,11 +27,49 @@ public class LimelightCommand extends Command {
 
     @Override
     public void execute() {
-        Optional<VisionMeasurement> visionEstimateOptional = limelightSub.getVisionMeasurement(swerve);
-        if (visionEstimateOptional.isEmpty()) return;
-        VisionMeasurement visionEstimate = visionEstimateOptional.get();
-        SmartDashboard.putNumber("limelight x pose", visionEstimate.pose().getX());
+        calcMT1diff();
+
+        multiple();
+    }
+
+    private void multiple() {
+        Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
+        Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
+
+        if (turretVisionEstimateOptional.isPresent()) {
+            VisionMeasurement visionEstimate = turretVisionEstimateOptional.get();
+            swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        }
+
+        if (sideVisionEstimateOptional.isPresent()) {
+            VisionMeasurement visionEstimate = sideVisionEstimateOptional.get();
+            swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        }
+    }
+
+    private void oneAtATime() {
+        Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
+        Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
+        VisionMeasurement visionEstimate;
+        if (turretVisionEstimateOptional.isEmpty()) {
+            if (sideVisionEstimateOptional.isEmpty()) {
+                return;
+            } else {
+                visionEstimate = sideVisionEstimateOptional.get();
+            }
+        } else {
+            visionEstimate = turretVisionEstimateOptional.get();
+        }
         swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+    }
+
+    private void calcMT1diff() {
+        Optional<Pose3d> turret = turretLimelight.getMegaTag1();
+        Optional<Pose3d> side = sideLimelight.getMegaTag1();
+        if (turret.isEmpty() || side.isEmpty()) {
+            return;
+        }
+        Transform3d diff = side.get().minus(turret.get());
     }
 
     @Override

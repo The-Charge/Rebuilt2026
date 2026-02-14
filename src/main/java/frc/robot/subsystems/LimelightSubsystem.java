@@ -59,6 +59,14 @@ public class LimelightSubsystem extends SubsystemBase {
         return Optional.empty();
     }
 
+    public Optional<Pose3d> getMegaTag1() {
+        Pose3d pose = LimelightHelpers.getBotPose3d_wpiBlue("");
+        if (pose.equals(new Pose3d())) {
+            return Optional.empty();
+        }
+        return Optional.of(pose);
+    }
+
     public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
         boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
