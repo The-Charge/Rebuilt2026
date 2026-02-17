@@ -46,10 +46,13 @@ import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.NeutralZoneLED;
 import frc.robot.commands.leds.OpposingZoneLED;
+import frc.robot.commands.shooter.SpinDownShooter;
+import frc.robot.commands.shooter.SpinUpShooter;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
@@ -77,6 +80,7 @@ public class RobotContainer {
 
     public final IntakeSubsystem intake;
     public final IndexerSubsystem indexer;
+    public final ShooterSubsystem shooter;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
     public final SwerveSubsystem swerveSubsystem;
@@ -97,6 +101,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem();
         indexer = new IndexerSubsystem();
+        shooter = new ShooterSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
         swerveSubsystem = new SwerveSubsystem();
@@ -118,6 +123,8 @@ public class RobotContainer {
         commandDriver1.a().onTrue(new SpinUpIndexer(indexer, false));
         commandDriver1.b().onTrue(new InstantCommand(indexer::stopAll, indexer).ignoringDisable(true));
         commandDriver1.x().onTrue(new SpinDownIndexer(indexer));
+        commandDriver1.rightBumper().onTrue(new SpinUpShooter(shooter, false));
+        commandDriver1.leftBumper().onTrue(new SpinDownShooter(shooter));
         // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
         commandDriver2
                 .leftTrigger()

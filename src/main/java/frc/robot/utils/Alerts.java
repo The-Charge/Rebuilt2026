@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants.Roller;
+import frc.robot.constants.ShooterConstants;
 
 public class Alerts {
 
@@ -31,6 +32,13 @@ public class Alerts {
             exchangeOverheating,
             exchangeFaults,
             exchangeWarnings;
+
+    // shooter alerts
+    public static final Alert shooterDisconnected,
+            shooterOverheating,
+            shooterFaults,
+            shooterWarnings,
+            shooterConfigFail;
 
     // climber alerts
     public static final Alert climberDisconnected, climberOverheating, climberFaults, climberConfigFail;
@@ -138,6 +146,32 @@ public class Alerts {
                         IndexerConstants.Exchange.motorID),
                 AlertType.kWarning);
         exchangeWarnings.set(false);
+
+        shooterDisconnected = new Alert(
+                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.motorID),
+                AlertType.kError);
+        shooterDisconnected.set(false);
+
+        shooterOverheating = new Alert(
+                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.motorID), AlertType.kWarning);
+        shooterOverheating.set(false);
+
+        shooterFaults = new Alert(
+                String.format(
+                        "Potentially critical faults are active on shooter motor (CAN %d)", ShooterConstants.motorID),
+                AlertType.kWarning);
+        shooterFaults.set(false);
+
+        shooterWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on shooter motor (CAN %d)", ShooterConstants.motorID),
+                AlertType.kWarning);
+        shooterWarnings.set(false);
+
+        shooterConfigFail = new Alert(
+                String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.motorID),
+                AlertType.kError);
+        shooterConfigFail.set(false);
 
         climberDisconnected = new Alert(
                 String.format("Missing connection to climber motor (CAN %d)", ClimberConstants.motorID),
