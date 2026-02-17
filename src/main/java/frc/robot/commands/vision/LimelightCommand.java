@@ -63,6 +63,32 @@ public class LimelightCommand extends Command {
         swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
+    // tries to find which measurement is best
+    private void preferential() {
+        Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
+        Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
+        VisionMeasurement visionEstimate;
+        if (turretVisionEstimateOptional.isEmpty()) {
+            if (sideVisionEstimateOptional.isEmpty()) {
+                return;
+            } else {
+                visionEstimate = sideVisionEstimateOptional.get();
+            }
+        } else {
+            if (sideVisionEstimateOptional.isEmpty()) {
+                visionEstimate = turretVisionEstimateOptional.get();
+            } else {
+                if (turretVisionEstimateOptional.get().stdDevs().get(0, 0)
+                        > sideVisionEstimateOptional.get().stdDevs().get(0, 0)) {
+                    visionEstimate = sideVisionEstimateOptional.get();
+                } else {
+                    visionEstimate = turretVisionEstimateOptional.get();
+                }
+            }
+        }
+        swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+    }
+
     private void calcMT1diff() {
         Optional<Pose3d> turret = turretLimelight.getMegaTag1();
         Optional<Pose3d> side = sideLimelight.getMegaTag1();
