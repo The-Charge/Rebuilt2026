@@ -24,6 +24,7 @@ public class AlignTurret extends Command {
     private final Optional<Boolean> isRed;
     private final Optional<Pose2d> targetPose;
 
+    // Use AlignTurret to align Turret to a specified Pose (usually given by Swerve, or LimelightHelpers.getBotPose())
     public AlignTurret(
             TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Pose2d targetPose) {
 
@@ -37,7 +38,7 @@ public class AlignTurret extends Command {
         addRequirements(turret);
     }
 
-    // Align the turret to a specific hub if we can see the tags
+    // Align the turret directly to AprilTag on Hub (given by Alliance)
     public AlignTurret(
             TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Alliance alliance) {
 
@@ -58,22 +59,18 @@ public class AlignTurret extends Command {
 
     @Override
     public void execute() {
-        // double angle = SmartDashboard.getNumber("turretAngleDeg", 60);
-        // turretSub.setTurretAngle(Degrees.of(angle));
-        // turretSub.setTurretAngle(Degrees.of(timer.get() * 120));
-        // if (true) return;
-
+        // If using Hub tag
         if (isRed.isPresent()) {
             boolean succeeded = hubTagAlign(isRed.get());
 
+            // If can't see hub tag, use swervePose
             if (!succeeded) {
                 swerveAlign(FieldConstants.getHubPos(isRed.get()));
             }
             return;
         }
 
-        // TODO: if hub failed, get the hub pose manually
-
+        // If supplied given pose
         if (targetPose.isPresent()) {
             swerveAlign(targetPose.get());
         }
