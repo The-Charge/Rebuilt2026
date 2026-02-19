@@ -128,7 +128,7 @@ public class Robot extends TimedRobot {
         m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
 
         changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
@@ -192,7 +192,7 @@ public class Robot extends TimedRobot {
         }
 
         // get robot pose
-        Pose2d robotPose = RobotContainer.getInstance().swerveSubsystem.getPosition();
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getPosition();
 
         // get zone and alliance info
         FieldZone currentZone = FieldZone.fromRobotPose(robotPose);

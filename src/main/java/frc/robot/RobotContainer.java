@@ -46,6 +46,7 @@ import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.NeutralZoneLED;
 import frc.robot.commands.leds.OpposingZoneLED;
+import frc.robot.constants.LEDConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -85,8 +86,8 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final SwerveSubsystem swerveSubsystem;
-    // public final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
+    public final SwerveSubsystem swerve;
+    // public final LimelightSubsystem reeflimelight;
     public final LimelightSubsystem funnellimelight;
 
     public final FriendlyZoneLED activeFriendlyZoneLEDCommand;
@@ -96,6 +97,7 @@ public class RobotContainer {
     public final IdleLED idleLEDCommand;
     public final TurretSubsystem turretSub;
     // public TeleopDrive teleopDrive;
+    public final BlinkLED autoLEDCommand;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -112,7 +114,8 @@ public class RobotContainer {
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
         turretSub = new TurretSubsystem();
-        swerveSubsystem = new SwerveSubsystem();
+        swerve = new SwerveSubsystem();
+        // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
 
         activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
@@ -120,6 +123,7 @@ public class RobotContainer {
         neutralZoneLEDCommand = new NeutralZoneLED(ledSub);
         opposingZoneLEDCommand = new OpposingZoneLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
+        autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
 
         ledSub.setDefaultCommand(idleLEDCommand);
 
@@ -155,7 +159,12 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        Command auto = autoChooser.getSelected();
+        if (auto == null) {
+            auto = Commands.print("No auto selected");
+        }
+
+        return auto;
     }
 
     private void configureAutonomous() {
