@@ -14,7 +14,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 import frc.robot.constants.TurretConstants.IllegalAngle;
-import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import java.util.Optional;
@@ -123,9 +122,9 @@ public class TurretSubsystem extends SubsystemBase {
 
         Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
 
-        Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
-        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
-        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
-        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        // Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
+        // Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        // Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+        // Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
     }
 }

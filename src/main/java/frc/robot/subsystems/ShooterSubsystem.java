@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.ShooterConstants.HoodConfig;
 import frc.robot.constants.ShooterConstants.ShootConfig;
-import frc.robot.utils.Alerts;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 
@@ -107,17 +106,17 @@ public class ShooterSubsystem extends SubsystemBase {
 
         Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
 
-        Alerts.shooterDisconnected.set(!SparkUtils.isConnected(shootMotor));
-        Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
-        Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
-        Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
+        // Alerts.shooterDisconnected.set(!SparkUtils.isConnected(shootMotor));
+        // Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
+        // Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
+        // Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
 
         Logger.logSparkMotor(ShooterConstants.subsystemName, "hood", hoodMotor);
 
-        Alerts.hoodDisconnected.set(!SparkUtils.isConnected(hoodMotor));
-        Alerts.hoodOverheating.set(hoodMotor.getMotorTemperature() >= 80);
-        Alerts.hoodWarnings.set(SparkUtils.hasCriticalWarnings(hoodMotor.getWarnings()));
-        Alerts.hoodFaults.set(SparkUtils.hasCriticalFaults(hoodMotor.getFaults()));
+        // Alerts.hoodDisconnected.set(!SparkUtils.isConnected(hoodMotor));
+        // Alerts.hoodOverheating.set(hoodMotor.getMotorTemperature() >= 80);
+        // Alerts.hoodWarnings.set(SparkUtils.hasCriticalWarnings(hoodMotor.getWarnings()));
+        // Alerts.hoodFaults.set(SparkUtils.hasCriticalFaults(hoodMotor.getFaults()));
 
         Logger.logString(ShooterConstants.subsystemName, "hood/angle state", hoodPos == HoodPos.UP ? "Up" : "Down");
     }

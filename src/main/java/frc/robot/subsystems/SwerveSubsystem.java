@@ -38,4 +38,9 @@ public class SwerveSubsystem {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addVisionReading'");
     }
+
+    public Pose2d getPose() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPose'");
+    }
 }

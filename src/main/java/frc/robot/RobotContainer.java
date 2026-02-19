@@ -19,25 +19,20 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -57,20 +52,15 @@ import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import frc.robot.commands.turret.AlignTurret;
-import frc.robot.commands.vision.LimelightCommand;
-import frc.robot.constants.FieldConstants;
-import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.TurretSubsystem;
-import java.io.File;
 
 public class RobotContainer {
     // singleton instance
@@ -82,7 +72,7 @@ public class RobotContainer {
         return instance;
     }
 
-    private final SwerveSubsystem swerve = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
+    private final SwerveSubsystem swerve = new SwerveSubsystem();
     // private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
     private final LimelightSubsystem funnellimelight;
     // private TeleopDrive teleopDrive;
@@ -123,7 +113,9 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
+        turretSub = new TurretSubsystem();
         swerveSubsystem = new SwerveSubsystem();
+        funnellimelight = new LimelightSubsystem("funnal", new Pose3d());
 
         activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
         inactiveFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, false);
