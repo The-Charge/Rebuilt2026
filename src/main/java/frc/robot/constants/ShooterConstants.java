@@ -6,6 +6,16 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import java.util.Optional;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
+    public static final int shooterId = 72;
+    public static final int hoodId = 73;
+    public static final IdleMode idleMode = IdleMode.fromId(-1);
+    public static final int currentLimit = -1;
+    public static final double hoodPosThreshold = 3;
+    public static boolean shootInverted = false;
+    public static boolean hoodInverted = false;
+    public static double shootkP;
+    public static double shootkI;
+    public static double shootkD;
     public static Rotation2d upAngle;
     public static Rotation2d downAngle;
 
@@ -30,7 +40,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     }
 
     public static class HoodConfig {
-        public static int ID = 9;
+        public static int ID = 1000;
 
         public static double p = 0;
         public static double i = 0;

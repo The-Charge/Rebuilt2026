@@ -65,7 +65,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void configureMotor() {
         // shoot
-
         SparkFlexConfig shootConfig = new SparkFlexConfig();
 
         SparkUtils.configureBasicSettings(
@@ -90,7 +89,6 @@ public class ShooterSubsystem extends SubsystemBase {
         shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // hood
-
         // I'm not going to configure this properly yet as I don't know if we will even have a motor for this
         SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
