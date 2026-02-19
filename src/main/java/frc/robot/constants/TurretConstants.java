@@ -17,6 +17,7 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final boolean inverted = false;
     public static final double maxDutyCycle = .10;
     public static final Optional<Double> nominalVoltage = Optional.empty();
+    public static final double calibrationSpeed = 0.1;
 
     public static final double kP = 0.3;
     public static final double kI = 0;

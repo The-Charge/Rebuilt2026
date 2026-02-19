@@ -27,6 +27,7 @@ public class TurretSubsystem extends SubsystemBase {
     private Angle offset = Radians.of(Math.PI);
     private Optional<Angle> targetAngle;
     private final SparkMax turretMotor;
+    private boolean isCalibrated;
 
     public TurretSubsystem() {
         turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless); // port number under IndexerConstants
@@ -57,6 +58,7 @@ public class TurretSubsystem extends SubsystemBase {
         }
 
         targetAngle = Optional.empty();
+        isCalibrated = false;
 
         // SmartDashboard.putNumber("gearRatio", 27);
 
@@ -86,6 +88,24 @@ public class TurretSubsystem extends SubsystemBase {
     public void stop() {
         turretMotor.set(0);
         targetAngle = Optional.empty();
+    }
+
+    public void calibrate() {
+        turretMotor.set(TurretConstants.calibrationSpeed);
+        isCalibrated = false;
+    }
+
+    public boolean isAtLimit() {
+        if (turretMotor.getForwardLimitSwitch().isPressed()
+                || turretMotor.getReverseLimitSwitch().isPressed()) {
+            isCalibrated = true;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isCalibrated() {
+        return isCalibrated;
     }
 
     public Angle getTurretRawAngle() {
