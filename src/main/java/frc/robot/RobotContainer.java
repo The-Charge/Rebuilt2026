@@ -72,11 +72,6 @@ public class RobotContainer {
         return instance;
     }
 
-    private final SwerveSubsystem swerve = new SwerveSubsystem();
-    // private final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
-    private final LimelightSubsystem funnellimelight;
-    // private TeleopDrive teleopDrive;
-
     public final PowerDistribution pdp;
 
     public final CommandXboxController commandDriver1, commandDriver2;
@@ -91,6 +86,8 @@ public class RobotContainer {
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
     public final SwerveSubsystem swerveSubsystem;
+    // public final LimelightSubsystem reeflimelight = new LimelightSubsystem("reef", new Pose3d());
+    public final LimelightSubsystem funnellimelight;
 
     public final FriendlyZoneLED activeFriendlyZoneLEDCommand;
     public final FriendlyZoneLED inactiveFriendlyZoneLEDCommand;
@@ -98,6 +95,7 @@ public class RobotContainer {
     public final OpposingZoneLED opposingZoneLEDCommand;
     public final IdleLED idleLEDCommand;
     public final TurretSubsystem turretSub;
+    // public TeleopDrive teleopDrive;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -115,7 +113,7 @@ public class RobotContainer {
         ledSub = new LEDSubsystem();
         turretSub = new TurretSubsystem();
         swerveSubsystem = new SwerveSubsystem();
-        funnellimelight = new LimelightSubsystem("funnal", new Pose3d());
+        funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
 
         activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
         inactiveFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, false);
