@@ -46,13 +46,14 @@ import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.NeutralZoneLED;
 import frc.robot.commands.leds.OpposingZoneLED;
+import frc.robot.io.ButtonBox;
+import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
-import frc.robot.utils.ButtonBox;
 import frc.robot.utils.Logger;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -73,6 +74,7 @@ public class RobotContainer {
 
     public final CommandXboxController commandDriver1, commandDriver2;
     public final XboxController hidDriver1, hidDriver2;
+    public final CommandButtonBox commandButtonBox;
     public final ButtonBox hidButtonBox;
 
     private SendableChooser<Command> autoChooser;
@@ -96,7 +98,8 @@ public class RobotContainer {
         hidDriver1 = commandDriver1.getHID();
         commandDriver2 = new CommandXboxController(1);
         hidDriver2 = commandDriver2.getHID();
-        hidButtonBox = new ButtonBox(2);
+        commandButtonBox = new CommandButtonBox(2);
+        hidButtonBox = commandButtonBox.getHID();
 
         intake = new IntakeSubsystem();
         indexer = new IndexerSubsystem();

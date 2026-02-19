@@ -1,15 +1,17 @@
-package frc.robot.utils;
+package frc.robot.io;
 
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import java.util.Map;
 
 public class ButtonBox extends GenericHID {
     public enum Button {
         RESET_TURRET(1),
-        UNUSED_2(2),
+        UNJAM(2),
         UNUSED_3(3),
-        UNUSED_4(4),
+        DISABLE_ODO(4),
         UNUSED_5(5),
         UNUSED_6(6),
         UNUSED_7(7),
@@ -25,7 +27,7 @@ public class ButtonBox extends GenericHID {
     }
 
     public enum Axis {
-        UNUSED_0(0);
+        SLIDER(0);
 
         public final int value;
 
@@ -34,12 +36,23 @@ public class ButtonBox extends GenericHID {
         }
     }
 
+    private static final InterpolatingDoubleTreeMap sliderInterpolater;
+
+    static {
+        sliderInterpolater = InterpolatingDoubleTreeMap.ofEntries(
+                Map.entry(-0.95, -1.0),
+                Map.entry(-0.78, -0.5),
+                Map.entry(-0.55, 0.0),
+                Map.entry(0.7, 0.5),
+                Map.entry(1.0, 1.0));
+    }
+
     public ButtonBox(final int port) {
         super(port);
     }
 
-    public double getUnused0Axis() {
-        return getRawAxis(Axis.UNUSED_0.value);
+    public double getSliderAxis() {
+        return sliderInterpolater.get(getRawAxis(Axis.SLIDER.value));
     }
 
     public boolean getResetTurretButton() {
@@ -58,20 +71,20 @@ public class ButtonBox extends GenericHID {
         return button(Button.RESET_TURRET.value, loop);
     }
 
-    public boolean getUnused2Button() {
-        return getRawButton(Button.UNUSED_2.value);
+    public boolean getUnjamButton() {
+        return getRawButton(Button.UNJAM.value);
     }
 
-    public boolean getUnused2ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_2.value);
+    public boolean getUnjamButtonPressed() {
+        return getRawButtonPressed(Button.UNJAM.value);
     }
 
-    public boolean getUnused2ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_2.value);
+    public boolean getUnjamButtonReleased() {
+        return getRawButtonReleased(Button.UNJAM.value);
     }
 
-    public BooleanEvent unused2(EventLoop loop) {
-        return button(Button.UNUSED_2.value, loop);
+    public BooleanEvent unjam(EventLoop loop) {
+        return button(Button.UNJAM.value, loop);
     }
 
     public boolean getUnused3Button() {
@@ -90,20 +103,20 @@ public class ButtonBox extends GenericHID {
         return button(Button.UNUSED_3.value, loop);
     }
 
-    public boolean getUnused4Button() {
-        return getRawButton(Button.UNUSED_4.value);
+    public boolean getDisableOdoButton() {
+        return getRawButton(Button.DISABLE_ODO.value);
     }
 
-    public boolean getUnused4ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_4.value);
+    public boolean getDisabledOdoButtonPressed() {
+        return getRawButtonPressed(Button.DISABLE_ODO.value);
     }
 
-    public boolean getUnused4ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_4.value);
+    public boolean getDisabledOdoButtonReleased() {
+        return getRawButtonReleased(Button.DISABLE_ODO.value);
     }
 
-    public BooleanEvent unused4(EventLoop loop) {
-        return button(Button.UNUSED_4.value, loop);
+    public BooleanEvent disabledOdo(EventLoop loop) {
+        return button(Button.DISABLE_ODO.value, loop);
     }
 
     public boolean getUnused5Button() {
