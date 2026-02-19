@@ -5,6 +5,9 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants.Roller;
+import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.ShooterConstants.HoodConfig;
+import frc.robot.constants.TurretConstants;
 
 public class Alerts {
 
