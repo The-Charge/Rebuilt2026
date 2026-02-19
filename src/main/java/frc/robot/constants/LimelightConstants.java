@@ -1,17 +1,23 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 
 public class LimelightConstants {
-    public static final double kMaxAngularSpeed = 720;
-    public static final double kMaxSpeedForMegaTag1 = 0.5; // meters
-    public static final double kMaxDistanceForMegaTag1 = 3.75; // meters
-    public static final double kMaxDistance = 8; // could be increased
-    public static final boolean kVisionDiagnostics = true;
+    public static final AngularVelocity kMaxAngularSpeed = DegreesPerSecond.of(720);
+    public static final LinearVelocity kMaxSpeedForMegaTag1 = MetersPerSecond.of(0.5);
+    public static final Distance kMaxDistanceForMegaTag1 = Meters.of(3.75);
+    public static final Distance kMaxDistance = Meters.of(8); // could be increased
+    public static final boolean isLoggingVisionDiagnostics = true;
 
     public static final Time newMegaTag1ReadingThreshold = Seconds.of(10);
 
