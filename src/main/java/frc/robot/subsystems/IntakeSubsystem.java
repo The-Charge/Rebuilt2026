@@ -16,15 +16,16 @@ import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private SparkMax rollerMotor;
 
-    private Servo deployerServo;
+    private final SparkMax rollerMotor;
+    private final Servo leftDeployer, rightDeployer;
 
     private boolean deployed;
 
     public IntakeSubsystem() {
         rollerMotor = new SparkMax(IntakeConstants.Roller.motorID, MotorType.kBrushless);
-        deployerServo = new Servo(IntakeConstants.Servo.port);
+        leftDeployer = new Servo(IntakeConstants.LeftDeployer.port);
+        rightDeployer = new Servo(IntakeConstants.RightDeployer.port);
 
         deployed = false;
 
@@ -32,7 +33,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void deploy() {
-        deployerServo.set(IntakeConstants.Servo.deployedPosition);
+        leftDeployer.set(IntakeConstants.LeftDeployer.deployedPosition);
+        rightDeployer.set(IntakeConstants.RightDeployer.deployedPosition);
         deployed = true;
     }
 
@@ -78,7 +80,8 @@ public class IntakeSubsystem extends SubsystemBase {
         Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
         Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
 
-        Logger.logServo(IntakeConstants.name, "deployerServo", deployerServo);
+        Logger.logServo(IntakeConstants.name, "leftDeployer", leftDeployer);
+        Logger.logServo(IntakeConstants.name, "rightDeployer", rightDeployer);
 
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
     }

@@ -17,8 +17,14 @@ public class IntakeConstants {
         public static final double overheatingTemp = 80; // celcius
     }
 
-    public static class Servo {
+    public static class LeftDeployer {
         public static final int port = 8;
+
+        public static final double deployedPosition = 1;
+    }
+
+    public static class RightDeployer {
+        public static final int port = 7;
 
         public static final double deployedPosition = 1;
     }

@@ -192,7 +192,7 @@ public class Robot extends TimedRobot {
         }
 
         // get robot pose
-        Pose2d robotPose = Pose2d.kZero; // TODO: replace with value from odo
+        Pose2d robotPose = RobotContainer.getInstance().swerveSubsystem.getPosition();
 
         // get zone and alliance info
         FieldZone currentZone = FieldZone.fromRobotPose(robotPose);
@@ -215,8 +215,6 @@ public class Robot extends TimedRobot {
                 hasReachedPrePhaseChange = true;
             }
         }
-
-        // TODO: change friendly zone shooter behavior based on whether our hub is active
 
         // check if our hub is active
         boolean isHubActive;
@@ -305,6 +303,7 @@ public class Robot extends TimedRobot {
 
         // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinUpIndexerCommand);
         // TODO: aim turret at hub
+        // TODO: change friendly zone shooter behavior based on whether our hub is active
     }
 
     private void enterNeutralZone() {
