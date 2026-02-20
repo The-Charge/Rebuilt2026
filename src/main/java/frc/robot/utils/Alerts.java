@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants.Roller;
+import frc.robot.constants.ShooterConstants;
 
 public class Alerts {
 
@@ -34,6 +35,13 @@ public class Alerts {
 
     // climber alerts
     public static final Alert climberDisconnected, climberOverheating, climberFaults, climberConfigFail;
+
+    // shooter alerts
+    public static final Alert shooterDisconnected,
+            shooterOverheating,
+            shooterFaults,
+            shooterWarnings,
+            shooterConfigFail;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -158,6 +166,35 @@ public class Alerts {
                 String.format("Failed to update climber motor (CAN %d) config", ClimberConstants.motorID),
                 AlertType.kError);
         climberConfigFail.set(false);
+
+        shooterDisconnected = new Alert(
+                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.ShootConfig.ID),
+                AlertType.kError);
+        shooterDisconnected.set(false);
+
+        shooterOverheating = new Alert(
+                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterOverheating.set(false);
+
+        shooterFaults = new Alert(
+                String.format(
+                        "Potentially critical faults are active on shooter motor (CAN %d)",
+                        ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterFaults.set(false);
+
+        shooterWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on shooter motor (CAN %d)",
+                        ShooterConstants.ShootConfig.ID),
+                AlertType.kWarning);
+        shooterWarnings.set(false);
+
+        shooterConfigFail = new Alert(
+                String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.ShootConfig.ID),
+                AlertType.kError);
+        shooterConfigFail.set(false);
     }
 
     private Alerts() {}

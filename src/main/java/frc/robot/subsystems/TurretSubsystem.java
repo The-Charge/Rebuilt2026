@@ -116,6 +116,10 @@ public class TurretSubsystem extends SubsystemBase {
         return targetAngle;
     }
 
+    public void setAsZero() {
+        turretMotor.getEncoder().setPosition(0);
+    }
+
     @Override
     public void periodic() {
         Logger.logSubsystem(TurretConstants.subsystemName, this);

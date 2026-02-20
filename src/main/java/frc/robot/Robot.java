@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.DualBlinkLED;
+import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.RainbowLED;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.AutoDisplayUtil;
@@ -296,14 +297,18 @@ public class Robot extends TimedRobot {
     private void enterFriendlyZone(boolean isHubActive) {
         changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub,
-                isHubActive
-                        ? RobotContainer.getInstance().activeFriendlyZoneLEDCommand
-                        : RobotContainer.getInstance().inactiveFriendlyZoneLEDCommand,
+                new FriendlyZoneLED(
+                        RobotContainer.getInstance().ledSub, () -> isHubActive, () -> RobotContainer.getInstance()
+                                .getIsReadyToShoot()),
                 false);
 
-        // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinUpIndexerCommand);
-        // TODO: aim turret at hub
-        // TODO: change friendly zone shooter behavior based on whether our hub is active
+        // aim turret at hub or recenter if the hub is inactive
+        changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret,
+                isHubActive
+                        ? RobotContainer.getInstance().pointAtHubCommand
+                        : RobotContainer.getInstance().centerTurretCommand,
+                true);
     }
 
     private void enterNeutralZone() {
@@ -319,7 +324,9 @@ public class Robot extends TimedRobot {
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().opposingZoneLEDCommand, false);
 
         // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().spinDownIndexerCommand);
-        // TODO: recenter turret
+        // recenter turret
+        changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().centerTurretCommand, true);
     }
 
     private boolean isFriendlyHubActive(Alliance alliance, Alliance autoWinner, TeleopPhase phase) {

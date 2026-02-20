@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -42,10 +43,13 @@ import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.indexer.RunExchangeInReverse;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.BlinkLED;
-import frc.robot.commands.leds.FriendlyZoneLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.NeutralZoneLED;
 import frc.robot.commands.leds.OpposingZoneLED;
+import frc.robot.commands.turret.AlignTurret;
+import frc.robot.commands.turret.CalibrateTurret;
+import frc.robot.commands.turret.CenterTurret;
+import frc.robot.commands.turret.ShootTurret;
 import frc.robot.constants.LEDConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
@@ -54,10 +58,12 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -89,15 +95,17 @@ public class RobotContainer {
     public final SwerveSubsystem swerve;
     // public final LimelightSubsystem reeflimelight;
     public final LimelightSubsystem funnellimelight;
+    public final TurretSubsystem turret;
+    public final ShooterSubsystem shooter;
 
-    public final FriendlyZoneLED activeFriendlyZoneLEDCommand;
-    public final FriendlyZoneLED inactiveFriendlyZoneLEDCommand;
     public final NeutralZoneLED neutralZoneLEDCommand;
     public final OpposingZoneLED opposingZoneLEDCommand;
     public final IdleLED idleLEDCommand;
     public final TurretSubsystem turretSub;
     // public TeleopDrive teleopDrive;
     public final BlinkLED autoLEDCommand;
+    public final DeferredCommand pointAtHubCommand;
+    public final CenterTurret centerTurretCommand;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -117,13 +125,21 @@ public class RobotContainer {
         swerve = new SwerveSubsystem();
         // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
+        turret = new TurretSubsystem();
+        shooter = new ShooterSubsystem();
 
-        activeFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, true);
-        inactiveFriendlyZoneLEDCommand = new FriendlyZoneLED(ledSub, false);
         neutralZoneLEDCommand = new NeutralZoneLED(ledSub);
         opposingZoneLEDCommand = new OpposingZoneLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
+        pointAtHubCommand = new DeferredCommand(
+                () -> new AlignTurret(
+                        turret,
+                        swerve,
+                        funnellimelight,
+                        DriverStation.getAlliance().orElse(Alliance.Blue)),
+                Set.of());
+        centerTurretCommand = new CenterTurret(turretSub);
 
         ledSub.setDefaultCommand(idleLEDCommand);
 
@@ -140,12 +156,24 @@ public class RobotContainer {
                         new RunRoller(intake), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
+        commandDriver2
+                .rightTrigger()
+                .whileTrue(new DeferredCommand(
+                        () -> new ShootTurret(
+                                shooter,
+                                funnellimelight,
+                                swerve,
+                                DriverStation.getAlliance()
+                                        .map((val) -> val == Alliance.Red)
+                                        .orElse(false)),
+                        Set.of()));
 
-        // commandButtonBox.resetTurret().onTrue(new
-        // RecalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox
+                .resetTurret()
+                .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .unjam()
-                .onTrue(new ParallelCommandGroup(
+                .whileTrue(new ParallelCommandGroup(
                         new RunExchangeInReverse(indexer).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)));
         // commandButtonBox.disableOdo().onTrue();
     }
@@ -253,5 +281,9 @@ public class RobotContainer {
         boolean isRed =
                 DriverStation.getAlliance().map((val) -> val == Alliance.Red).orElse(false);
         AutoDisplayUtil.displayAutoPath(auto, isRed);
+    }
+
+    public boolean getIsReadyToShoot() {
+        return shooter.isShooterAtTargetSpeed().orElse(false); // TODO: is ready to shoot logic
     }
 }

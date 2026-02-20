@@ -1,8 +1,13 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RPM;
+
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import java.util.Optional;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
@@ -37,6 +42,8 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         public static boolean inverted = false;
         public static int currentLimit = 20;
         public static IdleMode idleMode = IdleMode.kCoast;
+
+        public static final AngularVelocity targetTolerance = RPM.of(100);
     }
 
     public static class HoodConfig {
@@ -54,6 +61,8 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     }
 
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
+    public static final Distance minShootingDistance = Meters.of(0);
+    public static final Distance maxShootingDistance = Meters.of(10);
 
     static {
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();

@@ -4,28 +4,30 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.LEDConstants;
 import frc.robot.subsystems.LEDSubsystem;
+import java.util.function.BooleanSupplier;
 
 public class FriendlyZoneLED extends Command {
 
     private final LEDSubsystem ledSub;
-    private final boolean isActive;
+    private final BooleanSupplier isActive;
+    private final BooleanSupplier isReady;
 
-    public FriendlyZoneLED(LEDSubsystem LEDSubsystem, boolean isHubActive) {
+    public FriendlyZoneLED(LEDSubsystem LEDSubsystem, BooleanSupplier isHubActive, BooleanSupplier isReadyToShoot) {
         ledSub = LEDSubsystem;
         isActive = isHubActive;
+        isReady = isReadyToShoot;
 
         addRequirements(ledSub);
     }
 
     @Override
     public void initialize() {
-        // TODO: alliance zone led logic
-        boolean isReadyToShoot = true;
-
-        if (isActive && isReadyToShoot) {
-            ledSub.solidColor(LEDConstants.chargeGreen);
-        } else if (isActive && !isReadyToShoot) {
-            ledSub.solidColor(LEDConstants.orange);
+        if (isActive.getAsBoolean()) {
+            if (isReady.getAsBoolean()) {
+                ledSub.solidColor(LEDConstants.chargeGreen);
+            } else {
+                ledSub.solidColor(LEDConstants.orange);
+            }
         } else {
             ledSub.solidColor(Color.kWhite);
         }

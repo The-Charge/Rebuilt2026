@@ -11,13 +11,12 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ShooterSubsystem.HoodPos;
 import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
 
 public class ShootTurret extends Command {
 
-    public ShooterSubsystem.HoodPos hoodPos;
+    // public ShooterSubsystem.HoodPos hoodPos;
 
     private final ShooterSubsystem shooterSub;
     private final LimelightSubsystem vSub;
@@ -57,13 +56,13 @@ public class ShootTurret extends Command {
         // Magnitude of Robot -> Hub vector
         double distance = poseToHub.getTranslation().getNorm();
 
-        if (distance > ShooterConstants.hoodPosThreshold) {
-            // if far, shoot low and far
-            shooterSub.setHoodPos(HoodPos.DOWN);
-        } else {
-            // if close, shoot high
-            shooterSub.setHoodPos(HoodPos.UP);
-        }
+        // if (distance > ShooterConstants.hoodPosThreshold) {
+        //     // if far, shoot low and far
+        //     shooterSub.setHoodPos(HoodPos.DOWN);
+        // } else {
+        //     // if close, shoot high
+        //     shooterSub.setHoodPos(HoodPos.UP);
+        // }
 
         shooterSub.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distance))); // Used to be: RPM.of(10)
     }

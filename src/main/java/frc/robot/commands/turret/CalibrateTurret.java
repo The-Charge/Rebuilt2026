@@ -17,6 +17,13 @@ public class CalibrateTurret extends Command {
     }
 
     @Override
+    public void end(boolean interrupted) {
+        turretSub.stop();
+
+        if (!interrupted) turretSub.setAsZero();
+    }
+
+    @Override
     public boolean isFinished() {
         return turretSub.isAtLimit();
     }
