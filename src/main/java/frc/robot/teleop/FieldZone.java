@@ -1,9 +1,9 @@
-package frc.robot.utils;
-
-import static edu.wpi.first.units.Units.Inches;
+package frc.robot.teleop;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.constants.FieldConstants;
+import frc.robot.utils.Logger;
 
 public enum FieldZone {
     BLUE,
@@ -16,16 +16,9 @@ public enum FieldZone {
             return NEUTRAL;
         }
 
-        double xInches = robotXPose.in(Inches);
-        /*
-         * Numbers from field manual:
-         * Blue alliance zone is from [0, 182.11)
-         * Neutral zone is from [182.11, 469.11]
-         * Red alliance zone is from (469.11, 651.22]
-         */
-        if (xInches < 182.11) {
+        if (robotXPose.lt(FieldConstants.blueZoneEdge)) {
             return BLUE;
-        } else if (xInches <= 182.11 + 143.5 * 2) {
+        } else if (robotXPose.lte(FieldConstants.redZoneEdge)) {
             return NEUTRAL;
         } else {
             return RED;

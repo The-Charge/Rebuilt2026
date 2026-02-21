@@ -4,11 +4,11 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LEDSubsystem;
 
-public class OpposingZoneLED extends Command {
+public class ActiveAtFZoneLED extends Command {
 
     private final LEDSubsystem ledSub;
 
-    public OpposingZoneLED(LEDSubsystem LEDSubsystem) {
+    public ActiveAtFZoneLED(LEDSubsystem LEDSubsystem) {
         ledSub = LEDSubsystem;
         addRequirements(ledSub);
     }

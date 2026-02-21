@@ -1,11 +1,11 @@
-package frc.robot.commands.turret;
+package frc.robot.commands.shooter;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
@@ -14,7 +14,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
 
-public class ShootTurret extends Command {
+public class PrepShootAtHub extends Command {
 
     // public ShooterSubsystem.HoodPos hoodPos;
 
@@ -23,7 +23,8 @@ public class ShootTurret extends Command {
     private final SwerveSubsystem swerveSub;
     private final boolean isRed;
 
-    public ShootTurret(ShooterSubsystem shootSub, LimelightSubsystem vSub, SwerveSubsystem swerveSub, boolean isRed) {
+    public PrepShootAtHub(
+            ShooterSubsystem shootSub, LimelightSubsystem vSub, SwerveSubsystem swerveSub, boolean isRed) {
         this.shooterSub = shootSub;
         this.vSub = vSub;
         this.swerveSub = swerveSub;
@@ -36,25 +37,21 @@ public class ShootTurret extends Command {
 
     @Override
     public void execute() {
-        Pose2d poseToHub;
+        Translation2d offsetToHub;
 
         // Use HubTag directly for distance
         Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
         // Otherwise use swerve positioning
-        if (!hubTagPose.isEmpty()) {
-            poseToHub = hubTagPose.get().toPose2d();
+        if (hubTagPose.isPresent()) {
+            offsetToHub = hubTagPose.get().getTranslation().toTranslation2d();
         } else {
             // Get Swerve Distance to Hub
-
-            // Hub Pose - Robot Swerve Pose
-            Transform2d poseToHubTransform = FieldConstants.getHubPos(isRed).minus(swerveSub.getPose());
-            // Transform2d -> Pose2d
-            poseToHub = new Pose2d(poseToHubTransform.getX(), poseToHubTransform.getY(), new Rotation2d());
-            return;
+            offsetToHub =
+                    FieldConstants.getHubLoc(isRed).minus(swerveSub.getPose().getTranslation());
         }
-        // Magnitude of Robot -> Hub vector
-        double distance = poseToHub.getTranslation().getNorm();
+        Distance distToTarget = Meters.of(Math.hypot(
+                offsetToHub.getMeasureX().in(Meters), offsetToHub.getMeasureY().in(Meters)));
 
         // if (distance > ShooterConstants.hoodPosThreshold) {
         //     // if far, shoot low and far
@@ -64,7 +61,8 @@ public class ShootTurret extends Command {
         //     shooterSub.setHoodPos(HoodPos.UP);
         // }
 
-        shooterSub.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distance))); // Used to be: RPM.of(10)
+        shooterSub.shoot(
+                RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters)))); // Used to be: RPM.of(10)
     }
 
     @Override

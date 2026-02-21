@@ -42,14 +42,16 @@ import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.indexer.RunExchangeInReverse;
 import frc.robot.commands.intake.RunRoller;
+import frc.robot.commands.leds.ActiveAtFZoneLED;
+import frc.robot.commands.leds.ActiveAtHubLED;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.IdleLED;
-import frc.robot.commands.leds.NeutralZoneLED;
-import frc.robot.commands.leds.OpposingZoneLED;
+import frc.robot.commands.leds.InactiveLED;
+import frc.robot.commands.shooter.PrepShootAtHub;
+import frc.robot.commands.shooter.PrepShootAtPoint;
 import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
-import frc.robot.commands.turret.ShootTurret;
 import frc.robot.constants.LEDConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
@@ -61,8 +63,10 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
+import frc.robot.utils.MiscUtils;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -98,14 +102,17 @@ public class RobotContainer {
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
 
-    public final NeutralZoneLED neutralZoneLEDCommand;
-    public final OpposingZoneLED opposingZoneLEDCommand;
+    public final ActiveAtHubLED activeAtHubLEDCommand;
+    public final ActiveAtFZoneLED activeAtFZoneLEDCommand;
+    public final InactiveLED inactiveLEDCommand;
     public final IdleLED idleLEDCommand;
-    public final TurretSubsystem turretSub;
     // public TeleopDrive teleopDrive;
     public final BlinkLED autoLEDCommand;
     public final DeferredCommand pointAtHubCommand;
     public final CenterTurret centerTurretCommand;
+    public final PrepShootAtPoint prepShootAtFZoneCommand;
+    public final DeferredCommand prepShootAtHubCommand;
+    public final AlignTurret pointAtFZoneCommand;
 
     private RobotContainer() {
         pdp = new PowerDistribution();
@@ -121,15 +128,15 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretSub = new TurretSubsystem();
         swerve = new SwerveSubsystem();
         // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
 
-        neutralZoneLEDCommand = new NeutralZoneLED(ledSub);
-        opposingZoneLEDCommand = new OpposingZoneLED(ledSub);
+        activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> getIsReadyToShoot());
+        activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
+        inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
         pointAtHubCommand = new DeferredCommand(
@@ -139,9 +146,27 @@ public class RobotContainer {
                         funnellimelight,
                         DriverStation.getAlliance().orElse(Alliance.Blue)),
                 Set.of());
-        centerTurretCommand = new CenterTurret(turretSub);
+        centerTurretCommand = new CenterTurret(turret);
+        prepShootAtFZoneCommand = new PrepShootAtPoint(
+                shooter,
+                swerve,
+                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
+        prepShootAtHubCommand = new DeferredCommand(
+                () -> new PrepShootAtHub(
+                        shooter,
+                        funnellimelight,
+                        swerve,
+                        DriverStation.getAlliance()
+                                .map((val) -> val == Alliance.Red)
+                                .orElse(false)),
+                Set.of());
+        pointAtFZoneCommand = new AlignTurret(
+                turret,
+                swerve,
+                funnellimelight,
+                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
 
-        ledSub.setDefaultCommand(idleLEDCommand);
+        MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
         configureBindings();
         configureAutonomous();
@@ -159,7 +184,7 @@ public class RobotContainer {
         commandDriver2
                 .rightTrigger()
                 .whileTrue(new DeferredCommand(
-                        () -> new ShootTurret(
+                        () -> new PrepShootAtHub(
                                 shooter,
                                 funnellimelight,
                                 swerve,
@@ -232,7 +257,7 @@ public class RobotContainer {
                 new PPHolonomicDriveController(translationPID, rotationPID),
                 config,
                 shouldFlipSupplier /*,
-                                   swerve*/);
+                                   swerve*/); // TODO: add swerve dependency
 
         autoChooser = AutoBuilder.buildAutoChooser();
         setupAutoDisplay();

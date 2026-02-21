@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +15,7 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class AlignTurret extends Command {
     private final SwerveSubsystem swerveSub;
@@ -22,17 +23,20 @@ public class AlignTurret extends Command {
     private final LimelightSubsystem limelightSub;
 
     private final Optional<Boolean> isRed;
-    private final Optional<Pose2d> targetPose;
+    private final Optional<Supplier<Translation2d>> targetPoint;
 
     // Use AlignTurret to align Turret to a specified Pose (usually given by Swerve, or LimelightHelpers.getBotPose())
     public AlignTurret(
-            TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Pose2d targetPose) {
+            TurretSubsystem turret,
+            SwerveSubsystem swerve,
+            LimelightSubsystem limelight,
+            Supplier<Translation2d> point) {
 
         this.swerveSub = swerve;
         this.turretSub = turret;
         this.limelightSub = limelight;
 
-        this.targetPose = Optional.of(targetPose);
+        this.targetPoint = Optional.of(point);
         this.isRed = Optional.empty();
 
         addRequirements(turret);
@@ -47,7 +51,7 @@ public class AlignTurret extends Command {
         this.limelightSub = limelight;
 
         this.isRed = Optional.of(alliance == Alliance.Red);
-        this.targetPose = Optional.empty();
+        this.targetPoint = Optional.empty();
 
         addRequirements(turret);
     }
@@ -65,14 +69,14 @@ public class AlignTurret extends Command {
 
             // If can't see hub tag, use swervePose
             if (!succeeded) {
-                swerveAlign(FieldConstants.getHubPos(isRed.get()));
+                swerveAlign(FieldConstants.getHubLoc(isRed.get()));
             }
             return;
         }
 
         // If supplied given pose
-        if (targetPose.isPresent()) {
-            swerveAlign(targetPose.get());
+        if (targetPoint.isPresent()) {
+            swerveAlign(targetPoint.get().get());
         }
     }
 
@@ -95,9 +99,9 @@ public class AlignTurret extends Command {
         return true;
     }
 
-    public void swerveAlign(Pose2d targetPose) {
+    public void swerveAlign(Translation2d targetLoc) {
         Pose2d robotPose = swerveSub.getPose();
-        Transform2d vectorDifference = targetPose.minus(robotPose);
+        Translation2d vectorDifference = targetLoc.minus(robotPose.getTranslation());
         Angle angleFieldRelative = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
         Angle absoluteAngle =
                 angleFieldRelative.plus(Degrees.of(robotPose.getRotation().getDegrees()));

@@ -1,21 +1,29 @@
 package frc.robot.commands.leds;
 
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.constants.LEDConstants;
 import frc.robot.subsystems.LEDSubsystem;
+import java.util.function.BooleanSupplier;
 
-public class NeutralZoneLED extends Command {
+public class ActiveAtHubLED extends Command {
 
     private final LEDSubsystem ledSub;
+    private final BooleanSupplier isReady;
 
-    public NeutralZoneLED(LEDSubsystem LEDSubsystem) {
+    public ActiveAtHubLED(LEDSubsystem LEDSubsystem, BooleanSupplier isReadyToShoot) {
         ledSub = LEDSubsystem;
+        isReady = isReadyToShoot;
+
         addRequirements(ledSub);
     }
 
     @Override
     public void initialize() {
-        ledSub.solidColor(Color.kWhite);
+        if (isReady.getAsBoolean()) {
+            ledSub.solidColor(LEDConstants.chargeGreen);
+        } else {
+            ledSub.solidColor(LEDConstants.orange);
+        }
     }
 
     @Override
@@ -28,7 +36,7 @@ public class NeutralZoneLED extends Command {
 
     @Override
     public boolean isFinished() {
-        return false; // don't end unless interrupted
+        return false;
     }
 
     @Override
