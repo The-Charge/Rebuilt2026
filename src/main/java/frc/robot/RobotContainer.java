@@ -34,13 +34,19 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
+import frc.robot.commands.climb.ManualSpool;
 import frc.robot.commands.indexer.RunExchangeInReverse;
+import frc.robot.commands.indexer.SpinDownIndexer;
+import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
@@ -49,9 +55,11 @@ import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.InactiveLED;
 import frc.robot.commands.shooter.PrepShootAtHub;
 import frc.robot.commands.shooter.PrepShootAtPoint;
+import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
+import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
@@ -134,7 +142,7 @@ public class RobotContainer {
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
 
-        activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> getIsReadyToShoot());
+        activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());
         activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
         inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
@@ -183,15 +191,8 @@ public class RobotContainer {
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
-                .whileTrue(new DeferredCommand(
-                        () -> new PrepShootAtHub(
-                                shooter,
-                                funnellimelight,
-                                swerve,
-                                DriverStation.getAlliance()
-                                        .map((val) -> val == Alliance.Red)
-                                        .orElse(false)),
-                        Set.of()));
+                .whileTrue(new RepeatCommand(new ConditionalCommand(
+                        new SpinUpIndexer(indexer, false), Commands.none(), () -> isReadyToShoot())));
 
         commandButtonBox
                 .resetTurret()
@@ -201,14 +202,29 @@ public class RobotContainer {
                 .whileTrue(new ParallelCommandGroup(
                         new RunExchangeInReverse(indexer).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)));
         // commandButtonBox.disableOdo().onTrue();
+        commandButtonBox
+                .stopShoot()
+                .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox
+                .spoolDown()
+                .whileTrue(new ManualSpool(climber, ClimberConstants.manualSpoolSpeed)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox
+                .spoolUp()
+                .whileTrue(new ManualSpool(climber, -ClimberConstants.manualSpoolSpeed)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     private void addNamedCommands() {
         NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
         NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
-        NamedCommands.registerCommand("PrepShooter", Commands.print("PrepShooter Command not implemented"));
-        NamedCommands.registerCommand("Shoot", Commands.print("Shoot Command not implemented"));
-        NamedCommands.registerCommand("HaltShooter", Commands.print("HaltShooter Command not implemented"));
+        NamedCommands.registerCommand(
+                "PrepShootAtHub", new ParallelCommandGroup(prepShootAtHubCommand, pointAtHubCommand));
+        NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer, false));
+        NamedCommands.registerCommand(
+                "StopShoot", new ParallelCommandGroup(new StopShooter(shooter), new SpinDownIndexer(indexer)));
+        NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
+        NamedCommands.registerCommand("WaitForReadyToShoot", new WaitUntilCommand(() -> isReadyToShoot()));
     }
 
     public Command getAutonomousCommand() {
@@ -256,8 +272,8 @@ public class RobotContainer {
                 outputConsumer,
                 new PPHolonomicDriveController(translationPID, rotationPID),
                 config,
-                shouldFlipSupplier /*,
-                                   swerve*/); // TODO: add swerve dependency
+                shouldFlipSupplier,
+                swerve);
 
         autoChooser = AutoBuilder.buildAutoChooser();
         setupAutoDisplay();
@@ -308,7 +324,7 @@ public class RobotContainer {
         AutoDisplayUtil.displayAutoPath(auto, isRed);
     }
 
-    public boolean getIsReadyToShoot() {
+    public boolean isReadyToShoot() {
         return shooter.isShooterAtTargetSpeed().orElse(false); // TODO: is ready to shoot logic
     }
 }

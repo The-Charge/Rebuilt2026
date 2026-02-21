@@ -27,4 +27,5 @@ public class ClimberConstants {
     public static final ClimberPosition upPosition = ClimberPosition.fromMechanismInches(90);
     public static final ClimberPosition downPosition = ClimberPosition.fromMechanismInches(0);
     public static final ClimberPosition targetTolerance = ClimberPosition.fromMechanismInches(0.1);
+    public static final double manualSpoolSpeed = 0.05;
 }

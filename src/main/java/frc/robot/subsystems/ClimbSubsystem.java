@@ -83,6 +83,12 @@ public class ClimbSubsystem extends SubsystemBase {
         motor.stopMotor();
     }
 
+    public void dutyCycle(double perc) {
+        motorTarget = Optional.empty();
+
+        motor.set(perc);
+    }
+
     public ClimberPosition getPosition() {
         return ClimberPosition.fromMotorRotations(motor.getPosition().getValue().in(Units.Rotations));
     }

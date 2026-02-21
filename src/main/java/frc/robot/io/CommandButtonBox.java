@@ -75,28 +75,28 @@ public class CommandButtonBox extends CommandGenericHID {
         return button(ButtonBox.Button.UNUSED_7.value, loop);
     }
 
-    public Trigger ununsed8() {
-        return ununsed8(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger stopShoot() {
+        return stopShoot(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger ununsed8(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_8.value, loop);
+    public Trigger stopShoot(EventLoop loop) {
+        return button(ButtonBox.Button.STOP_SHOOT.value, loop);
     }
 
-    public Trigger unused9() {
-        return unused9(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger spoolDown() {
+        return spoolDown(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused9(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_9.value, loop);
+    public Trigger spoolDown(EventLoop loop) {
+        return button(ButtonBox.Button.SPOOL_DOWN.value, loop);
     }
 
-    public Trigger unused10() {
-        return unused10(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger spoolUp() {
+        return spoolUp(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused10(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_10.value, loop);
+    public Trigger spoolUp(EventLoop loop) {
+        return button(ButtonBox.Button.SPOOL_UP.value, loop);
     }
 
     public Trigger slider(double threshold, EventLoop loop) {

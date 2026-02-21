@@ -5,8 +5,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class SwerveSubsystem {
+public class SwerveSubsystem extends SubsystemBase {
 
     public double getSpeed() {
         // TODO Auto-generated method stub

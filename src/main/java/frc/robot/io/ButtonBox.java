@@ -15,9 +15,9 @@ public class ButtonBox extends GenericHID {
         UNUSED_5(5),
         UNUSED_6(6),
         UNUSED_7(7),
-        UNUSED_8(8),
-        UNUSED_9(9),
-        UNUSED_10(10);
+        STOP_SHOOT(8),
+        SPOOL_DOWN(9),
+        SPOOL_UP(10);
 
         public final int value;
 
@@ -167,51 +167,51 @@ public class ButtonBox extends GenericHID {
         return button(Button.UNUSED_7.value, loop);
     }
 
-    public boolean getUnused8Button() {
-        return getRawButton(Button.UNUSED_8.value);
+    public boolean getStopShootButton() {
+        return getRawButton(Button.STOP_SHOOT.value);
     }
 
-    public boolean getUnused8ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_8.value);
+    public boolean getStopShootButtonPressed() {
+        return getRawButtonPressed(Button.STOP_SHOOT.value);
     }
 
-    public boolean getUnused8ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_8.value);
+    public boolean getStopShootButtonReleased() {
+        return getRawButtonReleased(Button.STOP_SHOOT.value);
     }
 
-    public BooleanEvent unused8(EventLoop loop) {
-        return button(Button.UNUSED_8.value, loop);
+    public BooleanEvent stopShoot(EventLoop loop) {
+        return button(Button.STOP_SHOOT.value, loop);
     }
 
-    public boolean getUnused9Button() {
-        return getRawButton(Button.UNUSED_9.value);
+    public boolean getSpoolDownButton() {
+        return getRawButton(Button.SPOOL_DOWN.value);
     }
 
-    public boolean getUnused9ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_9.value);
+    public boolean getSpoolDownButtonPressed() {
+        return getRawButtonPressed(Button.SPOOL_DOWN.value);
     }
 
-    public boolean getUnused9ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_9.value);
+    public boolean getSpoolDownButtonReleased() {
+        return getRawButtonReleased(Button.SPOOL_DOWN.value);
     }
 
-    public BooleanEvent unused9(EventLoop loop) {
-        return button(Button.UNUSED_9.value, loop);
+    public BooleanEvent spoolDown(EventLoop loop) {
+        return button(Button.SPOOL_DOWN.value, loop);
     }
 
-    public boolean getUnused10Button() {
-        return getRawButton(Button.UNUSED_10.value);
+    public boolean getSpoolUpButton() {
+        return getRawButton(Button.SPOOL_UP.value);
     }
 
-    public boolean getUnused10ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_10.value);
+    public boolean getSpoolUpButtonPressed() {
+        return getRawButtonPressed(Button.SPOOL_UP.value);
     }
 
-    public boolean getUnused10ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_10.value);
+    public boolean getSpoolUpButtonReleased() {
+        return getRawButtonReleased(Button.SPOOL_UP.value);
     }
 
-    public BooleanEvent ununsed10(EventLoop loop) {
-        return button(Button.UNUSED_10.value, loop);
+    public BooleanEvent spoolUp(EventLoop loop) {
+        return button(Button.SPOOL_UP.value, loop);
     }
 }

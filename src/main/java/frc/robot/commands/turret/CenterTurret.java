@@ -16,7 +16,7 @@ public class CenterTurret extends Command {
 
     @Override
     public void initialize() {
-        turret.setTurretAngle(TurretConstants.IllegalAngle.center);
+        turret.setTurretAngle(TurretConstants.centerAngle);
     }
 
     @Override

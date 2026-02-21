@@ -168,31 +168,31 @@ public class Alerts {
         climberConfigFail.set(false);
 
         shooterDisconnected = new Alert(
-                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.ShootConfig.ID),
+                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.ShootConfig.motorID),
                 AlertType.kError);
         shooterDisconnected.set(false);
 
         shooterOverheating = new Alert(
-                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.ShootConfig.ID),
+                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.ShootConfig.motorID),
                 AlertType.kWarning);
         shooterOverheating.set(false);
 
         shooterFaults = new Alert(
                 String.format(
                         "Potentially critical faults are active on shooter motor (CAN %d)",
-                        ShooterConstants.ShootConfig.ID),
+                        ShooterConstants.ShootConfig.motorID),
                 AlertType.kWarning);
         shooterFaults.set(false);
 
         shooterWarnings = new Alert(
                 String.format(
                         "Potentially critical warnings are active on shooter motor (CAN %d)",
-                        ShooterConstants.ShootConfig.ID),
+                        ShooterConstants.ShootConfig.motorID),
                 AlertType.kWarning);
         shooterWarnings.set(false);
 
         shooterConfigFail = new Alert(
-                String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.ShootConfig.ID),
+                String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.ShootConfig.motorID),
                 AlertType.kError);
         shooterConfigFail.set(false);
     }

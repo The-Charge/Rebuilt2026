@@ -75,6 +75,7 @@ public class Robot extends TimedRobot {
         }
 
         Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
+        Logger.logBool("", "isReadyToShoot", RobotContainer.getInstance().isReadyToShoot());
     }
 
     @Override

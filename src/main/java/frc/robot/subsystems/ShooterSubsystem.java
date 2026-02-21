@@ -33,7 +33,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private Optional<AngularVelocity> targetShooterSpeed;
 
     public ShooterSubsystem() {
-        shootMotor = new SparkFlex(ShootConfig.ID, MotorType.kBrushless);
+        shootMotor = new SparkFlex(ShootConfig.motorID, MotorType.kBrushless);
         // hoodMotor = new SparkMax(HoodConfig.ID, MotorType.kBrushless);
 
         // hoodPos = HoodPos.DOWN;

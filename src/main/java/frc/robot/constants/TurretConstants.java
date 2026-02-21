@@ -31,25 +31,8 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final double ticksPerRotation = 30.5; // We don't know why this is the case, it just is.
     public static final double rotationsPerTick = 1 / ticksPerRotation;
 
-    public static final class IllegalAngle {
-        public static final Angle center = Degrees.of(69.420);
-        public static final Angle epsilon = Degrees.of(30);
-        public static final Angle min = center.minus(epsilon);
-        public static final Angle max = center.plus(epsilon);
-
-        // Returns if the give angle cannot be pointed at by the turret
-        public static boolean isIllegal(Angle theta) {
-            theta = wrap(theta);
-            return theta.gte(min) && theta.lte(max);
-        }
-
-        // Moves an angle into [0, 360)
-        public static Angle wrap(Angle theta) {
-            return Degrees.of(((theta.in(Degrees) % 360) + 360) % 360); // Proper modulus for negative values
-        }
-
-        public static Angle toContinuousAngle(Angle theta) {
-            return wrap(theta.minus(max)).plus(max);
-        }
-    }
+    public static final Angle centerAngle = Degrees.of(69.420);
+    public static final Angle epsilon = Degrees.of(30);
+    public static final Angle minAngle = centerAngle.minus(epsilon);
+    public static final Angle maxAngle = centerAngle.plus(epsilon);
 }
