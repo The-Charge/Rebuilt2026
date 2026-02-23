@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.ShooterConstants.ShootConfig;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import java.util.Optional;
@@ -123,6 +124,8 @@ public class ShooterSubsystem extends SubsystemBase {
         Logger.logSubsystem(ShooterConstants.subsystemName, this);
 
         Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
+        CANMonitor.logCANDeviceStatus(
+                "shootMotor", ShooterConstants.ShootConfig.motorID, SparkUtils.isConnected(shootMotor));
         Alerts.shooterDisconnected.set(!SparkUtils.isConnected(shootMotor));
         Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
         Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));

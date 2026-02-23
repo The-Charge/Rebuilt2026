@@ -32,7 +32,11 @@ public class LEDSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.logSubsystem("LED", this);
+        Logger.logSubsystem(LEDConstants.subsystemName, this);
+        Logger.logString(
+                LEDConstants.subsystemName,
+                "currentPattern",
+                pattern.map((val) -> val.getClass().getName()).orElse("None"));
 
         if (pattern != null && pattern.isPresent()) {
             pattern.get().applyTo(buffer);

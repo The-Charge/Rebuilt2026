@@ -17,7 +17,11 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final boolean inverted = false;
     public static final double maxDutyCycle = .10;
     public static final Optional<Double> nominalVoltage = Optional.empty();
-    public static final double calibrationSpeed = 0.1;
+
+    public static final boolean forwardHardLimitEnabled = true;
+    public static final Optional<Double> forwardHardLimitResetRots = Optional.empty();
+    public static final boolean reverseHardLimitEnabled = true;
+    public static final Optional<Double> reverseHardLimitResetRots = Optional.empty();
 
     public static final double kP = 0.3;
     public static final double kI = 0;
@@ -35,4 +39,5 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final Angle epsilon = Degrees.of(30);
     public static final Angle minAngle = centerAngle.minus(epsilon);
     public static final Angle maxAngle = centerAngle.plus(epsilon);
+    public static final double calibrationSpeed = 0.1;
 }

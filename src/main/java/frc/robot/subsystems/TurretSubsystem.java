@@ -13,6 +13,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
 import frc.robot.utils.IllegalTurretAngle;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
@@ -49,11 +51,17 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.kS,
                 TurretConstants.kV,
                 TurretConstants.kA);
+        SparkUtils.configureHardStops(
+                turretConfig,
+                TurretConstants.forwardHardLimitEnabled,
+                TurretConstants.forwardHardLimitResetRots,
+                TurretConstants.reverseHardLimitEnabled,
+                TurretConstants.reverseHardLimitResetRots);
 
         if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
             Logger.reportError("Failed to configure turret motor");
-            // Alerts.spindexerConfigFail.set(true);
+            Alerts.turretConfigFail.set(true);
         }
 
         targetAngle = Optional.empty();
@@ -125,10 +133,15 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.logSubsystem(TurretConstants.subsystemName, this);
 
         Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
+        CANMonitor.logCANDeviceStatus("turretMotor", TurretConstants.motorID, SparkUtils.isConnected(turretMotor));
+        Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
+        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
 
-        // Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
-        // Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
-        // Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
-        // Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        Logger.logDouble(
+                TurretConstants.subsystemName,
+                "targetRots",
+                targetAngle.map((val) -> val.in(Rotations)).orElse(Double.NaN));
     }
 }

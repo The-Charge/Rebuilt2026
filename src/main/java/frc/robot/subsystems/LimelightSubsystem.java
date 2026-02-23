@@ -21,6 +21,7 @@ import frc.robot.utils.LimelightHelpers.LimelightResults;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.utils.LimelightHelpers.PoseEstimate;
 import frc.robot.utils.LimelightHelpers.RawFiducial;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
@@ -31,6 +32,11 @@ public class LimelightSubsystem extends SubsystemBase {
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(cameraName, this);
     }
 
     public void setCameraOffset(Pose3d cameraOffset) {

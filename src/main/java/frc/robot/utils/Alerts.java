@@ -6,6 +6,7 @@ import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.TurretConstants;
 
 public class Alerts {
 
@@ -42,6 +43,9 @@ public class Alerts {
             shooterFaults,
             shooterWarnings,
             shooterConfigFail;
+
+    // turret alerts
+    public static final Alert turretDisconnected, turretOverheating, turretFaults, turretWarnings, turretConfigFail;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -195,6 +199,32 @@ public class Alerts {
                 String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.ShootConfig.motorID),
                 AlertType.kError);
         shooterConfigFail.set(false);
+
+        turretDisconnected = new Alert(
+                String.format("Missing connection to turret motor (CAN %d)", TurretConstants.motorID),
+                AlertType.kError);
+        turretDisconnected.set(false);
+
+        turretOverheating = new Alert(
+                String.format("Turret motor (CAN %d) is overheating", TurretConstants.motorID), AlertType.kWarning);
+        turretOverheating.set(false);
+
+        turretFaults = new Alert(
+                String.format(
+                        "Potentially critical faults are active on turret motor (CAN %d)", TurretConstants.motorID),
+                AlertType.kWarning);
+        turretFaults.set(false);
+
+        turretWarnings = new Alert(
+                String.format(
+                        "Potentially critical warnings are active on turret motor (CAN %d)", TurretConstants.motorID),
+                AlertType.kWarning);
+        turretWarnings.set(false);
+
+        turretConfigFail = new Alert(
+                String.format("Failed to update turret motor (CAN %d) config", TurretConstants.motorID),
+                AlertType.kError);
+        turretConfigFail.set(false);
     }
 
     private Alerts() {}

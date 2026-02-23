@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.AddressableLED.ColorOrder;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class LEDConstants {
+    public static final String subsystemName = "LED";
+
     public static final int port = 9;
     public static final int ledCount = 43;
     // Our LED strip has a density of 720 LEDs per meter
