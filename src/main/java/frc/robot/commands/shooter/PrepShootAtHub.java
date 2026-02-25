@@ -14,6 +14,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
 
+
+// Set shooter velocity for correct speed based on hub distance
 public class PrepShootAtHub extends Command {
 
     // public ShooterSubsystem.HoodPos hoodPos;
