@@ -3,6 +3,7 @@ package frc.robot.commands.climb;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ClimbSubsystem;
 
+// Set Speed on climb manually
 public class ManualSpool extends Command {
 
     private final ClimbSubsystem climb;

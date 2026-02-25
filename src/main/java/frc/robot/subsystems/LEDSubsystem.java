@@ -11,6 +11,8 @@ import frc.robot.constants.LEDConstants;
 import frc.robot.utils.Logger;
 import java.util.Optional;
 
+// Apply pattern in periodic (each apply pattern is one frame),
+// Every time update pattern and periodic will apply
 public class LEDSubsystem extends SubsystemBase {
 
     private final AddressableLED led;

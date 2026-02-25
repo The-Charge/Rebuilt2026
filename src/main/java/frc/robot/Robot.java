@@ -30,7 +30,8 @@ public class Robot extends TimedRobot {
         Logger.init(); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
-        // handle disconnect of CAN devices
+        // handle disconnect of CAN devices; 
+        // set Callback function to log recconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
                 Logger.println(String.format("Reconnected to CAN device %d", id));
