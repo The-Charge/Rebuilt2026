@@ -33,6 +33,7 @@ public class LimelightCommand extends Command {
     }
 
     // Use both cameras together (CTRE Swerve; kalman filter)
+    @SuppressWarnings("unused")
     private void multiple() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
@@ -49,6 +50,7 @@ public class LimelightCommand extends Command {
     }
 
     // Strictly prefers Turret limelight
+    @SuppressWarnings("unused")
     private void oneAtATime() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
@@ -66,6 +68,7 @@ public class LimelightCommand extends Command {
     }
 
     // tries to find which measurement is best
+    @SuppressWarnings("unused")
     private void preferential() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
