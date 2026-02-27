@@ -40,4 +40,5 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final Angle minAngle = centerAngle.minus(epsilon);
     public static final Angle maxAngle = centerAngle.plus(epsilon);
     public static final double calibrationSpeed = 0.1;
+    public static final double manualSpeed = 0.1;
 }

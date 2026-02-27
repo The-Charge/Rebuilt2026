@@ -12,9 +12,9 @@ public class ButtonBox extends GenericHID {
         UNJAM(2),
         UNUSED_3(3),
         DISABLE_ODO(4),
-        UNUSED_5(5),
-        UNUSED_6(6),
-        UNUSED_7(7),
+        TURRET_LEFT(5),
+        TURRET_RIGHT(6),
+        TEST_SHOOT(7),
         STOP_SHOOT(8),
         SPOOL_DOWN(9),
         SPOOL_UP(10);
@@ -119,52 +119,52 @@ public class ButtonBox extends GenericHID {
         return button(Button.DISABLE_ODO.value, loop);
     }
 
-    public boolean getUnused5Button() {
-        return getRawButton(Button.UNUSED_5.value);
+    public boolean getTurretLeftButton() {
+        return getRawButton(Button.TURRET_LEFT.value);
     }
 
-    public boolean getUnused5ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_5.value);
+    public boolean getTurretLeftButtonPressed() {
+        return getRawButtonPressed(Button.TURRET_LEFT.value);
     }
 
-    public boolean getUnused5ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_5.value);
+    public boolean getTurretLeftButtonReleased() {
+        return getRawButtonReleased(Button.TURRET_LEFT.value);
     }
 
-    public BooleanEvent unused5(EventLoop loop) {
-        return button(Button.UNUSED_5.value, loop);
+    public BooleanEvent turretLeft(EventLoop loop) {
+        return button(Button.TURRET_LEFT.value, loop);
     }
 
-    public boolean getUnused6Button() {
-        return getRawButton(Button.UNUSED_6.value);
+    public boolean getTurretRightButton() {
+        return getRawButton(Button.TURRET_RIGHT.value);
     }
 
-    public boolean getUnused6ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_6.value);
+    public boolean getTurretRightButtonPressed() {
+        return getRawButtonPressed(Button.TURRET_RIGHT.value);
     }
 
-    public boolean getUnused6ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_6.value);
+    public boolean getTurretRightButtonReleased() {
+        return getRawButtonReleased(Button.TURRET_RIGHT.value);
     }
 
-    public BooleanEvent unused6(EventLoop loop) {
-        return button(Button.UNUSED_6.value, loop);
+    public BooleanEvent turretRight(EventLoop loop) {
+        return button(Button.TURRET_RIGHT.value, loop);
     }
 
-    public boolean getUnused7Button() {
-        return getRawButton(Button.UNUSED_7.value);
+    public boolean getTestShootButton() {
+        return getRawButton(Button.TEST_SHOOT.value);
     }
 
-    public boolean getUnused7ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_7.value);
+    public boolean getTestShootButtonPressed() {
+        return getRawButtonPressed(Button.TEST_SHOOT.value);
     }
 
-    public boolean getUnused7ButtonReleased() {
-        return getRawButtonReleased(Button.UNUSED_7.value);
+    public boolean getTestButtonShootReleased() {
+        return getRawButtonReleased(Button.TEST_SHOOT.value);
     }
 
-    public BooleanEvent unused7(EventLoop loop) {
-        return button(Button.UNUSED_7.value, loop);
+    public BooleanEvent testShoot(EventLoop loop) {
+        return button(Button.TEST_SHOOT.value, loop);
     }
 
     public boolean getStopShootButton() {

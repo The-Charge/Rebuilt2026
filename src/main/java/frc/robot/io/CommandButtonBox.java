@@ -51,28 +51,28 @@ public class CommandButtonBox extends CommandGenericHID {
         return button(ButtonBox.Button.DISABLE_ODO.value, loop);
     }
 
-    public Trigger unused5() {
-        return unused5(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger turretLeft() {
+        return turretLeft(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused5(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_5.value, loop);
+    public Trigger turretLeft(EventLoop loop) {
+        return button(ButtonBox.Button.TURRET_LEFT.value, loop);
     }
 
-    public Trigger unused6() {
-        return unused6(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger turretRight() {
+        return turretRight(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused6(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_6.value, loop);
+    public Trigger turretRight(EventLoop loop) {
+        return button(ButtonBox.Button.TURRET_RIGHT.value, loop);
     }
 
-    public Trigger unused7() {
-        return unused7(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger testShoot() {
+        return testShoot(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused7(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_7.value, loop);
+    public Trigger testShoot(EventLoop loop) {
+        return button(ButtonBox.Button.TEST_SHOOT.value, loop);
     }
 
     public Trigger stopShoot() {

@@ -128,6 +128,11 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.getEncoder().setPosition(0);
     }
 
+    public void dutyCycle(double duty) {
+        turretMotor.set(duty);
+        targetAngle = Optional.empty();
+    }
+
     @Override
     public void periodic() {
         Logger.logSubsystem(TurretConstants.subsystemName, this);

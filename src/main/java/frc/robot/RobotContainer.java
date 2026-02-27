@@ -44,7 +44,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
-import frc.robot.commands.indexer.RunExchangeInReverse;
 import frc.robot.commands.indexer.SpinDownIndexer;
 import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.intake.RunRoller;
@@ -53,14 +52,18 @@ import frc.robot.commands.leds.ActiveAtHubLED;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.InactiveLED;
+import frc.robot.commands.shooter.ManualShoot;
 import frc.robot.commands.shooter.PrepShootAtHub;
 import frc.robot.commands.shooter.PrepShootAtPoint;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
+import frc.robot.commands.turret.ManualTurret;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
+import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.TurretConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -197,11 +200,22 @@ public class RobotContainer {
         commandButtonBox
                 .resetTurret()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox
-                .unjam()
-                .whileTrue(new ParallelCommandGroup(
-                        new RunExchangeInReverse(indexer).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)));
         // commandButtonBox.disableOdo().onTrue();
+        commandButtonBox
+                .turretLeft()
+                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox
+                .turretRight()
+                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox
+                .testShoot()
+                .onTrue(new ManualShoot(
+                                shooter,
+                                () -> ShooterConstants.ShootConfig.maxManualSpeed.times(
+                                        -hidButtonBox.getSliderAxis() + 1 / 2.0))
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
@@ -325,6 +339,6 @@ public class RobotContainer {
     }
 
     public boolean isReadyToShoot() {
-        return shooter.isShooterAtTargetSpeed().orElse(false); // TODO: is ready to shoot logic
+        return shooter.isShooterAtTargetSpeed().orElse(false);
     }
 }

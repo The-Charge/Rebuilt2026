@@ -32,6 +32,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         public static IdleMode idleMode = IdleMode.kCoast;
 
         public static final AngularVelocity targetTolerance = RPM.of(100);
+        public static final AngularVelocity maxManualSpeed = RPM.of(6000);
     }
 
     // public static class HoodConfig {
