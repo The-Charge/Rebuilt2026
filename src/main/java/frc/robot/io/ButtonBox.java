@@ -9,8 +9,8 @@ import java.util.Map;
 public class ButtonBox extends GenericHID {
     public enum Button {
         RESET_TURRET(1),
-        UNJAM(2),
-        UNUSED_3(3),
+        ZERO_CLIMB(2),
+        DEPLOY_INTAKE(3),
         DISABLE_ODO(4),
         TURRET_LEFT(5),
         TURRET_RIGHT(6),
@@ -71,36 +71,36 @@ public class ButtonBox extends GenericHID {
         return button(Button.RESET_TURRET.value, loop);
     }
 
-    public boolean getUnjamButton() {
-        return getRawButton(Button.UNJAM.value);
+    public boolean getZeroClimbButton() {
+        return getRawButton(Button.ZERO_CLIMB.value);
     }
 
-    public boolean getUnjamButtonPressed() {
-        return getRawButtonPressed(Button.UNJAM.value);
+    public boolean getZeroClimbButtonPressed() {
+        return getRawButtonPressed(Button.ZERO_CLIMB.value);
     }
 
-    public boolean getUnjamButtonReleased() {
-        return getRawButtonReleased(Button.UNJAM.value);
+    public boolean getZeroClimbButtonReleased() {
+        return getRawButtonReleased(Button.ZERO_CLIMB.value);
     }
 
-    public BooleanEvent unjam(EventLoop loop) {
-        return button(Button.UNJAM.value, loop);
+    public BooleanEvent zeroClimb(EventLoop loop) {
+        return button(Button.ZERO_CLIMB.value, loop);
     }
 
-    public boolean getUnused3Button() {
-        return getRawButton(Button.UNUSED_3.value);
+    public boolean getDeployIntakeButton() {
+        return getRawButton(Button.DEPLOY_INTAKE.value);
     }
 
-    public boolean getUnused3ButtonPressed() {
-        return getRawButtonPressed(Button.UNUSED_3.value);
+    public boolean getDeployIntakeButtonPressed() {
+        return getRawButtonPressed(Button.DEPLOY_INTAKE.value);
     }
 
-    public boolean getUnusedButton3Released() {
-        return getRawButtonReleased(Button.UNUSED_3.value);
+    public boolean getDeployIntakeButtonReleased() {
+        return getRawButtonReleased(Button.DEPLOY_INTAKE.value);
     }
 
-    public BooleanEvent unused3(EventLoop loop) {
-        return button(Button.UNUSED_3.value, loop);
+    public BooleanEvent deployIntake(EventLoop loop) {
+        return button(Button.DEPLOY_INTAKE.value, loop);
     }
 
     public boolean getDisableOdoButton() {

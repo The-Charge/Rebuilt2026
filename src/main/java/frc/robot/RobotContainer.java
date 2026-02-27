@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -46,6 +47,7 @@ import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
 import frc.robot.commands.indexer.SpinDownIndexer;
 import frc.robot.commands.indexer.SpinUpIndexer;
+import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
@@ -200,6 +202,10 @@ public class RobotContainer {
         commandButtonBox
                 .resetTurret()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        commandButtonBox.zeroClimb().onTrue(new InstantCommand(() -> climber.setAsZero()));
+        commandButtonBox
+                .deployIntake()
+                .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         // commandButtonBox.disableOdo().onTrue();
         commandButtonBox
                 .turretLeft()

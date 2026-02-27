@@ -27,20 +27,20 @@ public class CommandButtonBox extends CommandGenericHID {
         return button(ButtonBox.Button.RESET_TURRET.value, loop);
     }
 
-    public Trigger unjam() {
-        return unjam(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger zeroClimb() {
+        return zeroClimb(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unjam(EventLoop loop) {
-        return button(ButtonBox.Button.UNJAM.value, loop);
+    public Trigger zeroClimb(EventLoop loop) {
+        return button(ButtonBox.Button.ZERO_CLIMB.value, loop);
     }
 
-    public Trigger unused3() {
-        return unused3(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger deployIntake() {
+        return deployIntake(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger unused3(EventLoop loop) {
-        return button(ButtonBox.Button.UNUSED_3.value, loop);
+    public Trigger deployIntake(EventLoop loop) {
+        return button(ButtonBox.Button.DEPLOY_INTAKE.value, loop);
     }
 
     public Trigger disableOdo() {

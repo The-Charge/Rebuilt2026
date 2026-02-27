@@ -89,6 +89,10 @@ public class ClimbSubsystem extends SubsystemBase {
         motor.set(perc);
     }
 
+    public void setAsZero() {
+        motor.setPosition(0);
+    }
+
     public ClimberPosition getPosition() {
         return ClimberPosition.fromMotorRotations(motor.getPosition().getValue().in(Units.Rotations));
     }
