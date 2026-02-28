@@ -7,18 +7,22 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.leds.BlinkLED;
+import frc.robot.constants.FieldConstants;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 public class Robot extends TimedRobot {
@@ -30,7 +34,7 @@ public class Robot extends TimedRobot {
         Logger.init(); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
-        // handle disconnect of CAN devices; 
+        // handle disconnect of CAN devices;
         // set Callback function to log recconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
@@ -43,6 +47,19 @@ public class Robot extends TimedRobot {
                     .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2))
                             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         });
+
+        // Adjust loop overrun warning timeout
+        if (FieldConstants.diableLoopOverruns) {
+            try {
+                Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
+                watchdogField.setAccessible(true);
+                Watchdog watchdog = (Watchdog) watchdogField.get(this);
+                watchdog.setTimeout(.2);
+            } catch (Exception e) {
+                DriverStation.reportWarning("Failed to disable loop overrun warnings.", false);
+            }
+            CommandScheduler.getInstance().setPeriod(.2);
+        }
 
         teleopLogic = Optional.empty();
     }
