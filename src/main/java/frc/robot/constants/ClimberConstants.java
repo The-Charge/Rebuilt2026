@@ -10,7 +10,7 @@ public class ClimberConstants {
 
     public static final String subsystemName = "Climber";
 
-    public static final int motorID = 2;
+    public static final int motorID = 3;
     public static final float mechanismInchesPerMotorRotation = 1;
 
     public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;

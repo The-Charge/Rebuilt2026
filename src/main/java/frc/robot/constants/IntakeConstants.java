@@ -13,7 +13,7 @@ public class IntakeConstants {
         public static final Optional<Double> nominalVoltage = Optional.empty();
         public static final int currentLimit = 20;
         public static final double speed = 1.00;
-        public static final int motorID = 12;
+        public static final int motorID = 14;
         public static final double overheatingTemp = 80; // celcius
     }
 

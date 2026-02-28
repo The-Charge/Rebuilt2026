@@ -16,7 +16,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         public static final double maxDutyCycle = 1.0;
         public static final Optional<Double> nominalVoltage = Optional.empty();
 
-        public static final int motorID = -1;
+        public static final int motorID = 4;
 
         public static double kP = 0;
         public static double kI = 0;

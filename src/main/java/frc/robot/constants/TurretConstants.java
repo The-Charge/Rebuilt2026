@@ -11,7 +11,7 @@ public class TurretConstants { // split into shooter, spinner, and hood
 
     public static final int hoodChannel = 17;
 
-    public static final int motorID = 9;
+    public static final int motorID = 15;
     public static final int maxCurrent = 10;
     public static final IdleMode idleMode = IdleMode.kCoast;
     public static final boolean inverted = false;
