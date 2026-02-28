@@ -12,7 +12,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -26,6 +25,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,12 +35,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
@@ -80,7 +78,6 @@ import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -121,14 +118,14 @@ public class RobotContainer {
     public final IdleLED idleLEDCommand;
     // public TeleopDrive teleopDrive;
     public final BlinkLED autoLEDCommand;
-    public final DeferredCommand pointAtHubCommand;
+    public final AlignTurret pointAtHubCommand;
     public final CenterTurret centerTurretCommand;
     public final PrepShootAtPoint prepShootAtFZoneCommand;
-    public final DeferredCommand prepShootAtHubCommand;
+    public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
 
     private RobotContainer() {
-        pdp = new PowerDistribution();
+        pdp = new PowerDistribution(30, ModuleType.kRev);
 
         commandDriver1 = new CommandXboxController(0);
         hidDriver1 = commandDriver1.getHID();
@@ -152,28 +149,16 @@ public class RobotContainer {
         inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
-        pointAtHubCommand = new DeferredCommand(
-                () -> new AlignTurret(
-                        turret,
-                        swerve,
-                        funnellimelight,
-                        DriverStation.getAlliance().orElse(Alliance.Blue)),
-                Set.of());
+        pointAtHubCommand = AlignTurret.atHub(turret, swerve, funnellimelight, () -> DriverStation.getAlliance()
+                .orElse(Alliance.Blue));
         centerTurretCommand = new CenterTurret(turret);
         prepShootAtFZoneCommand = new PrepShootAtPoint(
                 shooter,
                 swerve,
                 () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
-        prepShootAtHubCommand = new DeferredCommand(
-                () -> new PrepShootAtHub(
-                        shooter,
-                        funnellimelight,
-                        swerve,
-                        DriverStation.getAlliance()
-                                .map((val) -> val == Alliance.Red)
-                                .orElse(false)),
-                Set.of());
-        pointAtFZoneCommand = new AlignTurret(
+        prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance()
+                .orElse(Alliance.Blue));
+        pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,
                 funnellimelight,
@@ -197,7 +182,8 @@ public class RobotContainer {
         commandDriver2
                 .rightTrigger()
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
-                        new SpinUpIndexer(indexer, false), Commands.none(), () -> isReadyToShoot())));
+                        new SpinUpIndexer(indexer), new SpinDownIndexer(indexer), () -> isReadyToShoot())));
+        commandDriver2.rightTrigger().onFalse(new SpinDownIndexer(indexer));
 
         commandButtonBox
                 .resetTurret()
@@ -210,18 +196,18 @@ public class RobotContainer {
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
-                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .turretRight()
                 .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
-                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
                 .onTrue(new ManualShoot(
                                 shooter,
                                 () -> ShooterConstants.ShootConfig.maxManualSpeed.times(
-                                        -hidButtonBox.getSliderAxis() + 1 / 2.0))
-                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                                        (-hidButtonBox.getSliderAxis() + 1) / 2.0))
+                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
@@ -236,15 +222,15 @@ public class RobotContainer {
     }
 
     private void addNamedCommands() {
-        NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
-        NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
-        NamedCommands.registerCommand(
-                "PrepShootAtHub", new ParallelCommandGroup(prepShootAtHubCommand, pointAtHubCommand));
-        NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer, false));
-        NamedCommands.registerCommand(
-                "StopShoot", new ParallelCommandGroup(new StopShooter(shooter), new SpinDownIndexer(indexer)));
-        NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
-        NamedCommands.registerCommand("WaitForReadyToShoot", new WaitUntilCommand(() -> isReadyToShoot()));
+        // NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
+        // NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
+        // NamedCommands.registerCommand(
+        //         "PrepShootAtHub", new ParallelCommandGroup(prepShootAtHubCommand, pointAtHubCommand));
+        // NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer, false));
+        // NamedCommands.registerCommand(
+        //         "StopShoot", new ParallelCommandGroup(new StopShooter(shooter), new SpinDownIndexer(indexer)));
+        // NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
+        // NamedCommands.registerCommand("WaitForReadyToShoot", new WaitUntilCommand(() -> isReadyToShoot()));
     }
 
     public Command getAutonomousCommand() {

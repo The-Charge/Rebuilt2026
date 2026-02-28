@@ -50,7 +50,8 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.kCos,
                 TurretConstants.kS,
                 TurretConstants.kV,
-                TurretConstants.kA);
+                TurretConstants.kA,
+                TurretConstants.iZone);
         SparkUtils.configureHardStops(
                 turretConfig,
                 TurretConstants.forwardHardLimitEnabled,
@@ -103,12 +104,13 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean isAtLimit() {
-        if (turretMotor.getForwardLimitSwitch().isPressed()
-                || turretMotor.getReverseLimitSwitch().isPressed()) {
-            isCalibrated = true;
-            return true;
-        }
-        return false;
+        return true; // TODO: calibrate turret
+        // if (turretMotor.getForwardLimitSwitch().isPressed()
+        //         || turretMotor.getReverseLimitSwitch().isPressed()) {
+        //     isCalibrated = true;
+        //     return true;
+        // }
+        // return false;
     }
 
     public boolean isCalibrated() {

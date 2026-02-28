@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
 public class TurretConstants { // split into shooter, spinner, and hood
@@ -26,11 +27,12 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final double kP = 0.3;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final Optional<Double> kStaticG = Optional.empty();
-    public static final Optional<Double> kCos = Optional.empty();
-    public static final Optional<Double> kS = Optional.empty();
-    public static final Optional<Double> kV = Optional.empty();
-    public static final Optional<Double> kA = Optional.empty();
+    public static final Optional<Voltage> kStaticG = Optional.empty();
+    public static final Optional<Voltage> kCos = Optional.empty();
+    public static final Optional<Voltage> kS = Optional.empty();
+    public static final Optional<Voltage> kV = Optional.empty();
+    public static final Optional<Voltage> kA = Optional.empty();
+    public static final Optional<Double> iZone = Optional.empty();
 
     public static final double ticksPerRotation = 30.5; // We don't know why this is the case, it just is.
     public static final double rotationsPerTick = 1 / ticksPerRotation;

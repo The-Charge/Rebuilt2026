@@ -17,36 +17,41 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public double getSpeed() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
+        // throw new UnsupportedOperationException("Unimplemented method 'getSpeed'");
+        return 0;
     }
 
     public double getAngularVelocity() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAngularVelocity'");
+        // throw new UnsupportedOperationException("Unimplemented method 'getAngularVelocity'");
+        return 0;
     }
 
     public Rotation2d getHeading() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
+        // throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
+        return Rotation2d.kZero;
     }
 
     public Pose2d getPosition() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPosition'");
+        // throw new UnsupportedOperationException("Unimplemented method 'getPosition'");
+        return Pose2d.kZero;
     }
 
     public void addvisionmeasuremant(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addvisionmeasuremant'");
+        // throw new UnsupportedOperationException("Unimplemented method 'addvisionmeasuremant'");
     }
 
     public void addVisionReading(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addVisionReading'");
+        // throw new UnsupportedOperationException("Unimplemented method 'addVisionReading'");
     }
 
     public Pose2d getPose() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPose'");
+        // throw new UnsupportedOperationException("Unimplemented method 'getPose'");
+        return getPosition();
     }
 }

@@ -7,25 +7,21 @@ import frc.robot.subsystems.IndexerSubsystem;
 public class SpinUpIndexer extends Command {
 
     private final IndexerSubsystem indexer;
-    private final boolean wait;
 
-    public SpinUpIndexer(IndexerSubsystem indexerSub, boolean waitForTarget) {
+    public SpinUpIndexer(IndexerSubsystem indexerSub) {
         indexer = indexerSub; // so we can use indexer here
-        wait = waitForTarget;
 
         addRequirements(indexer); // reserves the table for indexer
     }
 
     @Override
     public void initialize() {
-        indexer.setSpindexerMotorVelocity(IndexerConstants.spindexerVelocity); // in this instance set velocity to ...
+        indexer.setSpindexerVoltage(IndexerConstants.spindexerVoltage);
         indexer.setExchangeMotorVoltage(IndexerConstants.exchangeVoltage);
     }
 
     @Override
     public boolean isFinished() {
-        if (!wait) return true;
-
-        return indexer.isSpindexerAtTarget().orElse(true);
+        return true;
     }
 }

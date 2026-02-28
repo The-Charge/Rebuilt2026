@@ -1,11 +1,10 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import static edu.wpi.first.units.Units.Celsius;
+
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
@@ -13,17 +12,17 @@ import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
-import frc.robot.utils.SparkUtils;
+import frc.robot.utils.TalonFXUtils;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-    private final SparkMax rollerMotor;
+    private final TalonFX rollerMotor;
     private final Servo leftDeployer, rightDeployer;
 
     private boolean deployed;
 
     public IntakeSubsystem() {
-        rollerMotor = new SparkMax(IntakeConstants.Roller.motorID, MotorType.kBrushless);
+        rollerMotor = new TalonFX(IntakeConstants.Roller.motorID);
         leftDeployer = new Servo(IntakeConstants.LeftDeployer.port);
         rightDeployer = new Servo(IntakeConstants.RightDeployer.port);
 
@@ -38,8 +37,8 @@ public class IntakeSubsystem extends SubsystemBase {
         deployed = true;
     }
 
-    public void startRoller(double speed) {
-        rollerMotor.set(speed);
+    public void setRollerVoltage(double volts) {
+        rollerMotor.setVoltage(volts);
     }
 
     public void stopRoller() {
@@ -47,18 +46,17 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     private void configureRollerMotor() {
-        SparkMaxConfig motorConfig = new SparkMaxConfig();
+        TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-        SparkUtils.configureBasicSettings(
+        TalonFXUtils.configureBasicSettings(
                 motorConfig,
                 Roller.currentLimit,
-                Roller.idleMode,
+                Roller.neutralMode,
                 Roller.inverted,
                 Roller.maxDutyCycle,
-                Roller.nominalVoltage);
+                Roller.maxVoltage);
 
-        if (rollerMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
+        if (rollerMotor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
             Logger.reportError("Failed to configure roller motor");
             Alerts.rollerConfigFail.set(true);
         }
@@ -72,13 +70,11 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         Logger.logSubsystem(IntakeConstants.name, this);
 
-        Logger.logSparkMotor(IntakeConstants.name, "rollerMotor", rollerMotor);
-        CANMonitor.logCANDeviceStatus(
-                "rollerMotor", IntakeConstants.Roller.motorID, SparkUtils.isConnected(rollerMotor));
-        Alerts.rollerDisconnected.set(!SparkUtils.isConnected(rollerMotor));
-        Alerts.rollerOverheating.set(rollerMotor.getMotorTemperature() >= Roller.overheatingTemp);
-        Alerts.rollerFaults.set(SparkUtils.hasCriticalFaults(rollerMotor.getFaults()));
-        Alerts.rollerWarnings.set(SparkUtils.hasCriticalWarnings(rollerMotor.getWarnings()));
+        Logger.logTalonFX(IntakeConstants.name, "rollerMotor", rollerMotor);
+        CANMonitor.logCANDeviceStatus("rollerMotor", IntakeConstants.Roller.motorID, rollerMotor.isConnected());
+        Alerts.rollerDisconnected.set(!rollerMotor.isConnected());
+        Alerts.rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().in(Celsius) >= Roller.overheatingTemp);
+        Alerts.rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
 
         Logger.logServo(IntakeConstants.name, "leftDeployer", leftDeployer);
         Logger.logServo(IntakeConstants.name, "rightDeployer", rightDeployer);

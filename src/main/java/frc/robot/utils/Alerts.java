@@ -20,7 +20,7 @@ public class Alerts {
             notLoggingToFlashdrive;
 
     // intake alerts
-    public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults, rollerWarnings;
+    public static final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults;
 
     // indexer alerts
     public static final Alert spindexerDisconnected,
@@ -87,11 +87,6 @@ public class Alerts {
                 String.format("Potentially critical faults are active on roller motor (CAN %d)", Roller.motorID),
                 AlertType.kWarning);
         rollerFaults.set(false);
-
-        rollerWarnings = new Alert(
-                String.format("Potentially critical warnings are active on roller motor (CAN %d)", Roller.motorID),
-                AlertType.kWarning);
-        rollerWarnings.set(false);
 
         spindexerDisconnected = new Alert(
                 String.format("Missing connection to spindexer motor (CAN %d)", IndexerConstants.Spindexer.motorID),

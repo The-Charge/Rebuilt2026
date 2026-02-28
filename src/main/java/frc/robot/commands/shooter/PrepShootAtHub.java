@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.RPM;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
@@ -13,7 +14,8 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
-
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 // Set shooter velocity for correct speed based on hub distance
 public class PrepShootAtHub extends Command {
@@ -23,14 +25,17 @@ public class PrepShootAtHub extends Command {
     private final ShooterSubsystem shooterSub;
     private final LimelightSubsystem vSub;
     private final SwerveSubsystem swerveSub;
-    private final boolean isRed;
+    private final BooleanSupplier isRed;
 
     public PrepShootAtHub(
-            ShooterSubsystem shootSub, LimelightSubsystem vSub, SwerveSubsystem swerveSub, boolean isRed) {
+            ShooterSubsystem shootSub,
+            LimelightSubsystem vSub,
+            SwerveSubsystem swerveSub,
+            Supplier<Alliance> alliance) {
         this.shooterSub = shootSub;
         this.vSub = vSub;
         this.swerveSub = swerveSub;
-        this.isRed = isRed;
+        this.isRed = () -> alliance.get() == Alliance.Red;
         addRequirements(shooterSub);
     }
 
@@ -42,15 +47,15 @@ public class PrepShootAtHub extends Command {
         Translation2d offsetToHub;
 
         // Use HubTag directly for distance
-        Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed));
+        Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed.getAsBoolean()));
 
         // Otherwise use swerve positioning
         if (hubTagPose.isPresent()) {
             offsetToHub = hubTagPose.get().getTranslation().toTranslation2d();
         } else {
             // Get Swerve Distance to Hub
-            offsetToHub =
-                    FieldConstants.getHubLoc(isRed).minus(swerveSub.getPose().getTranslation());
+            offsetToHub = FieldConstants.getHubLoc(isRed.getAsBoolean())
+                    .minus(swerveSub.getPose().getTranslation());
         }
         Distance distToTarget = Meters.of(Math.hypot(
                 offsetToHub.getMeasureX().in(Meters), offsetToHub.getMeasureY().in(Meters)));

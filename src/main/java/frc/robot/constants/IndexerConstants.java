@@ -1,7 +1,6 @@
 package frc.robot.constants;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import frc.robot.units.SpindexerVelocity;
 import java.util.Optional;
 
 public class IndexerConstants {
@@ -10,35 +9,25 @@ public class IndexerConstants {
 
     public static class Spindexer {
         public static final int motorID = 17;
-        public static final double gearRatio = 40d / 1;
+        public static final double gearRatio = 48d / 1;
 
-        public static final int maxCurrent = 20;
+        public static final int maxCurrent = 30;
         public static final IdleMode idleMode = IdleMode.kCoast;
-        public static final boolean inverted = false;
+        public static final boolean inverted = true;
         public static final double maxDutyCycle = 1;
         public static final Optional<Double> nominalVoltage = Optional.empty();
-        public static final double kP = 0.1;
-        public static final double kI = 0;
-        public static final double kD = 0;
-        public static final Optional<Double> kStaticG = Optional.empty();
-        public static final Optional<Double> kCos = Optional.empty();
-        public static final Optional<Double> kS = Optional.empty();
-        public static final Optional<Double> kV = Optional.empty();
-        public static final Optional<Double> kA = Optional.empty();
-
-        public static final SpindexerVelocity targetTolerance = SpindexerVelocity.fromMotorRPM(20);
     }
 
     public static class Exchange {
         public static final int motorID = 16;
 
-        public static final int maxCurrent = 20;
+        public static final int maxCurrent = 30;
         public static final IdleMode idleMode = IdleMode.kCoast;
         public static final boolean inverted = false;
         public static final double maxDutyCycle = 1;
         public static final Optional<Double> nominalVoltage = Optional.empty();
     }
 
-    public static final SpindexerVelocity spindexerVelocity = SpindexerVelocity.fromMechanismRPM(3000);
-    public static final double exchangeVoltage = 12;
+    public static final double spindexerVoltage = 0.3 * 12;
+    public static final double exchangeVoltage = 0.4 * 12;
 }

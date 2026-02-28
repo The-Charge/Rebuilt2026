@@ -59,7 +59,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void stopShoot() {
-        shootMotor.set(0);
+        shootMotor.stopMotor();
         targetShooterSpeed = Optional.empty();
     }
 
@@ -78,7 +78,6 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShootConfig.inverted,
                 ShootConfig.maxDutyCycle,
                 ShootConfig.nominalVoltage);
-
         SparkUtils.configureClosedLoopSettings(
                 shootConfig,
                 ShootConfig.kP,
@@ -88,7 +87,8 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShootConfig.kCos,
                 ShootConfig.kS,
                 ShootConfig.kV,
-                ShootConfig.kA);
+                ShootConfig.kA,
+                ShootConfig.iZone);
 
         if (shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {

@@ -15,6 +15,7 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class AlignTurret extends Command {
@@ -22,38 +23,45 @@ public class AlignTurret extends Command {
     private final TurretSubsystem turretSub;
     private final LimelightSubsystem limelightSub;
 
-    private final Optional<Boolean> isRed;
+    private final Optional<BooleanSupplier> isRed;
     private final Optional<Supplier<Translation2d>> targetPoint;
 
-    // Use AlignTurret to align Turret to a specified Pose (usually given by Swerve, or LimelightHelpers.getBotPose())
-    public AlignTurret(
+    private AlignTurret(
             TurretSubsystem turret,
             SwerveSubsystem swerve,
             LimelightSubsystem limelight,
-            Supplier<Translation2d> point) {
+            Optional<Supplier<Translation2d>> point,
+            Optional<Supplier<Alliance>> alliance) {
 
         this.swerveSub = swerve;
         this.turretSub = turret;
         this.limelightSub = limelight;
 
-        this.targetPoint = Optional.of(point);
-        this.isRed = Optional.empty();
+        if (point.isEmpty()) {
+            targetPoint = Optional.empty();
+        } else {
+            targetPoint = Optional.of(point.get());
+        }
+        if (alliance.isEmpty()) {
+            isRed = Optional.empty();
+        } else {
+            isRed = Optional.of(() -> alliance.get().get() == Alliance.Red);
+        }
 
         addRequirements(turret);
     }
 
-    // Align the turret directly to AprilTag on Hub (given by Alliance)
-    public AlignTurret(
-            TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Alliance alliance) {
+    public static AlignTurret atPoint(
+            TurretSubsystem turret,
+            SwerveSubsystem swerve,
+            LimelightSubsystem limelight,
+            Supplier<Translation2d> point) {
+        return new AlignTurret(turret, swerve, limelight, Optional.of(point), Optional.empty());
+    }
 
-        this.swerveSub = swerve;
-        this.turretSub = turret;
-        this.limelightSub = limelight;
-
-        this.isRed = Optional.of(alliance == Alliance.Red);
-        this.targetPoint = Optional.empty();
-
-        addRequirements(turret);
+    public static AlignTurret atHub(
+            TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Supplier<Alliance> alliance) {
+        return new AlignTurret(turret, swerve, limelight, Optional.empty(), Optional.of(alliance));
     }
 
     @Override
@@ -65,11 +73,11 @@ public class AlignTurret extends Command {
     public void execute() {
         // If using Hub tag
         if (isRed.isPresent()) {
-            boolean succeeded = hubTagAlign(isRed.get());
+            boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
 
             // If can't see hub tag, use swervePose
             if (!succeeded) {
-                swerveAlign(FieldConstants.getHubLoc(isRed.get()));
+                swerveAlign(FieldConstants.getHubLoc(isRed.get().getAsBoolean()));
             }
             return;
         }

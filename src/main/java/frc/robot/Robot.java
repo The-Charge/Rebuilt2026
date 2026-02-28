@@ -72,7 +72,7 @@ public class Robot extends TimedRobot {
         Logger.logPDP(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus(
                 "PDP",
-                RobotContainer.getInstance().pdp.getModule(),
+                RobotContainer.getInstance().pdp.getModule() + 1,
                 CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
         Alerts.pdpDisconnected.set(!CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
 

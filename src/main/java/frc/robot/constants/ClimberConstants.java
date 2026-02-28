@@ -11,21 +11,21 @@ public class ClimberConstants {
     public static final String subsystemName = "Climber";
 
     public static final int motorID = 3;
-    public static final float mechanismInchesPerMotorRotation = 1;
+    public static final double mechanismInchesPerMotorRotation = -6 / 313.35;
 
     public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;
     public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
-    public static final double maxCurrent = 60;
+    public static final double maxCurrent = 40;
     public static final double maxDutyCycle = 1;
     public static final Optional<Double> maxVoltage = Optional.of(12d);
-    public static final double kP = 0.1;
+    public static final double kP = 0.2;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final Optional<Double> kG = Optional.empty();
     public static final Optional<GravityTypeValue> kGType = Optional.empty();
 
-    public static final ClimberPosition upPosition = ClimberPosition.fromMechanismInches(90);
-    public static final ClimberPosition downPosition = ClimberPosition.fromMechanismInches(0);
+    public static final ClimberPosition upPosition = ClimberPosition.fromMechanismInches(0);
+    public static final ClimberPosition downPosition = ClimberPosition.fromMechanismInches(-6);
     public static final ClimberPosition targetTolerance = ClimberPosition.fromMechanismInches(0.1);
-    public static final double manualSpoolSpeed = 0.05;
+    public static final double manualSpoolSpeed = 0.2;
 }

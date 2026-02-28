@@ -23,7 +23,12 @@ public class ManualShoot extends Command {
     }
 
     @Override
+    public void end(boolean interrupted) {
+        shoot.stopShoot();
+    }
+
+    @Override
     public boolean isFinished() {
-        return true;
+        return false;
     }
 }

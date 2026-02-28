@@ -15,7 +15,7 @@ public class RunRoller extends Command {
 
     @Override
     public void initialize() {
-        intake.startRoller(IntakeConstants.Roller.speed);
+        intake.setRollerVoltage(IntakeConstants.Roller.intakeVoltage);
     }
 
     @Override

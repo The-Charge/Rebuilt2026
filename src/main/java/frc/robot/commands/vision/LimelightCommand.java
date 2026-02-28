@@ -1,7 +1,5 @@
 package frc.robot.commands.vision;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
@@ -27,7 +25,7 @@ public class LimelightCommand extends Command {
 
     @Override
     public void execute() {
-        calcMT1diff();
+        // calcMT1diff();
 
         multiple();
     }
@@ -91,14 +89,14 @@ public class LimelightCommand extends Command {
         swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
-    private void calcMT1diff() {
-        Optional<Pose3d> turret = turretLimelight.getMegaTag1();
-        Optional<Pose3d> side = sideLimelight.getMegaTag1();
-        if (turret.isEmpty() || side.isEmpty()) {
-            return;
-        }
-        Transform3d diff = side.get().minus(turret.get());
-    }
+    // private void calcMT1diff() {
+    //     Optional<Pose3d> turret = turretLimelight.getMegaTag1();
+    //     Optional<Pose3d> side = sideLimelight.getMegaTag1();
+    //     if (turret.isEmpty() || side.isEmpty()) {
+    //         return;
+    //     }
+    //     Transform3d diff = side.get().minus(turret.get());
+    // }
 
     @Override
     public void end(boolean interrupted) {}

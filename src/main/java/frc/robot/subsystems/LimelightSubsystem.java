@@ -121,8 +121,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
 
-        if (poseEstimate.tagCount == 1
-                && poseEstimate.rawFiducials.length == 1) { // single tag TODO: why are two checks needed?
+        if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) { // single tag
             RawFiducial singleTag = poseEstimate.rawFiducials[0];
 
             if (LimelightConstants.isLoggingVisionDiagnostics) {

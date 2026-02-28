@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RPM;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
 public class ShooterConstants { // split into shooter, spinner, and hood
@@ -18,21 +19,22 @@ public class ShooterConstants { // split into shooter, spinner, and hood
 
         public static final int motorID = 4;
 
-        public static double kP = 0;
-        public static double kI = 0;
+        public static double kP = 0.001;
+        public static double kI = 5e-7;
         public static double kD = 0;
-        public static final Optional<Double> kStaticG = Optional.empty();
-        public static final Optional<Double> kCos = Optional.empty();
-        public static final Optional<Double> kS = Optional.empty();
-        public static final Optional<Double> kV = Optional.empty();
-        public static final Optional<Double> kA = Optional.empty();
+        public static final Optional<Voltage> kStaticG = Optional.empty();
+        public static final Optional<Voltage> kCos = Optional.empty();
+        public static final Optional<Voltage> kS = Optional.empty();
+        public static final Optional<Voltage> kV = Optional.empty();
+        public static final Optional<Voltage> kA = Optional.empty();
+        public static final Optional<Double> iZone = Optional.of(2000d);
 
         public static boolean inverted = false;
-        public static int currentLimit = 20;
+        public static int currentLimit = 30;
         public static IdleMode idleMode = IdleMode.kCoast;
 
         public static final AngularVelocity targetTolerance = RPM.of(100);
-        public static final AngularVelocity maxManualSpeed = RPM.of(6000);
+        public static final AngularVelocity maxManualSpeed = RPM.of(7000);
     }
 
     // public static class HoodConfig {

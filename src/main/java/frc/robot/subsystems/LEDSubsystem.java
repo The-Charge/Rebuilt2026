@@ -38,7 +38,7 @@ public class LEDSubsystem extends SubsystemBase {
         Logger.logString(
                 LEDConstants.subsystemName,
                 "currentPattern",
-                pattern.map((val) -> val.getClass().getName()).orElse("None"));
+                pattern.map((val) -> val.getClass().getTypeName()).orElse("None"));
 
         if (pattern != null && pattern.isPresent()) {
             pattern.get().applyTo(buffer);
