@@ -182,8 +182,8 @@ public class RobotContainer {
         commandDriver2
                 .rightTrigger()
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
-                        new SpinUpIndexer(indexer), new SpinDownIndexer(indexer), () -> isReadyToShoot())));
-        commandDriver2.rightTrigger().onFalse(new SpinDownIndexer(indexer));
+                        new SpinUpIndexer(indexer), new SpinDownIndexer(indexer), () -> isReadyToShoot())))
+                .onFalse(new SpinDownIndexer(indexer));
 
         commandButtonBox
                 .resetTurret()

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.leds.BlinkLED;
-import frc.robot.constants.FieldConstants;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
@@ -35,7 +34,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
         // handle disconnect of CAN devices;
-        // set Callback function to log recconnect and flash LEDs for disconnection
+        // set Callback function to log reconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
                 Logger.println(String.format("Reconnected to CAN device %d", id));
@@ -49,16 +48,16 @@ public class Robot extends TimedRobot {
         });
 
         // Adjust loop overrun warning timeout
-        if (FieldConstants.diableLoopOverruns) {
-            try {
-                Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
-                watchdogField.setAccessible(true);
-                Watchdog watchdog = (Watchdog) watchdogField.get(this);
-                watchdog.setTimeout(.2);
-            } catch (Exception e) {
-                DriverStation.reportWarning("Failed to disable loop overrun warnings.", false);
-            }
-            CommandScheduler.getInstance().setPeriod(.2);
+        // TODO: this might completely break things, test with large values to see if it influences the periodic rate
+        try {
+            Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
+            watchdogField.setAccessible(true);
+            Watchdog watchdog = (Watchdog) watchdogField.get(this);
+            watchdog.setTimeout(0.2);
+
+            CommandScheduler.getInstance().setPeriod(0.2);
+        } catch (Exception e) {
+            Logger.reportWarning("Failed to disable loop overrun warnings", false);
         }
 
         teleopLogic = Optional.empty();
