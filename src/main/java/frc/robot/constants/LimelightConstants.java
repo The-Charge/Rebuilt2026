@@ -32,6 +32,8 @@ public class LimelightConstants {
             public static final double kAverageDistancePunishment = 0.1;
             public static final double kRobotSpeedPunishment = 0.15;
             public static final double kSingleTagPunishment = 0.3;
+            public static double kMinStd = 0.05;
+
         }
 
         public static final class MegaTag2 {
@@ -39,6 +41,7 @@ public class LimelightConstants {
             public static final double kAverageDistancePunishment = 0.075;
             public static final double kRobotSpeedPunishment = 0.25;
             public static final double kMultipleTagsBonus = 0.05;
+            public static double kMinStd = 0.05;
         }
     }
 
@@ -50,4 +53,5 @@ public class LimelightConstants {
     public static final AprilTagFieldLayout tagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     public static double krotStdDev = 0.3;
+
 }

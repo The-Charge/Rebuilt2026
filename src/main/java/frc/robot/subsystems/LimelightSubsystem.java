@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
+import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
+import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.LimelightHelpers.LimelightResults;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
@@ -141,7 +143,7 @@ public class LimelightSubsystem extends SubsystemBase {
         translationalStdDev += swerve.getSpeed() * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
         // make sure we aren't putting all our trust in vision
-        translationalStdDev = Math.max(translationalStdDev, 0.05);
+        translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
 
         double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
 
@@ -164,7 +166,7 @@ public class LimelightSubsystem extends SubsystemBase {
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
         transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
-        transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
+        transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
         double rotStdDev = Double.MAX_VALUE; // never trust rotation under any circumstances
 
