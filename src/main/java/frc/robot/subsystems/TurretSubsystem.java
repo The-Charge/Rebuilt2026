@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
 import frc.robot.utils.Alerts;
@@ -104,13 +105,14 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean isAtLimit() {
-        return true; // TODO: calibrate turret
-        // if (turretMotor.getForwardLimitSwitch().isPressed()
-        //         || turretMotor.getReverseLimitSwitch().isPressed()) {
-        //     isCalibrated = true;
-        //     return true;
-        // }
-        // return false;
+        DigitalInput din = new DigitalInput(TurretConstants.limitSwitchChannel);
+        boolean isOn = din.get();
+        din.close();
+        if (isOn) {
+            isCalibrated = true;
+            return true;
+        }
+        return false;
     }
 
     public boolean isCalibrated() {
