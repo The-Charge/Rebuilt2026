@@ -65,6 +65,6 @@ public class SubsystemGuide extends SubsystemBase {
 
     // example code to get the current velocity of a motor
     public double getExampleMotorRPM() {
-        return exampleTalonFXMotor.getVelocity().getValue().abs(Units.RPM);
+        return exampleTalonFXMotor.getVelocity().getValue().in(Units.RPM);
     }
 }

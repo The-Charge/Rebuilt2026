@@ -1,87 +1,156 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.revrobotics.PersistMode;
+import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TurretConstants;
+import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
+import frc.robot.utils.IllegalTurretAngle;
+import frc.robot.utils.Logger;
+import frc.robot.utils.SparkUtils;
+import java.util.Optional;
 
 // shoot angle, turret
 public class TurretSubsystem extends SubsystemBase {
-    private final SparkMax spin;
-    private final SparkFlex shooter;
-    private final Servo hood;
+    // private final SparkFlex shooter;
+    // private final Servo hood;
 
-    private Rotation2d offset = new Rotation2d();
+    private Angle offset = Radians.of(Math.PI);
+    private Optional<Angle> targetAngle;
+    private final SparkMax turretMotor;
+    private boolean isCalibrated;
 
     public TurretSubsystem() {
-        spin = new SparkMax(TurretConstants.turretId, MotorType.kBrushless);
-        shooter = new SparkFlex(TurretConstants.shooterId, MotorType.kBrushless);
-        hood = new Servo(TurretConstants.hoodChannel);
+        turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless); // port number under IndexerConstants
+        SparkMaxConfig turretConfig = new SparkMaxConfig();
 
-        configureMotors();
+        SparkUtils.configureBasicSettings(
+                turretConfig,
+                TurretConstants.maxCurrent,
+                TurretConstants.idleMode,
+                TurretConstants.inverted,
+                TurretConstants.maxDutyCycle,
+                TurretConstants.nominalVoltage);
+        SparkUtils.configureClosedLoopSettings(
+                turretConfig,
+                TurretConstants.kP,
+                TurretConstants.kI,
+                TurretConstants.kD,
+                TurretConstants.kStaticG,
+                TurretConstants.kCos,
+                TurretConstants.kS,
+                TurretConstants.kV,
+                TurretConstants.kA,
+                TurretConstants.iZone);
+        SparkUtils.configureHardStops(
+                turretConfig,
+                TurretConstants.forwardHardLimitEnabled,
+                TurretConstants.forwardHardLimitResetRots,
+                TurretConstants.reverseHardLimitEnabled,
+                TurretConstants.reverseHardLimitResetRots);
+
+        if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+                != REVLibError.kOk) {
+            Logger.reportError("Failed to configure turret motor");
+            Alerts.turretConfigFail.set(true);
+        }
+
+        targetAngle = Optional.empty();
+        isCalibrated = false;
+
+        // SmartDashboard.putNumber("gearRatio", 27);
+
+        // shooter = new SparkFlex(TurretConstants.shooterId, MotorType.kBrushless);
+        // hood = new Servo(TurretConstants.hoodChannel);
     }
 
-    @Override
-    public void periodic() {}
+    public void setTurretAngle(Angle angle) {
+        if (angle == null) {
+            Logger.reportWarning("Cannot set turret angle to a null angle", true);
+            return;
+        }
 
-    public void setTurretAngle(Rotation2d angle) {
-        spin.getClosedLoopController()
-                .setSetpoint(angle.plus(offset).getRadians() * TurretConstants.ticksPerRadian, ControlType.kPosition);
-    }
+        targetAngle = Optional.of(angle);
 
-    public void setHoodAngle(Rotation2d angle) {
-        // IDK some map from angle to servo position
-    }
+        if (IllegalTurretAngle.isIllegal(angle)) {
+            return;
+        }
 
-    public void setHoodPos(double val) {
-        hood.set(val);
-    }
+        angle = IllegalTurretAngle.toContinuousAngle(angle);
 
-    public void shoot(double speed) {
-        shooter.set(speed); // dumb
+        double request = angle.plus(offset).in(Rotations) * TurretConstants.ticksPerRotation;
+        // double request = angle.in(Rotations) * SmartDashboard.getNumber("gearRatio", 27);
+        turretMotor.getClosedLoopController().setSetpoint(request, ControlType.kPosition);
     }
 
     public void stop() {
-        spin.set(0);
-        shooter.set(0);
-        // stop the hood servo too
+        turretMotor.set(0);
+        targetAngle = Optional.empty();
     }
 
-    public Rotation2d getTurretAngle() {
-        return new Rotation2d(spin.getEncoder().getPosition() * TurretConstants.radiansPerTick).plus(offset);
+    public void calibrate() {
+        turretMotor.set(TurretConstants.calibrationSpeed);
+        isCalibrated = false;
     }
 
-    public Rotation2d getHoodAngle() {
-        // the reverse of the previos map
-        return null;
+    public boolean isAtLimit() {
+        DigitalInput din = new DigitalInput(TurretConstants.limitSwitchChannel);
+        boolean isOn = din.get();
+        din.close();
+        if (isOn) {
+            isCalibrated = true;
+            return true;
+        }
+        return false;
     }
 
-    public double getHoodPos() {
-        return hood.get();
+    public boolean isCalibrated() {
+        return isCalibrated;
     }
 
-    private void configureMotors() { // BAD. Constants reused and servo not configured
-        SparkMaxConfig maxconfig = new SparkMaxConfig();
-        maxconfig.closedLoop.pid(TurretConstants.kP, TurretConstants.kI, TurretConstants.kD);
-        maxconfig.idleMode(TurretConstants.idleMode);
-        maxconfig.smartCurrentLimit(TurretConstants.currentLimit);
-        maxconfig.inverted(TurretConstants.inverted);
+    public Angle getTurretRawAngle() {
+        // return new Rotation2d(turret.getEncoder().getPosition() * TurretConstants.Spin.radiansPerTick).plus(offset);
+        return Rotations.of(turretMotor.getEncoder().getPosition());
+    }
 
-        spin.configure(maxconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public Optional<Angle> getTargetAngle() {
+        return targetAngle;
+    }
 
-        SparkFlexConfig flexconfig = new SparkFlexConfig();
-        flexconfig.idleMode(TurretConstants.idleMode);
-        flexconfig.smartCurrentLimit(TurretConstants.currentLimit);
-        flexconfig.inverted(TurretConstants.inverted);
+    public void setAsZero() {
+        turretMotor.getEncoder().setPosition(0);
+    }
 
-        shooter.configure(flexconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public void dutyCycle(double duty) {
+        turretMotor.set(duty);
+        targetAngle = Optional.empty();
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(TurretConstants.subsystemName, this);
+
+        Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
+        CANMonitor.logCANDeviceStatus("turretMotor", TurretConstants.motorID, SparkUtils.isConnected(turretMotor));
+        Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
+        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+
+        Logger.logDouble(
+                TurretConstants.subsystemName,
+                "targetRots",
+                targetAngle.map((val) -> val.in(Rotations)).orElse(Double.NaN));
     }
 }

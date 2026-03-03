@@ -4,27 +4,76 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.leds.BlinkLED;
+import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.CANMonitor;
+import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
+import frc.robot.utils.MiscUtils;
+import java.lang.reflect.Field;
+import java.util.Optional;
 
 public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
+    private Optional<TeleopLogic> teleopLogic;
 
     public Robot() {
         Logger.init(); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
+
+        // handle disconnect of CAN devices;
+        // set Callback function to log reconnect and flash LEDs for disconnection
+        CANMonitor.setConnectionChangeCallback((id, connected) -> {
+            if (connected == true) {
+                Logger.println(String.format("Reconnected to CAN device %d", id));
+                return;
+            }
+
+            Logger.reportWarning(String.format("Lost connection to CAN device %d", id), false);
+            CommandScheduler.getInstance()
+                    .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2))
+                            .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        });
+
+        // Adjust loop overrun warning timeout
+        // TODO: this might completely break things, test with large values to see if it influences the periodic rate
+        try {
+            Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
+            watchdogField.setAccessible(true);
+            Watchdog watchdog = (Watchdog) watchdogField.get(this);
+            watchdog.setTimeout(0.2);
+
+            CommandScheduler.getInstance().setPeriod(0.2);
+        } catch (Exception e) {
+            Logger.reportWarning("Failed to disable loop overrun warnings", false);
+        }
+
+        teleopLogic = Optional.empty();
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        ControllerUtil.periodic(RobotContainer.getInstance().hidDriver1, RobotContainer.getInstance().hidDriver2);
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
+        CANMonitor.logCANDeviceStatus(
+                "PDP",
+                RobotContainer.getInstance().pdp.getModule() + 1,
+                CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
+        Alerts.pdpDisconnected.set(!CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
 
         Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
         Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
@@ -41,10 +90,25 @@ public class Robot extends TimedRobot {
             Alerts.lowBattery.set(false);
             Alerts.criticalBattery.set(false);
         }
+
+        Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
+        Logger.logBool("", "isReadyToShoot", RobotContainer.getInstance().isReadyToShoot());
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        RobotContainer.getInstance().indexer.stopAll();
+        RobotContainer.getInstance().intake.stopRoller();
+        RobotContainer.getInstance().climber.stopAll();
+        RobotContainer.getInstance().shooter.stopShoot();
+        RobotContainer.getInstance().turret.stop();
+
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);
+
+        ControllerUtil.cancelControllerRumbles(0);
+        ControllerUtil.cancelControllerRumbles(1);
+    }
 
     @Override
     public void disabledPeriodic() {}
@@ -54,40 +118,45 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
+        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
+
+        RobotContainer.getInstance().displayAuto();
     }
 
     @Override
     public void autonomousPeriodic() {}
 
     @Override
-    public void autonomousExit() {}
-
-    @Override
-    public void teleopInit() {
+    public void autonomousExit() {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
     }
 
     @Override
-    public void teleopPeriodic() {}
-
-    @Override
-    public void teleopExit() {}
-
-    @Override
-    public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
+    public void teleopInit() {
+        teleopLogic = Optional.of(new TeleopLogic());
+        teleopLogic.get().startTeleop();
     }
 
     @Override
-    public void testPeriodic() {}
+    public void teleopPeriodic() {
+        if (teleopLogic.isPresent()) {
+            teleopLogic.get().teleopPeriodic();
+        }
+    }
 
     @Override
-    public void testExit() {}
+    public void teleopExit() {
+        if (teleopLogic.isPresent()) {
+            teleopLogic.get().endTeleop();
+        }
+        teleopLogic = Optional.empty();
+    }
 }

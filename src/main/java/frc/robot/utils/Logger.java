@@ -13,12 +13,10 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 
 public class Logger {
 
@@ -43,11 +41,18 @@ public class Logger {
         DriverStation.startDataLog(DataLogManager.getLog(), true);
 
         ntInstance = NetworkTableInstance.getDefault();
-        nt = ntInstance.getTable(""); // root table
+        nt = ntInstance.getTable("Logger"); // root table
 
         println("Logging started");
 
         hasInited = true;
+
+        String logDir = DataLogManager.getLogDir();
+        logString("Logger", "loggingDirectory", logDir);
+
+        boolean loggingToFlash = logDir == null ? false : logDir.toLowerCase().startsWith("/u");
+        logBool("Logger", "loggingToFlashdrive", loggingToFlash);
+        Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
     }
 
     /**
@@ -398,8 +403,7 @@ public class Logger {
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void logTalonFX(
-            String subsystem, String name, TalonFX motor, Optional<Map<String, String>> additionalData) {
+    public static void logTalonFX(String subsystem, String name, TalonFX motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -415,18 +419,18 @@ public class Logger {
         TalonFXFaults activeFaults = TalonFXUtils.getAllActiveFaults(motor);
         TalonFXFaults stickyFaults = TalonFXUtils.getAllStickyFaults(motor);
 
-        logDouble(table, "positionRots", motor.getPosition().getValue().abs(Units.Rotations));
-        logDouble(table, "velocityRPM", motor.getVelocity().getValue().abs(Units.RPM));
-        logDouble(table, "tempC", motor.getDeviceTemp().getValue().abs(Units.Celsius));
+        logDouble(table, "positionRots", motor.getPosition().getValue().in(Units.Rotations));
+        logDouble(table, "velocityRPM", motor.getVelocity().getValue().in(Units.RPM));
+        logDouble(table, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
         logDouble(table, "dutyCycle", motor.get());
-        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().abs(Units.Volts));
-        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().abs(Units.Volts));
+        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().in(Units.Volts));
+        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
         logBool(table, "hardStopForward", activeFaults.forwardHardLimit());
         logBool(table, "hardStopReverse", activeFaults.reverseHardLimit());
         logBool(table, "softStopForward", activeFaults.forwardSoftLimit());
         logBool(table, "softStopReverse", activeFaults.reverseSoftLimit());
-        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().abs(Units.Amps));
-        logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().abs(Units.Amps));
+        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
+        logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().in(Units.Amps));
         logEnum(table, "controlMode", motor.getControlMode().getValue());
         logDouble(table, "targetRots", motor.getClosedLoopReference().getValue().doubleValue());
         logBool(table, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);
@@ -490,16 +494,9 @@ public class Logger {
                 "usingFusedCANCoderWhileUnlicensed",
                 stickyFaults.usingFusedCANCoderWhileUnlicensed());
         logBool(table, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
-    public static void logSparkMotor(
-            String subsystem, String name, SparkBase motor, Optional<Map<String, String>> additionalData) {
+    public static void logSparkMotor(String subsystem, String name, SparkBase motor) {
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
@@ -567,12 +564,6 @@ public class Logger {
         logBool(table + "/stickyWarnings", "sensor", stickyWarnings.sensor);
         logBool(table + "/stickyWarnings", "stall", stickyWarnings.stall);
         logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
-
-        if (additionalData != null && additionalData.isPresent()) {
-            for (Entry<String, String> data : additionalData.get().entrySet()) {
-                logString(table, data.getKey(), data.getValue());
-            }
-        }
     }
 
     public static <T extends SubsystemBase> void logSubsystem(String subsystemName, T subsystem) {
@@ -612,6 +603,7 @@ public class Logger {
         logDouble("PDP", "batteryVoltage", pdp.getVoltage());
         logDoubleArray("PDP", "currents", pdp.getAllCurrents());
         logDouble("PDP", "totalCurrent", pdp.getTotalCurrent());
+        logBool("PDP", "connected", CANMonitor.isPDPConnected(pdp));
 
         PowerDistributionFaults faults = pdp.getFaults();
         String table = "PDP/faults";
@@ -675,6 +667,22 @@ public class Logger {
         logBool(table, "hardware", stickyFaults.HardwareFault);
         logBool(table, "firmware", stickyFaults.FirmwareFault);
         logBool(table, "hasReset", stickyFaults.HasReset);
+    }
+
+    public static void logServo(String subsystem, String name, Servo servo) {
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (servo == null) {
+            reportWarning("Cannot log a null Servo", true);
+            return;
+        }
+
+        String table = subsystem + "/" + name;
+
+        logDouble(table, "position", servo.get());
     }
 
     private static class StackTrace {

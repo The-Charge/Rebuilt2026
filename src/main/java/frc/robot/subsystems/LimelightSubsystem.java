@@ -14,13 +14,14 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.LimelightResults;
-import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
-import frc.robot.LimelightHelpers.PoseEstimate;
-import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
+import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.LimelightHelpers.LimelightResults;
+import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
+import frc.robot.utils.LimelightHelpers.PoseEstimate;
+import frc.robot.utils.LimelightHelpers.RawFiducial;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
@@ -31,6 +32,11 @@ public class LimelightSubsystem extends SubsystemBase {
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(cameraName, this);
     }
 
     public void setCameraOffset(Pose3d cameraOffset) {
@@ -115,8 +121,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
 
-        if (poseEstimate.tagCount == 1
-                && poseEstimate.rawFiducials.length == 1) { // single tag TODO: why are two checks needed?
+        if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) { // single tag
             RawFiducial singleTag = poseEstimate.rawFiducials[0];
 
             if (LimelightConstants.isLoggingVisionDiagnostics) {
@@ -155,8 +160,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         double transStdDev = StdDevConstants.MegaTag2.kInitialValue;
 
-        if (poseEstimate.tagCount > 1)
-            transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus; // TODO: is this even needed?
+        if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
         transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
