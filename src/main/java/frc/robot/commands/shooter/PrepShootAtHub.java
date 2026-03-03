@@ -26,16 +26,21 @@ public class PrepShootAtHub extends Command {
     private final LimelightSubsystem vSub;
     private final SwerveSubsystem swerveSub;
     private final BooleanSupplier isRed;
+    private Optional<Alliance> knownAlliance;
 
     public PrepShootAtHub(
             ShooterSubsystem shootSub,
             LimelightSubsystem vSub,
             SwerveSubsystem swerveSub,
-            Supplier<Alliance> alliance) {
+            Supplier<Optional<Alliance>> alliance) {
         this.shooterSub = shootSub;
         this.vSub = vSub;
         this.swerveSub = swerveSub;
-        this.isRed = () -> alliance.get() == Alliance.Red;
+        this.knownAlliance = Optional.empty();
+        this.isRed = () -> {
+            knownAlliance = knownAlliance.or(alliance);
+            return knownAlliance.orElse(Alliance.Blue) == Alliance.Red;
+        };
         addRequirements(shooterSub);
     }
 

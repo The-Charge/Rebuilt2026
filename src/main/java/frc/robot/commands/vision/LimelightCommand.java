@@ -69,11 +69,9 @@ public class LimelightCommand extends Command {
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
         VisionMeasurement visionEstimate;
         if (turretVisionEstimateOptional.isEmpty()) {
-            if (sideVisionEstimateOptional.isEmpty()) {
-                return;
-            } else {
-                visionEstimate = sideVisionEstimateOptional.get();
-            }
+            if (sideVisionEstimateOptional.isEmpty()) return;
+
+            visionEstimate = sideVisionEstimateOptional.get();
         } else {
             if (sideVisionEstimateOptional.isEmpty()) {
                 visionEstimate = turretVisionEstimateOptional.get();
