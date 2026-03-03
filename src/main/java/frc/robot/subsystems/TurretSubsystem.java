@@ -26,12 +26,16 @@ public class TurretSubsystem extends SubsystemBase {
     // private final SparkFlex shooter;
     // private final Servo hood;
 
+    private final SparkMax turretMotor;
+    private final DigitalInput forwardLimit;
+
     private Angle offset = Radians.of(Math.PI);
     private Optional<Angle> targetAngle;
-    private final SparkMax turretMotor;
     private boolean isCalibrated;
 
     public TurretSubsystem() {
+        forwardLimit = new DigitalInput(TurretConstants.forwardLimitChannel);
+
         turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless); // port number under IndexerConstants
         SparkMaxConfig turretConfig = new SparkMaxConfig();
 
@@ -99,24 +103,8 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.empty();
     }
 
-    public void calibrate() {
-        turretMotor.set(TurretConstants.calibrationSpeed);
-        isCalibrated = false;
-    }
-
-    public boolean isAtLimit() {
-        DigitalInput din = new DigitalInput(TurretConstants.limitSwitchChannel);
-        boolean isOn = din.get();
-        din.close();
-        if (isOn) {
-            isCalibrated = true;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isCalibrated() {
-        return isCalibrated;
+    public boolean isAtForwardLimit() {
+        return !forwardLimit.get();
     }
 
     public Angle getTurretRawAngle() {
@@ -128,13 +116,21 @@ public class TurretSubsystem extends SubsystemBase {
         return targetAngle;
     }
 
-    public void setAsZero() {
-        turretMotor.getEncoder().setPosition(0);
+    public void setEncoderPos(double pos) {
+        turretMotor.getEncoder().setPosition(pos);
     }
 
     public void dutyCycle(double duty) {
         turretMotor.set(duty);
         targetAngle = Optional.empty();
+    }
+
+    public void setIsCalibrated(boolean calibrated) {
+        isCalibrated = calibrated;
+    }
+
+    public boolean getIsCalibrated() {
+        return isCalibrated;
     }
 
     @Override
@@ -152,5 +148,6 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.subsystemName,
                 "targetRots",
                 targetAngle.map((val) -> val.in(Rotations)).orElse(Double.NaN));
+        Logger.logBool(TurretConstants.subsystemName, "forwardLimit", isAtForwardLimit());
     }
 }

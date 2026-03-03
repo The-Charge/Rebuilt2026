@@ -51,7 +51,7 @@ public class TeleopLogic {
         CommandScheduler.getInstance().schedule(new DeployIntake(RobotContainer.getInstance().intake));
         AutoDisplayUtil.clearAutoPath();
 
-        if (!RobotContainer.getInstance().turret.isCalibrated()) {
+        if (!RobotContainer.getInstance().turret.getIsCalibrated()) {
             CommandScheduler.getInstance()
                     .schedule(new CalibrateTurret(RobotContainer.getInstance().turret)
                             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));

@@ -156,8 +156,7 @@ public class RobotContainer {
                 shooter,
                 swerve,
                 () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
-        prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance()
-                .orElse(Alliance.Blue));
+        prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance());
         pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,

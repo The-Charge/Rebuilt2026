@@ -18,14 +18,14 @@
             },
             "children": [
               {
-                "title": "0_PDP",
+                "title": "14_rollerMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/0_PDP",
+                  "topic": "/Logger/CAN/14_rollerMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -35,14 +35,14 @@
                 }
               },
               {
-                "title": "2_climbMotor",
+                "title": "15_turretMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/2_climbMotor",
+                  "topic": "/Logger/CAN/15_turretMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -52,14 +52,14 @@
                 }
               },
               {
-                "title": "11_exchangeMotor",
+                "title": "16_exchangeMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/11_exchangeMotor",
+                  "topic": "/Logger/CAN/16_exchangeMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -69,14 +69,14 @@
                 }
               },
               {
-                "title": "12_rollerMotor",
+                "title": "17_spindexerMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/12_rollerMotor",
+                  "topic": "/Logger/CAN/17_spindexerMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -86,14 +86,48 @@
                 }
               },
               {
-                "title": "13_spindexerMotor",
+                "title": "30_PDP",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/13_spindexerMotor",
+                  "topic": "/Logger/CAN/30_PDP",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "3_climbMotor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/3_climbMotor",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "4_shootMotor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/4_shootMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -146,11 +180,7 @@
             "properties": {
               "topic": "/CameraPublisher/limelight-reef",
               "period": 0.06,
-              "rotation_turns": 0,
-              "resolution": [
-                0.0,
-                0.0
-              ]
+              "rotation_turns": 0
             }
           },
           {

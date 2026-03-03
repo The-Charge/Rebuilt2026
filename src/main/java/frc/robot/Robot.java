@@ -48,7 +48,6 @@ public class Robot extends TimedRobot {
         });
 
         // Adjust loop overrun warning timeout
-        // TODO: this might completely break things, test with large values to see if it influences the periodic rate
         try {
             Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
             watchdogField.setAccessible(true);
@@ -59,6 +58,7 @@ public class Robot extends TimedRobot {
         } catch (Exception e) {
             Logger.reportWarning("Failed to disable loop overrun warnings", false);
         }
+        DriverStation.silenceJoystickConnectionWarning(true);
 
         teleopLogic = Optional.empty();
     }
