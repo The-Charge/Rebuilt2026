@@ -1,5 +1,8 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Seconds;
+
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.DeviceEnableValue;
 import com.revrobotics.spark.SparkBase;
@@ -10,17 +13,27 @@ import edu.wpi.first.hal.PowerDistributionStickyFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Logger {
 
     private static final String PREFIX = "[Logger] ";
+    private static final Optional<Time> loopOverrunPeriod = Optional.of(Seconds.of(0.2));
+    private static final boolean showJoystickDisconnectWarnings = false;
+    private static final boolean ctreLoggingEnabled = false;
 
     private static boolean hasInited;
     private static NetworkTableInstance ntInstance;
@@ -32,7 +45,7 @@ public class Logger {
 
     private Logger() {}
 
-    public static void init() {
+    public static void init(Robot robot) {
         if (hasInited) return;
 
         DataLogManager.start();
@@ -46,6 +59,22 @@ public class Logger {
         println("Logging started");
 
         hasInited = true;
+
+        // Adjust loop overrun warning timeout
+        if (loopOverrunPeriod.isPresent()) {
+            try {
+                Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
+                watchdogField.setAccessible(true);
+                Watchdog watchdog = (Watchdog) watchdogField.get(robot);
+                watchdog.setTimeout(loopOverrunPeriod.get().in(Seconds));
+
+                CommandScheduler.getInstance().setPeriod(loopOverrunPeriod.get().in(Seconds));
+            } catch (Exception e) {
+                Logger.reportWarning("Failed to adjust loop overrun warnings", false);
+            }
+        }
+        DriverStation.silenceJoystickConnectionWarning(!showJoystickDisconnectWarnings);
+        SignalLogger.enableAutoLogging(ctreLoggingEnabled);
 
         String logDir = DataLogManager.getLogDir();
         logString("Logger", "loggingDirectory", logDir);

@@ -7,9 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -21,7 +19,6 @@ import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
-import java.lang.reflect.Field;
 import java.util.Optional;
 
 public class Robot extends TimedRobot {
@@ -30,7 +27,7 @@ public class Robot extends TimedRobot {
     private Optional<TeleopLogic> teleopLogic;
 
     public Robot() {
-        Logger.init(); // DO NOT DELETE ; start logger
+        Logger.init(this); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
         // handle disconnect of CAN devices;
@@ -46,19 +43,6 @@ public class Robot extends TimedRobot {
                     .schedule(new BlinkLED(RobotContainer.getInstance().ledSub, Color.kRed, Seconds.of(2))
                             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         });
-
-        // Adjust loop overrun warning timeout
-        try {
-            Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");
-            watchdogField.setAccessible(true);
-            Watchdog watchdog = (Watchdog) watchdogField.get(this);
-            watchdog.setTimeout(0.2);
-
-            CommandScheduler.getInstance().setPeriod(0.2);
-        } catch (Exception e) {
-            Logger.reportWarning("Failed to disable loop overrun warnings", false);
-        }
-        DriverStation.silenceJoystickConnectionWarning(true);
 
         teleopLogic = Optional.empty();
     }
