@@ -13,6 +13,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 
 public class LimelightConstants {
+    public static final String subsystemName = "Limelight";
+
     public static final AngularVelocity kMaxAngularSpeed = DegreesPerSecond.of(720);
     public static final LinearVelocity kMaxSpeedForMegaTag1 = MetersPerSecond.of(0.5);
     public static final Distance kMaxDistanceForMegaTag1 = Meters.of(3.75);
@@ -33,7 +35,6 @@ public class LimelightConstants {
             public static final double kRobotSpeedPunishment = 0.15;
             public static final double kSingleTagPunishment = 0.3;
             public static double kMinStd = 0.05;
-
         }
 
         public static final class MegaTag2 {
@@ -53,5 +54,4 @@ public class LimelightConstants {
     public static final AprilTagFieldLayout tagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     public static double krotStdDev = 0.3;
-
 }

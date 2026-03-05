@@ -42,7 +42,6 @@ public class CANMonitor {
      * @param callback Arg 1: The integer ID of the device who's status changed, Arg 2: the new connection status of the device
      * Sets function to run when status of a CAN device connection changes
      */
-    
     public static void setConnectionChangeCallback(BiConsumer<Integer, Boolean> callback) {
         if (callback == null) {
             Logger.reportWarning("Cannot set CAN connection change callback to a null BiConsumer", true);

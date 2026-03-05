@@ -11,7 +11,6 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import java.util.function.Supplier;
 
-
 // Set shooter velocity for correct speed based on custom point
 public class PrepShootAtPoint extends Command {
 
