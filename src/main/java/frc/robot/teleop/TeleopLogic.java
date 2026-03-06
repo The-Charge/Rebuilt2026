@@ -79,7 +79,7 @@ public class TeleopLogic {
         }
 
         // get robot pose
-        Pose2d robotPose = RobotContainer.getInstance().swerve.getPosition();
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getStateCopy().Pose;
 
         // get zone and alliance info
         FieldZone zone = FieldZone.fromRobotPose(robotPose);

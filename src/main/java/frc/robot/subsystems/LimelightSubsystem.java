@@ -73,7 +73,7 @@ public class LimelightSubsystem extends SubsystemBase {
         return Optional.of(pose);
     }
 
-    public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve) {
+    public Optional<VisionMeasurement> getVisionMeasurement(CommandSwerveDrivetrain swerve) {
         boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
@@ -82,7 +82,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
         final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1.in(Meters);
-        final double robotSpeed = swerve.getSpeed(); // get swerve speed from ctre
+        final double robotSpeed = swerve.getStateCopy().Speeds.vxMetersPerSecond; // get swerve speed from ctre
         final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1.in(MetersPerSecond);
 
         SmartDashboard.putBoolean("twoOrMoreTags", twoOrMoreTags);
@@ -95,7 +95,7 @@ public class LimelightSubsystem extends SubsystemBase {
         return getVisionMeasurement(swerve, useMegaTag2);
     }
 
-    public Optional<VisionMeasurement> getVisionMeasurement(SwerveSubsystem swerve, boolean useMegaTag2) {
+    public Optional<VisionMeasurement> getVisionMeasurement(CommandSwerveDrivetrain swerve, boolean useMegaTag2) {
         PoseEstimate poseEstimate;
         Optional<Matrix<N3, N1>> stdDevs;
 
@@ -103,7 +103,8 @@ public class LimelightSubsystem extends SubsystemBase {
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
             stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         } else {
-            LimelightHelpers.SetRobotOrientation(cameraName, swerve.getHeading().getDegrees(), 0, 0, 0, 0, 0);
+            LimelightHelpers.SetRobotOrientation(
+                    cameraName, swerve.getStateCopy().RawHeading.getDegrees(), 0, 0, 0, 0, 0);
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
             stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         }
@@ -116,7 +117,7 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
-            LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
+            LimelightHelpers.PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
 
         double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
@@ -138,7 +139,8 @@ public class LimelightSubsystem extends SubsystemBase {
         }
         translationalStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
         translationalStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
-        translationalStdDev += swerve.getSpeed() * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
+        translationalStdDev +=
+                swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
         // make sure we aren't putting all our trust in vision
         translationalStdDev = Math.max(translationalStdDev, 0.05);
@@ -149,11 +151,11 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
-            LimelightHelpers.PoseEstimate poseEstimate, SwerveSubsystem swerve) {
+            LimelightHelpers.PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
 
-        boolean isGoingTooFast =
-                Math.abs(swerve.getAngularVelocity()) > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
+        boolean isGoingTooFast = Math.abs(swerve.getStateCopy().Speeds.omegaRadiansPerSecond)
+                > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
         if (isGoingTooFast) return Optional.empty();
 
         if (poseEstimate.avgTagDist > 8) return Optional.empty();
@@ -162,7 +164,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
-        transStdDev += swerve.getSpeed() * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
+        transStdDev += swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
         transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
 

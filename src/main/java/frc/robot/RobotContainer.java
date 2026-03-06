@@ -10,7 +10,11 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -40,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
@@ -64,15 +69,16 @@ import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.TurretConstants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.AutoDisplayUtil;
@@ -106,11 +112,22 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final SwerveSubsystem swerve;
     // public final LimelightSubsystem reeflimelight;
     public final LimelightSubsystem funnellimelight;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
+
+    private double MaxSpeed =
+            1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxAngularRate =
+            RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.1)
+            .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    public final CommandSwerveDrivetrain swerve = TunerConstants.createDrivetrain();
 
     public final ActiveAtHubLED activeAtHubLEDCommand;
     public final ActiveAtFZoneLED activeAtFZoneLEDCommand;
@@ -138,11 +155,28 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        swerve = new SwerveSubsystem();
         // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
         funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
+
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        swerve.setDefaultCommand(
+                // Drivetrain will execute this command periodically
+                swerve.applyRequest(
+                        () -> drive.withVelocityX(-commandDriver1.getLeftY()
+                                        * MaxSpeed) // Drive forward with negative Y (forward)
+                                .withVelocityY(
+                                        -commandDriver1.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                                .withRotationalRate(-commandDriver1.getRightX()
+                                        * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                        ));
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        final var idle = new SwerveRequest.Idle();
+        RobotModeTriggers.disabled().whileTrue(swerve.applyRequest(() -> idle).ignoringDisable(true));
 
         activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());
         activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
@@ -155,13 +189,15 @@ public class RobotContainer {
         prepShootAtFZoneCommand = new PrepShootAtPoint(
                 shooter,
                 swerve,
-                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
+                () -> TeleopLogic.getFriendlyZoneTarget(
+                        swerve.getStateCopy().Pose.getTranslation()));
         prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance());
         pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,
                 funnellimelight,
-                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
+                () -> TeleopLogic.getFriendlyZoneTarget(
+                        swerve.getStateCopy().Pose.getTranslation()));
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 

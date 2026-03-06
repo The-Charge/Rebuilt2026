@@ -11,15 +11,15 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class AlignTurret extends Command {
-    private final SwerveSubsystem swerveSub;
+    private final CommandSwerveDrivetrain swerveSub;
     private final TurretSubsystem turretSub;
     private final LimelightSubsystem limelightSub;
 
@@ -28,7 +28,7 @@ public class AlignTurret extends Command {
 
     private AlignTurret(
             TurretSubsystem turret,
-            SwerveSubsystem swerve,
+            CommandSwerveDrivetrain swerve,
             LimelightSubsystem limelight,
             Optional<Supplier<Translation2d>> point,
             Optional<Supplier<Alliance>> alliance) {
@@ -53,14 +53,17 @@ public class AlignTurret extends Command {
 
     public static AlignTurret atPoint(
             TurretSubsystem turret,
-            SwerveSubsystem swerve,
+            CommandSwerveDrivetrain swerve,
             LimelightSubsystem limelight,
             Supplier<Translation2d> point) {
         return new AlignTurret(turret, swerve, limelight, Optional.of(point), Optional.empty());
     }
 
     public static AlignTurret atHub(
-            TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Supplier<Alliance> alliance) {
+            TurretSubsystem turret,
+            CommandSwerveDrivetrain swerve,
+            LimelightSubsystem limelight,
+            Supplier<Alliance> alliance) {
         return new AlignTurret(turret, swerve, limelight, Optional.empty(), Optional.of(alliance));
     }
 
@@ -108,7 +111,7 @@ public class AlignTurret extends Command {
     }
 
     public void swerveAlign(Translation2d targetLoc) {
-        Pose2d robotPose = swerveSub.getPose();
+        Pose2d robotPose = swerveSub.getStateCopy().Pose;
         Translation2d vectorDifference = targetLoc.minus(robotPose.getTranslation());
         Angle angleFieldRelative = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
         Angle absoluteAngle =

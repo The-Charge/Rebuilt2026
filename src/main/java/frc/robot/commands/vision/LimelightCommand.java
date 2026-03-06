@@ -1,20 +1,20 @@
 package frc.robot.commands.vision;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
-import frc.robot.subsystems.SwerveSubsystem;
 import java.util.Optional;
 
 public class LimelightCommand extends Command {
     private final LimelightSubsystem turretLimelight;
     private final LimelightSubsystem sideLimelight;
-    private final SwerveSubsystem swerve;
+    private final CommandSwerveDrivetrain swerve;
 
     public LimelightCommand(
             LimelightSubsystem turretLimelightSubsystem,
             LimelightSubsystem sideLimelightSubsystem,
-            SwerveSubsystem swerveSub) {
+            CommandSwerveDrivetrain swerveSub) {
         turretLimelight = turretLimelightSubsystem;
         sideLimelight = sideLimelightSubsystem;
         swerve = swerveSub;
@@ -37,12 +37,12 @@ public class LimelightCommand extends Command {
 
         if (turretVisionEstimateOptional.isPresent()) {
             VisionMeasurement visionEstimate = turretVisionEstimateOptional.get();
-            swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+            swerve.addVisionMeasurement(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
         }
 
         if (sideVisionEstimateOptional.isPresent()) {
             VisionMeasurement visionEstimate = sideVisionEstimateOptional.get();
-            swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+            swerve.addVisionMeasurement(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
         }
     }
 
@@ -60,7 +60,7 @@ public class LimelightCommand extends Command {
         } else {
             visionEstimate = turretVisionEstimateOptional.get();
         }
-        swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        swerve.addVisionMeasurement(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
     // tries to find which measurement is best
@@ -84,7 +84,7 @@ public class LimelightCommand extends Command {
                 }
             }
         }
-        swerve.addVisionReading(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
+        swerve.addVisionMeasurement(visionEstimate.pose(), visionEstimate.timestamp(), visionEstimate.stdDevs());
     }
 
     // private void calcMT1diff() {
