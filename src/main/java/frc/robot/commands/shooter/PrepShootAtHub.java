@@ -13,6 +13,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -64,6 +65,8 @@ public class PrepShootAtHub extends Command {
         }
         Distance distToTarget = Meters.of(Math.hypot(
                 offsetToHub.getMeasureX().in(Meters), offsetToHub.getMeasureY().in(Meters)));
+
+        Logger.logDouble(ShooterConstants.subsystemName, "distToTarget", distToTarget.in(Meters));
 
         // if (distance > ShooterConstants.hoodPosThreshold) {
         //     // if far, shoot low and far

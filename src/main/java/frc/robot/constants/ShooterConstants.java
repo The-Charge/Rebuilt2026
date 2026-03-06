@@ -19,7 +19,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
 
         public static final int motorID = 4;
 
-        public static double kP = 0.001;
+        public static double kP = 0.0001;
         public static double kI = 5e-7;
         public static double kD = 0;
         public static final Optional<Voltage> kStaticG = Optional.empty();
@@ -55,8 +55,8 @@ public class ShooterConstants { // split into shooter, spinner, and hood
 
     static {
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();
-        distanceToRPMPlot.put(0.0, 0.0);
-        distanceToRPMPlot.put(69.0, 69.0);
+        distanceToRPMPlot.put(0.0, 100.0);
+        distanceToRPMPlot.put(10.0, 3000.0);
     }
 
     public static final String subsystemName = "Shooter";

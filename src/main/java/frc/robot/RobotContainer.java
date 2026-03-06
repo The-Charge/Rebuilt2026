@@ -230,11 +230,11 @@ public class RobotContainer {
         // commandButtonBox.disableOdo().onTrue();
         commandButtonBox
                 .turretLeft()
-                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .turretRight()
-                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()

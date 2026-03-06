@@ -35,7 +35,7 @@ public class CalibrateTurret extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        if (!interrupted) turretSub.setEncoderPos(TurretConstants.calibrationEndPos);
+        if (!interrupted) turretSub.setEncoderPosition(TurretConstants.calibrationEndPos);
         turretSub.setIsCalibrated(true);
     }
 

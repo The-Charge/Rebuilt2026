@@ -143,4 +143,13 @@ public class Robot extends TimedRobot {
         }
         teleopLogic = Optional.empty();
     }
+
+    @Override
+    public void testInit() {
+        RobotContainer.getInstance().turret.removeDefaultCommand();
+        RobotContainer.getInstance().shooter.removeDefaultCommand();
+        RobotContainer.getInstance().intake.removeDefaultCommand();
+        RobotContainer.getInstance().indexer.removeDefaultCommand();
+        RobotContainer.getInstance().climber.removeDefaultCommand();
+    }
 }

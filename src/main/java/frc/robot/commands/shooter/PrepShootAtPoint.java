@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.utils.Logger;
 import java.util.function.Supplier;
 
 // Set shooter velocity for correct speed based on custom point
@@ -34,6 +35,8 @@ public class PrepShootAtPoint extends Command {
         Translation2d offset = target.minus(swerve.getStateCopy().Pose.getTranslation());
         Distance distToTarget = Meters.of(
                 Math.hypot(offset.getMeasureX().in(Meters), offset.getMeasureY().in(Meters)));
+
+        Logger.logDouble(ShooterConstants.subsystemName, "distToTarget", distToTarget.in(Meters));
 
         shoot.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
     }
