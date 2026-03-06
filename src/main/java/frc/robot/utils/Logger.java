@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
 import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.hal.PowerDistributionStickyFaults;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
@@ -430,6 +431,24 @@ public class Logger {
 
         logStringArray(subsystem, key, (String[])
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
+    }
+
+    public static void logPose3d(String subsystem, String key, Pose3d val) {
+        if (subsystem == null) subsystem = "";
+        if (key == null) {
+            reportWarning("Cannot log to an empty key", true);
+            return;
+        }
+
+        Double[] ret = {val.getX(), val.getY(), val.getZ(), val.getRotation().getX(), val.getRotation().getY(), val.getRotation().getZ()};
+
+        String normalized = NetworkTable.normalizeKey(subsystem + "/" + key, false);
+        if (!nt.getEntry(normalized).setDoubleArray(ret)) {
+            reportWarning(
+                    "attempted to log double value to entry '" + key + "' of type "
+                            + nt.getEntry(normalized).getType().getValueStr(),
+                    true);
+        }
     }
 
     public static void logTalonFX(String subsystem, String name, TalonFX motor) {

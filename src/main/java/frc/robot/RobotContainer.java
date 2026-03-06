@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -65,6 +66,7 @@ import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
 import frc.robot.commands.turret.ManualTurret;
+import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.ShooterConstants;
@@ -112,8 +114,8 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    // public final LimelightSubsystem reeflimelight;
-    public final LimelightSubsystem funnellimelight;
+    public final LimelightSubsystem turretLimelight;
+    public final LimelightSubsystem otherLimelight;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
 
@@ -155,8 +157,8 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
-        funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
+        turretLimelight = new LimelightSubsystem("turret", new Pose3d());
+        otherLimelight = new LimelightSubsystem("other", new Pose3d());
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
 
@@ -183,7 +185,7 @@ public class RobotContainer {
         inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
-        pointAtHubCommand = AlignTurret.atHub(turret, swerve, funnellimelight, () -> DriverStation.getAlliance()
+        pointAtHubCommand = AlignTurret.atHub(turret, swerve, otherLimelight, () -> DriverStation.getAlliance()
                 .orElse(Alliance.Blue));
         centerTurretCommand = new CenterTurret(turret);
         prepShootAtFZoneCommand = new PrepShootAtPoint(
@@ -191,15 +193,18 @@ public class RobotContainer {
                 swerve,
                 () -> TeleopLogic.getFriendlyZoneTarget(
                         swerve.getStateCopy().Pose.getTranslation()));
-        prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance());
+        prepShootAtHubCommand = new PrepShootAtHub(shooter, otherLimelight, swerve, () -> DriverStation.getAlliance());
         pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,
-                funnellimelight,
+                otherLimelight,
                 () -> TeleopLogic.getFriendlyZoneTarget(
                         swerve.getStateCopy().Pose.getTranslation()));
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
+        CommandScheduler.getInstance()
+                .schedule(
+                        new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled()));
 
         configureBindings();
         configureAutonomous();

@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -16,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
+import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
+import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.LimelightHelpers.LimelightResults;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
@@ -74,25 +75,12 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public Optional<VisionMeasurement> getVisionMeasurement(CommandSwerveDrivetrain swerve) {
-        boolean useMegaTag2 = true;
         final PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
         if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
 
         if (poseEstimate.avgTagDist > LimelightConstants.kMaxDistance.in(Meters)) return Optional.empty();
 
-        final boolean twoOrMoreTags = poseEstimate.tagCount >= 2;
-        final boolean closeEnough = poseEstimate.avgTagDist < LimelightConstants.kMaxDistanceForMegaTag1.in(Meters);
-        final double robotSpeed = swerve.getStateCopy().Speeds.vxMetersPerSecond; // get swerve speed from ctre
-        final boolean movingSlowEnough = robotSpeed < LimelightConstants.kMaxSpeedForMegaTag1.in(MetersPerSecond);
-
-        SmartDashboard.putBoolean("twoOrMoreTags", twoOrMoreTags);
-        SmartDashboard.putBoolean("closeEnough", closeEnough);
-        SmartDashboard.putBoolean("robotSpeed", movingSlowEnough);
-
-        final boolean CAN_GET_GOOD_HEADING = twoOrMoreTags && movingSlowEnough && closeEnough;
-        if (!CAN_GET_GOOD_HEADING) return Optional.empty();
-        if (CAN_GET_GOOD_HEADING) useMegaTag2 = false;
-        return getVisionMeasurement(swerve, useMegaTag2);
+        return getVisionMeasurement(swerve, true);
     }
 
     public Optional<VisionMeasurement> getVisionMeasurement(CommandSwerveDrivetrain swerve, boolean useMegaTag2) {
@@ -103,8 +91,7 @@ public class LimelightSubsystem extends SubsystemBase {
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
             stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         } else {
-            LimelightHelpers.SetRobotOrientation(
-                    cameraName, swerve.getStateCopy().RawHeading.getDegrees(), 0, 0, 0, 0, 0);
+            // LimelightHelpers.SetRobotOrientation(cameraName, swerve.getStateCopy().RawHeading.getDegrees(), 0, 0, 0, 0, 0);
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
             stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         }
@@ -143,7 +130,7 @@ public class LimelightSubsystem extends SubsystemBase {
                 swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
         // make sure we aren't putting all our trust in vision
-        translationalStdDev = Math.max(translationalStdDev, 0.05);
+        translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
 
         double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
 
@@ -166,10 +153,18 @@ public class LimelightSubsystem extends SubsystemBase {
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
         transStdDev += swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
-        transStdDev = Math.max(transStdDev, 0.05); // make sure we aren't putting all our trust in vision
+        transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
         double rotStdDev = Double.MAX_VALUE; // never trust rotation under any circumstances
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
+    }
+
+    public void setIMUMode(int mode) {
+        LimelightHelpers.SetIMUMode(cameraName, mode);
+    }
+
+    public void setThrottle(boolean enabled) {
+        LimelightHelpers.SetThrottle(cameraName, enabled ? 100 : 0);
     }
 }
