@@ -440,7 +440,14 @@ public class Logger {
             return;
         }
 
-        Double[] ret = {val.getX(), val.getY(), val.getZ(), val.getRotation().getX(), val.getRotation().getY(), val.getRotation().getZ()};
+        Double[] ret = {
+            val.getX(),
+            val.getY(),
+            val.getZ(),
+            val.getRotation().getX(),
+            val.getRotation().getY(),
+            val.getRotation().getZ()
+        };
 
         String normalized = NetworkTable.normalizeKey(subsystem + "/" + key, false);
         if (!nt.getEntry(normalized).setDoubleArray(ret)) {

@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
@@ -58,7 +57,6 @@ public class LimelightSubsystem extends SubsystemBase {
         for (LimelightTarget_Fiducial targetFiducial : targetFiducials) {
             if (targetFiducial.fiducialID == id) {
                 Pose3d pose = targetFiducial.getTargetPose_CameraSpace();
-                SmartDashboard.putNumber("ret", Math.atan2(pose.getY(), pose.getX()));
                 return Optional.of(pose);
             }
         }
@@ -91,7 +89,8 @@ public class LimelightSubsystem extends SubsystemBase {
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(cameraName);
             stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         } else {
-            // LimelightHelpers.SetRobotOrientation(cameraName, swerve.getStateCopy().RawHeading.getDegrees(), 0, 0, 0, 0, 0);
+            // LimelightHelpers.SetRobotOrientation(cameraName, swerve.getStateCopy().RawHeading.getDegrees(), 0, 0, 0,
+            // 0, 0);
             poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName);
             stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         }
@@ -111,11 +110,6 @@ public class LimelightSubsystem extends SubsystemBase {
 
         if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) { // single tag
             RawFiducial singleTag = poseEstimate.rawFiducials[0];
-
-            if (LimelightConstants.isLoggingVisionDiagnostics) {
-                SmartDashboard.putNumber(
-                        "VisionDiagnostics/" + cameraName + "/single tag pose ambiguity", singleTag.ambiguity);
-            }
 
             if (singleTag.ambiguity > 0.7 || singleTag.distToCamera > 5) {
                 return Optional.empty(); // don't trust if too ambiguous or too far

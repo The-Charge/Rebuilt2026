@@ -22,7 +22,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -69,6 +68,7 @@ import frc.robot.commands.turret.ManualTurret;
 import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
+import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.TunerConstants;
@@ -142,6 +142,7 @@ public class RobotContainer {
     public final PrepShootAtPoint prepShootAtFZoneCommand;
     public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
+    private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
@@ -157,8 +158,8 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretLimelight = new LimelightSubsystem("turret", new Pose3d());
-        otherLimelight = new LimelightSubsystem("other", new Pose3d());
+        turretLimelight = new LimelightSubsystem("turret", LimelightConstants.turretPose);
+        otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
 
@@ -209,6 +210,8 @@ public class RobotContainer {
         configureBindings();
         configureAutonomous();
         addNamedCommands();
+
+        swerve.registerTelemetry(logger::telemeterize);
     }
 
     private void configureBindings() {
