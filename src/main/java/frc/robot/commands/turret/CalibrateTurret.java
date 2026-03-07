@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.Logger;
+
 import java.util.Optional;
 
 public class CalibrateTurret extends Command {

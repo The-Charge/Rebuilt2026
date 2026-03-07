@@ -101,7 +101,7 @@ public class TurretSubsystem extends SubsystemBase {
                 limitedAngle.asMechanismAngle().in(Degrees));
         Logger.logDouble(TurretConstants.subsystemName, "limitedMotorRots", limitedAngle.asMotorRotations());
 
-        turretMotor.getClosedLoopController().setSetpoint(angle.asMechanismRotations(), ControlType.kPosition);
+        turretMotor.getClosedLoopController().setSetpoint(limitedAngle.asMotorRotations(), ControlType.kPosition);
     }
 
     public void stop() {
