@@ -19,7 +19,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
 
         public static final int motorID = 4;
 
-        public static double kP = 0.0001;
+        public static double kP = 0.001;
         public static double kI = 5e-7;
         public static double kD = 0;
         public static final Optional<Voltage> kStaticG = Optional.empty();

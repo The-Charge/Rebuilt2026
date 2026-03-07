@@ -29,7 +29,7 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final boolean reverseHardLimitEnabled = false;
     public static final Optional<Double> reverseHardLimitResetRots = Optional.empty();
 
-    public static final double kP = 0.3;
+    public static final double kP = 0.2;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final Optional<Voltage> kStaticG = Optional.empty();
@@ -45,13 +45,13 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final TurretAngle minLegalAngle = TurretAngle.fromMechanismRotations(-0.25);
     public static final TurretAngle maxLegalAngle = TurretAngle.fromMechanismRotations(0.25);
 
-    public static final double manualSpeed = 0.1;
-
-    public static final double calibrationSpeed = -0.05;
-    public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-29.428341);
-    public static final Time calibrationResetDelay = Seconds.of(0.2);
-    public static final double calibrationThresholdCurrent = 5; // AMPS
-
     public static Translation2d turretCenterOffset =
             new Translation2d(Inches.of(-5.5), Inches.of(-5.5)); // vector from center of robot to turret
+
+    public static final double manualSpeed = 0.1;
+
+    public static final double calibrationSpeed = -0.2;
+    public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-35.213959);
+    public static final Time calibrationEndDelay = Seconds.of(0.2);
+    public static final double calibrationThresholdCurrent = 16; // AMPS
 }

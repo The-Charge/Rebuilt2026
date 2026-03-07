@@ -136,6 +136,7 @@ public class RobotContainer {
     public final PrepShootAtPoint prepShootAtFZoneCommand;
     public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
+    public final LimelightCommand limelightCommand;
 
     private SwerveRequest.FieldCentric swerveFieldCentricDrive;
     private SwerveRequest.RobotCentric swerveRobotCentricDrive;
@@ -191,9 +192,10 @@ public class RobotContainer {
                         swerve.getStateCopy().Pose.getTranslation()));
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
-        CommandScheduler.getInstance()
-                .schedule(
-                        new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled()));
+
+        limelightCommand =
+                new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
+        CommandScheduler.getInstance().schedule(limelightCommand);
 
         setupSwerve();
         configureBindings();
