@@ -1,6 +1,7 @@
 package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -10,8 +11,13 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.utils.Logger;
+
+import static edu.wpi.first.units.Units.Rotation;
+
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 public class LimelightCommand extends Command {
     private final LimelightSubsystem turretLimelight;
@@ -82,6 +88,7 @@ public class LimelightCommand extends Command {
         // }
     }
 
+
     private void seed() {
         Optional<Pose3d> MT1turret = turretLimelight.getMegaTag1();
         Optional<Pose3d> MT1side = sideLimelight.getMegaTag1();
@@ -96,6 +103,12 @@ public class LimelightCommand extends Command {
             sideLimelight.seedInternalIMU(rots);
             isSeeded = true;
         }
+    }
+    private void seedFromPP() {
+        Angle rot = swerve.getStateCopy().Pose.getRotation().getMeasure();
+        turretLimelight.seedInternalIMU(rot);
+        turretLimelight.seedInternalIMU(rot);
+
     }
 
     // Use both cameras together (CTRE Swerve; kalman filter)
