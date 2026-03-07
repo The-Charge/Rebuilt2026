@@ -20,14 +20,14 @@ public class IntakeConstants {
     }
 
     public static class LeftDeployer {
-        public static final int port = 0;
+        public static final int port = 1;
 
         public static final double deployedPosition = 1;
     }
 
     public static class RightDeployer {
-        public static final int port = 1;
+        public static final int port = 3;
 
-        public static final double deployedPosition = 1;
+        public static final double deployedPosition = 0.5;
     }
 }
