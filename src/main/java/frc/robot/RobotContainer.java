@@ -217,7 +217,11 @@ public class RobotContainer {
                                                 -hidDriver1.getLeftX(),
                                                 SwerveConstants.joystickDeadband,
                                                 SwerveConstants.joystickExponent))) // Drive left with negative X (left)
-                                .withRotationalRate(0) // Drive counterclockwise with negative X (left)
+                                .withRotationalRate(
+                                        SwerveConstants.maxAngularVel.times(ControllerUtil.applyLinearDeadband(
+                                                -hidDriver1.getRightX(),
+                                                SwerveConstants.joystickDeadband))) // Drive counterclockwise with
+                        // negative X (left)
                         ));
 
         // Idle while the robot is disabled. This ensures the configured
