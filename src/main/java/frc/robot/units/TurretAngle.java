@@ -50,7 +50,8 @@ public class TurretAngle {
 
     // ask Marcos
     public TurretAngle wrap() {
-        return fromMechanismRotations(((asMechanismRotations() % 1) + 1) % 1);
+        final double centerMechRots = TurretConstants.calibrationEndPos.asMechanismRotations();
+        return fromMechanismRotations(((((asMechanismRotations() - centerMechRots)  % 1) + 1) % 1) + centerMechRots);
         // Examples: 3.2 -> 0.2 -> 1.2 -> 0.2
         //          -3.2 -> -0.2 -> 0.8 -> 0.8
     }
