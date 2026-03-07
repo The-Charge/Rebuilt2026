@@ -130,6 +130,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        // TODO: seed the cameras using the angle from pathplanner
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 

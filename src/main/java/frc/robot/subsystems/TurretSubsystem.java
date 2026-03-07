@@ -126,8 +126,8 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.getEncoder().setPosition(angle.asMotorRotations());
     }
     /**
-    * sets percent output of motor
-    **/ 
+     * sets percent output of motor
+     **/
     public void dutyCycle(double duty) {
         turretMotor.set(duty);
         targetAngle = Optional.empty();

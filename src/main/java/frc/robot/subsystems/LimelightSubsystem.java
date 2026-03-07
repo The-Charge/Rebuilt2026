@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
@@ -34,8 +35,8 @@ public class LimelightSubsystem extends SubsystemBase {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
         LimelightHelpers.setRewindEnabled(name, true);
-        // LimelightHelpers.SetIMUMode(name, 3);
-        // LimelightHelpers.SetIMUAssistAlpha(name, 1);
+        LimelightHelpers.SetIMUMode(name, 3);
+        // LimelightHelpers.SetIMUAssistAlpha(name, 0.1);
     }
 
     @Override
@@ -166,13 +167,20 @@ public class LimelightSubsystem extends SubsystemBase {
 
         if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
-        transStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
+        transStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond)
+                * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
         double rotStdDev = LimelightConstants.krotStdDev; // never trust rotation under any circumstances, but maybe do
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
+    }
+
+    public void seedInternalIMU(Angle yaw) {
+        LimelightHelpers.SetIMUMode(cameraName, 1);
+        LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
+        LimelightHelpers.SetIMUMode(cameraName, 3);
     }
 
     public void setIMUMode(int mode) {

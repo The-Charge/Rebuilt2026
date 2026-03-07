@@ -1,8 +1,9 @@
 package frc.robot.commands.vision;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -18,9 +19,10 @@ public class LimelightCommand extends Command {
     private final CommandSwerveDrivetrain swerve;
     private final Supplier<Boolean> enabled;
     private boolean enabledLast;
+    private boolean isSeeded;
 
-    StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault()
-            .getStructTopic(String.format("/%s/poseDeviation", getName()), Pose2d.struct)
+    StructPublisher<Pose3d> publisher = NetworkTableInstance.getDefault()
+            .getStructTopic(String.format("/%s/poseDeviation", getName()), Pose3d.struct)
             .publish();
 
     public LimelightCommand(
@@ -32,6 +34,7 @@ public class LimelightCommand extends Command {
         sideLimelight = sideLimelightSubsystem;
         swerve = swerveSub;
         enabled = enabledSup;
+        isSeeded = false;
         addRequirements(turretLimelight, sideLimelight);
     }
 
@@ -43,8 +46,8 @@ public class LimelightCommand extends Command {
     @Override
     public void execute() {
         if (enabled.get() && !enabledLast) {
-            turretLimelight.setIMUMode(3);
-            sideLimelight.setIMUMode(3);
+            // turretLimelight.setIMUMode(3);
+            // sideLimelight.setIMUMode(3);
             turretLimelight.setThrottle(false);
             sideLimelight.setThrottle(false);
             turretLimelight.setPipeline(1);
@@ -63,6 +66,10 @@ public class LimelightCommand extends Command {
             enabledLast = false;
         }
 
+        if (!isSeeded) {
+            seed();
+        }
+
         calcMT1diff();
 
         multiple();
@@ -75,7 +82,24 @@ public class LimelightCommand extends Command {
         // }
     }
 
+    private void seed() {
+        Optional<Pose3d> MT1turret = turretLimelight.getMegaTag1();
+        Optional<Pose3d> MT1side = sideLimelight.getMegaTag1();
+        if (MT1turret.isPresent() || MT1side.isPresent()) {
+            Angle rots;
+            if (MT1turret.isPresent()) {
+                rots = MT1turret.get().getRotation().getMeasureZ();
+            } else {
+                rots = MT1side.get().getRotation().getMeasureZ();
+            }
+            turretLimelight.seedInternalIMU(rots);
+            sideLimelight.seedInternalIMU(rots);
+            isSeeded = true;
+        }
+    }
+
     // Use both cameras together (CTRE Swerve; kalman filter)
+    @SuppressWarnings("unused")
     private void multiple() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
@@ -135,12 +159,12 @@ public class LimelightCommand extends Command {
     }
 
     private void calcMT1diff() {
-        Optional<Pose2d> turret = turretLimelight.getMegaTag2();
-        Optional<Pose2d> side = sideLimelight.getMegaTag2();
+        Optional<Pose3d> turret = turretLimelight.getMegaTag1();
+        Optional<Pose3d> side = sideLimelight.getMegaTag1();
         if (turret.isEmpty() || side.isEmpty()) {
             return;
         }
-        Pose2d diff = new Pose2d().plus(side.get().minus(turret.get()));
+        Pose3d diff = new Pose3d().plus(side.get().minus(turret.get()));
         // Logger.logPose3d(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
         publisher.set(diff);
     }

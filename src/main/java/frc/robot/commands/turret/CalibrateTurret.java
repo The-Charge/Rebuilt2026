@@ -50,6 +50,4 @@ public class CalibrateTurret extends Command {
             turretSub.setIsCalibrated(true);
         }
     }
-
-    
 }
