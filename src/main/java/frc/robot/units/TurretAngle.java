@@ -6,6 +6,8 @@ import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.TurretConstants;
 import frc.robot.utils.Logger;
 
+// Converts between angle of Motor and angle of turret Mechanism; using constant TurretConstants.motorRotsPerMechRots
+// Also has a wrap and checks for validity of angle
 public class TurretAngle {
 
     private double motorRots;
@@ -46,10 +48,14 @@ public class TurretAngle {
         return Rotations.of(asMechanismRotations());
     }
 
+    // ask Marcos
     public TurretAngle wrap() {
         return fromMechanismRotations(((asMechanismRotations() % 1) + 1) % 1);
+        // Examples: 3.2 -> 0.2 -> 1.2 -> 0.2
+        //          -3.2 -> -0.2 -> 0.8 -> 0.8
     }
 
+    // Wraps angle, then checks if between bounds
     public boolean isLegal() {
         TurretAngle wrapped = wrap();
         return wrapped.asMotorRotations() >= TurretConstants.minLegalAngle.asMotorRotations()
