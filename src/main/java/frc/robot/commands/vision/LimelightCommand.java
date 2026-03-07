@@ -70,6 +70,8 @@ public class LimelightCommand extends Command {
             seed();
         }
 
+        setRobotOrientation();
+
         calcMT1diff();
 
         multiple();
@@ -83,14 +85,22 @@ public class LimelightCommand extends Command {
     }
 
     private void seed() {
-        Optional<Pose3d> MT1turret = turretLimelight.getMegaTag1();
-        Optional<Pose3d> MT1side = sideLimelight.getMegaTag1();
+        Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
+        Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
         if (MT1turret.isPresent() || MT1side.isPresent()) {
             Angle rots;
-            if (MT1turret.isPresent()) {
-                rots = MT1turret.get().getRotation().getMeasureZ();
+            if (MT1turret.isPresent() && MT1side.isPresent()) {
+                if (MT1turret.get().stdDevs().get(0, 0)
+                        > MT1side.get().stdDevs().get(0, 0)) {
+                    rots = MT1turret.get().pose().getRotation().getMeasure();
+
+                } else {
+                    rots = MT1side.get().pose().getRotation().getMeasure();
+                }
+            } else if (MT1turret.isPresent()) {
+                rots = MT1turret.get().pose().getRotation().getMeasure();
             } else {
-                rots = MT1side.get().getRotation().getMeasureZ();
+                rots = MT1side.get().pose().getRotation().getMeasure();
             }
             turretLimelight.seedInternalIMU(rots);
             sideLimelight.seedInternalIMU(rots);
@@ -103,6 +113,29 @@ public class LimelightCommand extends Command {
         turretLimelight.seedInternalIMU(rot);
         sideLimelight.seedInternalIMU(rot);
         isSeeded = true;
+    }
+
+    private void setRobotOrientation() {
+        Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
+        Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
+        if (MT1turret.isPresent() || MT1side.isPresent()) {
+            Angle rots;
+            if (MT1turret.isPresent() && MT1side.isPresent()) {
+                if (MT1turret.get().stdDevs().get(0, 0)
+                        > MT1side.get().stdDevs().get(0, 0)) {
+                    rots = MT1turret.get().pose().getRotation().getMeasure();
+
+                } else {
+                    rots = MT1side.get().pose().getRotation().getMeasure();
+                }
+            } else if (MT1turret.isPresent()) {
+                rots = MT1turret.get().pose().getRotation().getMeasure();
+            } else {
+                rots = MT1side.get().pose().getRotation().getMeasure();
+            }
+            turretLimelight.setRobotOrientation(rots);
+            sideLimelight.setRobotOrientation(rots);
+        }
     }
 
     // Use both cameras together (CTRE Swerve; kalman filter)

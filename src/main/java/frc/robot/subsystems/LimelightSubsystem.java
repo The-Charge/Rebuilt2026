@@ -35,7 +35,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
         LimelightHelpers.setRewindEnabled(name, true);
-        LimelightHelpers.SetIMUMode(name, 3);
+        LimelightHelpers.SetIMUMode(name, 4);
         // LimelightHelpers.SetIMUAssistAlpha(name, 0.1);
     }
 
@@ -180,7 +180,11 @@ public class LimelightSubsystem extends SubsystemBase {
     public void seedInternalIMU(Angle yaw) {
         LimelightHelpers.SetIMUMode(cameraName, 1);
         LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
-        LimelightHelpers.SetIMUMode(cameraName, 3);
+        LimelightHelpers.SetIMUMode(cameraName, 4);
+    }
+
+    public void setRobotOrientation(Angle yaw) {
+        LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
     }
 
     public void setIMUMode(int mode) {
