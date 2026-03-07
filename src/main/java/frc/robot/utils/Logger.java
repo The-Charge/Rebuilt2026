@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -501,6 +501,27 @@ public class Logger {
         }
     }
 
+    public static void logTalonFXReduced(String subsystem, String name, TalonFX motor) {
+        if (loggingDisabled) return;
+
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (motor == null) {
+            reportWarning("Cannot log a null TalonFX", true);
+            return;
+        }
+
+        String table = subsystem + "/" + name;
+
+        logDouble(table, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
+        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
+        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
+        logEnum(table, "controlMode", motor.getControlMode().getValue());
+    }
+
     public static void logTalonFX(String subsystem, String name, TalonFX motor) {
         if (loggingDisabled) return;
 
@@ -681,7 +702,7 @@ public class Logger {
         // logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
     }
 
-    public static <T extends SubsystemBase> void logSubsystem(String subsystemName, T subsystem) {
+    public static <T extends Subsystem> void logSubsystem(String subsystemName, T subsystem) {
         if (loggingDisabled) return;
 
         if (subsystemName == null) {

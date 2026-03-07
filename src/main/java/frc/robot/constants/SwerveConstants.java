@@ -10,6 +10,8 @@ public class SwerveConstants {
 
     private SwerveConstants() {}
 
+    public static final String subsystemName = "Swerve";
+
     public static final LinearVelocity maxTranslationVel = TunerConstants.kSpeedAt12Volts;
     public static final AngularVelocity maxAngularVel = RotationsPerSecond.of(1.5);
 

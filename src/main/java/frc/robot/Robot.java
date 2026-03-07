@@ -65,6 +65,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().ledSub.slowPeriodic();
         RobotContainer.getInstance().otherLimelight.slowPeriodic();
         RobotContainer.getInstance().turretLimelight.slowPeriodic();
+        RobotContainer.getInstance().auxSwerve.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
 
@@ -78,16 +79,17 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().ledSub.verySlowPeriodic();
         RobotContainer.getInstance().otherLimelight.verySlowPeriodic();
         RobotContainer.getInstance().turretLimelight.verySlowPeriodic();
+        RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
         Alerts.pdpDisconnected.set(!pdpConnected);
 
         double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
-        if (batteryVoltage <= 10) {
+        if (batteryVoltage <= 11) {
             Alerts.lowBattery.set(false);
             Alerts.criticalBattery.set(true);
-        } else if (batteryVoltage <= 11) {
+        } else if (batteryVoltage <= 12) {
             Alerts.lowBattery.set(true);
             Alerts.criticalBattery.set(false);
         } else {

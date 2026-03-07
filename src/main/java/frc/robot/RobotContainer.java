@@ -74,6 +74,7 @@ import frc.robot.constants.TurretConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
+import frc.robot.subsystems.AuxSwerveSubsystem;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -91,6 +92,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class RobotContainer {
@@ -122,6 +124,7 @@ public class RobotContainer {
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
     public final Telemetry swerveTelem;
+    public final AuxSwerveSubsystem auxSwerve;
 
     public final ActiveAtHubLED activeAtHubLEDCommand;
     public final ActiveAtFZoneLED activeAtFZoneLEDCommand;
@@ -164,6 +167,7 @@ public class RobotContainer {
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
         swerveTelem = new Telemetry(SwerveConstants.maxTranslationVel.in(MetersPerSecond));
+        auxSwerve = new AuxSwerveSubsystem();
 
         activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());
         activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
@@ -215,37 +219,56 @@ public class RobotContainer {
         swerveBrake = new SwerveRequest.SwerveDriveBrake();
         swerveIdle = new SwerveRequest.Idle();
 
+        DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
+
         swerveFieldCentricDriveCommand = swerve.applyRequest(() -> swerveFieldCentricDrive
                 .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                        -hidDriver1.getLeftY(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent)))
+                                -hidDriver1.getLeftY(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
                 .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                        -hidDriver1.getLeftX(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent)))
-                .withRotationalRate(SwerveConstants.maxAngularVel.times(ControllerUtil.applyLinearDeadband(
-                        -hidDriver1.getRightX(), SwerveConstants.joystickDeadband))));
+                                -hidDriver1.getLeftX(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withRotationalRate(SwerveConstants.maxAngularVel.times(
+                        ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
+                                * speedShifter.getAsDouble())));
 
         swerveRobotCentricDriveCommand = swerve.applyRequest(() -> swerveRobotCentricDrive
                 .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                        -hidDriver1.getLeftY(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent)))
+                                -hidDriver1.getLeftY(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
                 .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                        -hidDriver1.getLeftX(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent)))
-                .withRotationalRate(SwerveConstants.maxAngularVel.times(ControllerUtil.applyLinearDeadband(
-                        -hidDriver1.getRightX(), SwerveConstants.joystickDeadband))));
+                                -hidDriver1.getLeftX(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withRotationalRate(SwerveConstants.maxAngularVel.times(
+                        ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
+                                * speedShifter.getAsDouble())));
 
         swerveFieldCentricFacingAngleDriveCommand = swerve.applyRequest(() -> {
             ChassisSpeeds speed = swerve.getStateCopy().Speeds;
             if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.01) {
-                lastDefinedRotation = Optional.of(new Rotation2d(speed.vxMetersPerSecond, speed.vyMetersPerSecond));
+                lastDefinedRotation =
+                        Optional.of(new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
             }
 
             var req = swerveFieldCentricFacingAngleDrive
                     .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                            -hidDriver1.getLeftY(),
-                            SwerveConstants.joystickDeadband,
-                            SwerveConstants.joystickExponent)))
+                                    -hidDriver1.getLeftY(),
+                                    SwerveConstants.joystickDeadband,
+                                    SwerveConstants.joystickExponent)
+                            * speedShifter.getAsDouble()))
                     .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
-                            -hidDriver1.getLeftX(),
-                            SwerveConstants.joystickDeadband,
-                            SwerveConstants.joystickExponent)));
+                                    -hidDriver1.getLeftX(),
+                                    SwerveConstants.joystickDeadband,
+                                    SwerveConstants.joystickExponent)
+                            * speedShifter.getAsDouble()));
             if (lastDefinedRotation.isPresent()) {
                 req = req.withTargetDirection(lastDefinedRotation.get());
             }
@@ -266,6 +289,14 @@ public class RobotContainer {
                         })
                         .ignoringDisable(true));
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
+        commandDriver1
+                .leftTrigger()
+                .onTrue(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
+                        .ignoringDisable(true))
+                .onFalse(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
+                        .ignoringDisable(true));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.

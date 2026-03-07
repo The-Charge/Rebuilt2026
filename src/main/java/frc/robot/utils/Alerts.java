@@ -4,9 +4,10 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
-import frc.robot.constants.IntakeConstants.Roller;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.TurretConstants;
+import frc.robot.generated.TunerConstants;
 
 public class Alerts {
 
@@ -47,6 +48,16 @@ public class Alerts {
     // turret alerts
     public static final Alert turretDisconnected, turretOverheating, turretFaults, turretWarnings, turretConfigFail;
 
+    // swerve alerts
+    public static final Alert flDriveDisconnected, flDriveOverheating;
+    public static final Alert flAzimuthDisconnected, flAzimuthOverheating;
+    public static final Alert frDriveDisconnected, frDriveOverheating;
+    public static final Alert frAzimuthDisconnected, frAzimuthOverheating;
+    public static final Alert blDriveDisconnected, blDriveOverheating;
+    public static final Alert blAzimuthDisconnected, blAzimuthOverheating;
+    public static final Alert brDriveDisconnected, brDriveOverheating;
+    public static final Alert brAzimuthDisconnected, brAzimuthOverheating;
+
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
         driver1Missing.set(false);
@@ -71,156 +82,81 @@ public class Alerts {
                 AlertType.kError);
         notLoggingToFlashdrive.set(false);
 
-        rollerConfigFail = new Alert(
-                String.format("Failed to update roller motor (CAN %d) config", Roller.motorID), AlertType.kError);
-        rollerConfigFail.set(false);
+        rollerConfigFail = makeConfigFailAlert("roller motor", IntakeConstants.Roller.motorID);
+        rollerDisconnected = makeDisconnectAlert("roller motor", IntakeConstants.Roller.motorID);
+        rollerOverheating = makeOverheatingAlert("roller motor", IntakeConstants.Roller.motorID);
+        rollerFaults = makeCriticalFaultsAlert("roller motor", IntakeConstants.Roller.motorID);
 
-        rollerDisconnected = new Alert(
-                String.format("Missing connection to roller motor (CAN %d)", Roller.motorID), AlertType.kError);
-        rollerDisconnected.set(false);
+        spindexerDisconnected = makeDisconnectAlert("spindexer motor", IndexerConstants.Spindexer.motorID);
+        spindexerOverheating = makeOverheatingAlert("spindexer motor", IndexerConstants.Spindexer.motorID);
+        spindexerFaults = makeCriticalFaultsAlert("spindexer motor", IndexerConstants.Spindexer.motorID);
+        spindexerWarnings = makeCriticalWarningsAlert("spindexer motor", IndexerConstants.Spindexer.motorID);
+        spindexerConfigFail = makeConfigFailAlert("spindexer motor", IndexerConstants.Spindexer.motorID);
 
-        rollerOverheating =
-                new Alert(String.format("Roller motor (CAN %d) is overheating", Roller.motorID), AlertType.kWarning);
-        rollerOverheating.set(false);
+        exchangeConfigFail = makeConfigFailAlert("exchange motor", IndexerConstants.Exchange.motorID);
+        exchangeDisconnected = makeDisconnectAlert("exchange motor", IndexerConstants.Exchange.motorID);
+        exchangeOverheating = makeOverheatingAlert("exchange motor", IndexerConstants.Exchange.motorID);
+        exchangeFaults = makeCriticalFaultsAlert("exchange motor", IndexerConstants.Exchange.motorID);
+        exchangeWarnings = makeCriticalWarningsAlert("exchange motor", IndexerConstants.Exchange.motorID);
 
-        rollerFaults = new Alert(
-                String.format("Potentially critical faults are active on roller motor (CAN %d)", Roller.motorID),
-                AlertType.kWarning);
-        rollerFaults.set(false);
+        climberDisconnected = makeDisconnectAlert("climber motor", ClimberConstants.motorID);
+        climberOverheating = makeOverheatingAlert("climber motor", ClimberConstants.motorID);
+        climberFaults = makeCriticalFaultsAlert("climber motor", ClimberConstants.motorID);
+        climberConfigFail = makeConfigFailAlert("climber motor", ClimberConstants.motorID);
 
-        spindexerDisconnected = new Alert(
-                String.format("Missing connection to spindexer motor (CAN %d)", IndexerConstants.Spindexer.motorID),
-                AlertType.kError);
-        spindexerDisconnected.set(false);
+        shooterDisconnected = makeDisconnectAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
+        shooterOverheating = makeOverheatingAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
+        shooterFaults = makeCriticalFaultsAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
+        shooterWarnings = makeCriticalWarningsAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
+        shooterConfigFail = makeConfigFailAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
 
-        spindexerOverheating = new Alert(
-                String.format("Spindexer motor (CAN %d) is overheating", IndexerConstants.Spindexer.motorID),
-                AlertType.kWarning);
-        spindexerOverheating.set(false);
+        turretDisconnected = makeDisconnectAlert("turret motor", TurretConstants.motorID);
+        turretOverheating = makeOverheatingAlert("turret motor", TurretConstants.motorID);
+        turretFaults = makeCriticalFaultsAlert("turret motor", TurretConstants.motorID);
+        turretWarnings = makeCriticalWarningsAlert("turret motor", TurretConstants.motorID);
+        turretConfigFail = makeConfigFailAlert("turret motor", TurretConstants.motorID);
 
-        spindexerFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on spindexer motor (CAN %d)",
-                        IndexerConstants.Spindexer.motorID),
-                AlertType.kWarning);
-        spindexerFaults.set(false);
-
-        spindexerWarnings = new Alert(
-                String.format(
-                        "Potentially critical warnings are active on spindexer motor (CAN %d)",
-                        IndexerConstants.Spindexer.motorID),
-                AlertType.kWarning);
-        spindexerWarnings.set(false);
-
-        spindexerConfigFail = new Alert(
-                String.format("Failed to update spindexer motor (CAN %d) config", IndexerConstants.Spindexer.motorID),
-                AlertType.kError);
-        spindexerConfigFail.set(false);
-
-        exchangeConfigFail = new Alert(
-                String.format("Failed to update exchange motor (CAN %d) config", IndexerConstants.Exchange.motorID),
-                AlertType.kError);
-        exchangeConfigFail.set(false);
-
-        exchangeDisconnected = new Alert(
-                String.format("Missing connection to exchange motor (CAN %d)", IndexerConstants.Exchange.motorID),
-                AlertType.kError);
-        exchangeDisconnected.set(false);
-
-        exchangeOverheating = new Alert(
-                String.format("Exchange motor (CAN %d) is overheating", IndexerConstants.Exchange.motorID),
-                AlertType.kWarning);
-        exchangeOverheating.set(false);
-
-        exchangeFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on exchange motor (CAN %d)",
-                        IndexerConstants.Exchange.motorID),
-                AlertType.kWarning);
-        exchangeFaults.set(false);
-
-        exchangeWarnings = new Alert(
-                String.format(
-                        "Potentially critical warnings are active on exchange motor (CAN %d)",
-                        IndexerConstants.Exchange.motorID),
-                AlertType.kWarning);
-        exchangeWarnings.set(false);
-
-        climberDisconnected = new Alert(
-                String.format("Missing connection to climber motor (CAN %d)", ClimberConstants.motorID),
-                AlertType.kError);
-        climberDisconnected.set(false);
-
-        climberOverheating = new Alert(
-                String.format("Climber motor (CAN %d) is overheating", ClimberConstants.motorID), AlertType.kWarning);
-        climberOverheating.set(false);
-
-        climberFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on climber motor (CAN %d)", ClimberConstants.motorID),
-                AlertType.kWarning);
-        climberFaults.set(false);
-
-        climberConfigFail = new Alert(
-                String.format("Failed to update climber motor (CAN %d) config", ClimberConstants.motorID),
-                AlertType.kError);
-        climberConfigFail.set(false);
-
-        shooterDisconnected = new Alert(
-                String.format("Missing connection to shooter motor (CAN %d)", ShooterConstants.ShootConfig.motorID),
-                AlertType.kError);
-        shooterDisconnected.set(false);
-
-        shooterOverheating = new Alert(
-                String.format("Shooter motor (CAN %d) is overheating", ShooterConstants.ShootConfig.motorID),
-                AlertType.kWarning);
-        shooterOverheating.set(false);
-
-        shooterFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on shooter motor (CAN %d)",
-                        ShooterConstants.ShootConfig.motorID),
-                AlertType.kWarning);
-        shooterFaults.set(false);
-
-        shooterWarnings = new Alert(
-                String.format(
-                        "Potentially critical warnings are active on shooter motor (CAN %d)",
-                        ShooterConstants.ShootConfig.motorID),
-                AlertType.kWarning);
-        shooterWarnings.set(false);
-
-        shooterConfigFail = new Alert(
-                String.format("Failed to update shooter motor (CAN %d) config", ShooterConstants.ShootConfig.motorID),
-                AlertType.kError);
-        shooterConfigFail.set(false);
-
-        turretDisconnected = new Alert(
-                String.format("Missing connection to turret motor (CAN %d)", TurretConstants.motorID),
-                AlertType.kError);
-        turretDisconnected.set(false);
-
-        turretOverheating = new Alert(
-                String.format("Turret motor (CAN %d) is overheating", TurretConstants.motorID), AlertType.kWarning);
-        turretOverheating.set(false);
-
-        turretFaults = new Alert(
-                String.format(
-                        "Potentially critical faults are active on turret motor (CAN %d)", TurretConstants.motorID),
-                AlertType.kWarning);
-        turretFaults.set(false);
-
-        turretWarnings = new Alert(
-                String.format(
-                        "Potentially critical warnings are active on turret motor (CAN %d)", TurretConstants.motorID),
-                AlertType.kWarning);
-        turretWarnings.set(false);
-
-        turretConfigFail = new Alert(
-                String.format("Failed to update turret motor (CAN %d) config", TurretConstants.motorID),
-                AlertType.kError);
-        turretConfigFail.set(false);
+        flDriveDisconnected = makeDisconnectAlert("flDrive motor", TunerConstants.FrontLeft.DriveMotorId);
+        flDriveOverheating = makeOverheatingAlert("flDrive motor", TunerConstants.FrontLeft.DriveMotorId);
+        flAzimuthDisconnected = makeDisconnectAlert("flAzimuth motor", TunerConstants.FrontLeft.SteerMotorId);
+        flAzimuthOverheating = makeOverheatingAlert("flAzimuth motor", TunerConstants.FrontLeft.SteerMotorId);
+        frDriveDisconnected = makeDisconnectAlert("frDrive motor", TunerConstants.FrontRight.DriveMotorId);
+        frDriveOverheating = makeOverheatingAlert("frDrive motor", TunerConstants.FrontRight.DriveMotorId);
+        frAzimuthDisconnected = makeDisconnectAlert("frAzimuth motor", TunerConstants.FrontRight.SteerMotorId);
+        frAzimuthOverheating = makeOverheatingAlert("frAzimuth motor", TunerConstants.FrontRight.SteerMotorId);
+        blDriveDisconnected = makeDisconnectAlert("blDrive motor", TunerConstants.BackLeft.DriveMotorId);
+        blDriveOverheating = makeOverheatingAlert("blDrive motor", TunerConstants.BackLeft.DriveMotorId);
+        blAzimuthDisconnected = makeDisconnectAlert("blAzimuth motor", TunerConstants.BackLeft.SteerMotorId);
+        blAzimuthOverheating = makeOverheatingAlert("blAzimuth motor", TunerConstants.BackLeft.SteerMotorId);
+        brDriveDisconnected = makeDisconnectAlert("brDrive motor", TunerConstants.BackRight.DriveMotorId);
+        brDriveOverheating = makeOverheatingAlert("brDrive motor", TunerConstants.BackRight.DriveMotorId);
+        brAzimuthDisconnected = makeDisconnectAlert("brAzimuth motor", TunerConstants.BackRight.SteerMotorId);
+        brAzimuthOverheating = makeOverheatingAlert("brAzimuth motor", TunerConstants.BackRight.SteerMotorId);
     }
 
     private Alerts() {}
+
+    private static Alert makeConfigFailAlert(String motorName, int can) {
+        return new Alert(String.format("Failed to update %s (CAN %d) config", motorName, can), AlertType.kError);
+    }
+
+    private static Alert makeDisconnectAlert(String motorName, int can) {
+        return new Alert(String.format("Missing connection to %s (CAN %d)", motorName, can), AlertType.kError);
+    }
+
+    private static Alert makeOverheatingAlert(String motorName, int can) {
+        return new Alert(String.format("%s (CAN %d) is overheating", motorName, can), AlertType.kWarning);
+    }
+
+    private static Alert makeCriticalFaultsAlert(String motorName, int can) {
+        return new Alert(
+                String.format("Potentially critical faults are active on %s (CAN %d)", motorName, can),
+                AlertType.kWarning);
+    }
+
+    private static Alert makeCriticalWarningsAlert(String motorName, int can) {
+        return new Alert(
+                String.format("Potentially critical warnings are active on %s (CAN %d)", motorName, can),
+                AlertType.kWarning);
+    }
 }
