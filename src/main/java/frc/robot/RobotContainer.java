@@ -344,7 +344,6 @@ public class RobotContainer {
         setupAutoDisplay();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
-        SmartDashboard.putData("Field", new Field2d());
     }
 
     private void setupAutoDisplay() {

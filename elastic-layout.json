@@ -171,14 +171,14 @@
             }
           },
           {
-            "title": "limelight-reef",
+            "title": "limelight-turret",
             "x": 448.0,
             "y": 0.0,
             "width": 384.0,
             "height": 384.0,
             "type": "Camera Stream",
             "properties": {
-              "topic": "/CameraPublisher/limelight-reef",
+              "topic": "/CameraPublisher/limelight-turret",
               "period": 0.06,
               "rotation_turns": 0
             }
@@ -349,7 +349,7 @@
             "height": 448.0,
             "type": "Camera Stream",
             "properties": {
-              "topic": "/CameraPublisher/limelight-reef",
+              "topic": "/CameraPublisher/limelight-turret",
               "period": 0.06,
               "rotation_turns": 0
             }
