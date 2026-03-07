@@ -109,8 +109,9 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.empty();
     }
 
+    // Checks if turret is at hard stop by checking if output current is greater than threshold
     public boolean isAtForwardLimit() {
-        return !forwardLimit.get();
+        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent;
     }
 
     public TurretAngle getTurretAngle() {
@@ -124,7 +125,9 @@ public class TurretSubsystem extends SubsystemBase {
     public void setEncoderPosition(TurretAngle angle) {
         turretMotor.getEncoder().setPosition(angle.asMotorRotations());
     }
-
+    /**
+    * sets percent output of motor
+    **/ 
     public void dutyCycle(double duty) {
         turretMotor.set(duty);
         targetAngle = Optional.empty();

@@ -4,10 +4,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.utils.Logger;
-
 import java.util.Optional;
 
+// Calibrates Turret by sending it to hard stop, pausing for a small amount of time, and setting position as zero
 public class CalibrateTurret extends Command {
 
     private final TurretSubsystem turretSub;
@@ -18,6 +17,7 @@ public class CalibrateTurret extends Command {
         addRequirements(turretSubsystem);
     }
 
+    // Start command by starting the turret at a slow speed towards the end position
     @Override
     public void initialize() {
         turretSub.dutyCycle(TurretConstants.calibrationSpeed);
@@ -27,6 +27,7 @@ public class CalibrateTurret extends Command {
 
     @Override
     public void execute() {
+        // When at hard stop, stop the motor and start the timer
         if (turretSub.isAtForwardLimit() && zeroingDelay.isEmpty()) {
             zeroingDelay = Optional.of(new Timer());
             zeroingDelay.get().start();
@@ -35,14 +36,20 @@ public class CalibrateTurret extends Command {
         }
     }
 
-    @Override
-    public void end(boolean interrupted) {
-        if (!interrupted) turretSub.setEncoderPosition(TurretConstants.calibrationEndPos);
-        turretSub.setIsCalibrated(true);
-    }
-
+    // Once timer finishes, the command ends
     @Override
     public boolean isFinished() {
         return zeroingDelay.isPresent() && zeroingDelay.get().hasElapsed(TurretConstants.calibrationResetDelay);
     }
+
+    // Once command ends, set as end position.
+    @Override
+    public void end(boolean interrupted) {
+        if (!interrupted) {
+            turretSub.setEncoderPosition(TurretConstants.calibrationEndPos);
+            turretSub.setIsCalibrated(true);
+        }
+    }
+
+    
 }

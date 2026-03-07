@@ -48,4 +48,6 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final double calibrationSpeed = -0.05;
     public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-29.428341);
     public static final Time calibrationResetDelay = Seconds.of(0.2);
+    public static final double calibrationThresholdCurrent = 5; // AMPS
+
 }
