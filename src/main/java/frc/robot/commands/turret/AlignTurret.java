@@ -4,11 +4,15 @@ import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -17,6 +21,8 @@ import frc.robot.utils.Logger;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.config.RobotConfig;
 
 public class AlignTurret extends Command {
     private final CommandSwerveDrivetrain swerveSub;
@@ -100,11 +106,16 @@ public class AlignTurret extends Command {
         // Get Detection (safe)
         // change based on which alliance
         Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
-
+        
         // Gets actual pose (safe)
         if (poseOpt.isEmpty()) return false; // TODO: log that this failed
         Pose3d pose = poseOpt.get();
 
+        // Shift by distance of turret to center; shift needs to rotate with robot rotation, so using swerve rotation here
+        // but camera is close enough so ...
+        // Pose2d p2d = pose.toPose2d();
+        // Rotation2d swerveRot = RobotContainer.getInstance().swerve.getStateCopy().Pose.getRotation();
+        // p2d = p2d.plus(new Transform2d(TurretConstants.turretCenterOffset.rotateBy(swerveRot), new Rotation2d()));
         // Set turret angle to robotToHub vector
         Angle angleToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
 
@@ -115,6 +126,8 @@ public class AlignTurret extends Command {
 
     public void swerveAlign(Translation2d targetLoc) {
         Pose2d robotPose = swerveSub.getStateCopy().Pose;
+        // add turret offset from center, rotate offset by robot orientation
+        robotPose = robotPose.plus(new Transform2d(TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()), new Rotation2d())); // shift turret from center of robot
         Translation2d vectorDifference = targetLoc.minus(robotPose.getTranslation());
         Angle fieldCentricAngle = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
         Angle robotCentricAngle = fieldCentricAngle.plus(robotPose.getRotation().getMeasure());

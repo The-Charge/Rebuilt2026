@@ -1,8 +1,14 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.units.TurretAngle;
@@ -49,4 +55,6 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-29.428341);
     public static final Time calibrationResetDelay = Seconds.of(0.2);
     public static final double calibrationThresholdCurrent = 5; // AMPS
+
+    public static Translation2d turretCenterOffset = new Translation2d(Inches.of(-5.5), Inches.of(-5.5)); // vector from center of robot to turret
 }
