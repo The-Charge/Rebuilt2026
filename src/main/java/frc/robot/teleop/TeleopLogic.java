@@ -210,6 +210,9 @@ public class TeleopLogic {
                 RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtFZoneCommand, false);
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, true);
+
+        // put the swerve in "Snake Mode" so that it is easier to pick up fuel
+        // MiscUtils.changeSubsystemDefaultCommand(RobotContainer.getInstance().swerve, false);
     }
 
     private void enterInactiveMode() {

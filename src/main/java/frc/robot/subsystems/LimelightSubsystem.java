@@ -9,6 +9,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -133,10 +134,13 @@ public class LimelightSubsystem extends SubsystemBase {
             // megatag1 performs much worse with only one tag
             translationalStdDev += StdDevConstants.MegaTag1.kSingleTagPunishment;
         }
+
+        ChassisSpeeds speed = swerve.getStateCopy().Speeds;
+
         translationalStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
         translationalStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
-        translationalStdDev +=
-                swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
+        translationalStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond)
+                * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
 
         // make sure we aren't putting all our trust in vision
         translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
@@ -158,9 +162,11 @@ public class LimelightSubsystem extends SubsystemBase {
 
         double transStdDev = StdDevConstants.MegaTag2.kInitialValue;
 
+        ChassisSpeeds speed = swerve.getStateCopy().Speeds;
+
         if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
         transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
-        transStdDev += swerve.getStateCopy().Speeds.vxMetersPerSecond * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
+        transStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
