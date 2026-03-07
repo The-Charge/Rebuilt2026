@@ -57,17 +57,24 @@ public class IndexerSubsystem extends SubsystemBase {
         Logger.logSubsystem(IndexerConstants.subsystemName, this);
 
         Logger.logSparkMotor(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor);
-        CANMonitor.logCANDeviceStatus(
-                "spindexerMotor", IndexerConstants.Spindexer.motorID, SparkUtils.isConnected(spindexerMotor));
-        Alerts.spindexerDisconnected.set(!SparkUtils.isConnected(spindexerMotor));
+
+        Logger.logSparkMotor(IndexerConstants.subsystemName, "exchangeMotor", exchangeMotor);
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {
+        boolean spindexerConnected = SparkUtils.isConnected(spindexerMotor);
+
+        CANMonitor.logCANDeviceStatus("spindexerMotor", IndexerConstants.Spindexer.motorID, spindexerConnected);
+        Alerts.spindexerDisconnected.set(!spindexerConnected);
         Alerts.spindexerOverheating.set(spindexerMotor.getMotorTemperature() >= 80);
         Alerts.spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
         Alerts.spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
 
-        Logger.logSparkMotor(IndexerConstants.subsystemName, "exchangeMotor", exchangeMotor);
-        CANMonitor.logCANDeviceStatus(
-                "exchangeMotor", IndexerConstants.Exchange.motorID, SparkUtils.isConnected(exchangeMotor));
-        Alerts.exchangeDisconnected.set(!SparkUtils.isConnected(exchangeMotor));
+        boolean exchangeConnected = SparkUtils.isConnected(exchangeMotor);
+        CANMonitor.logCANDeviceStatus("exchangeMotor", IndexerConstants.Exchange.motorID, exchangeConnected);
+        Alerts.exchangeDisconnected.set(!exchangeConnected);
         Alerts.exchangeOverheating.set(exchangeMotor.getMotorTemperature() >= 80);
         Alerts.exchangeFaults.set(SparkUtils.hasCriticalFaults(exchangeMotor.getFaults()));
         Alerts.exchangeWarnings.set(SparkUtils.hasCriticalWarnings(exchangeMotor.getWarnings()));

@@ -143,11 +143,7 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.logSubsystem(TurretConstants.subsystemName, this);
 
         Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
-        CANMonitor.logCANDeviceStatus("turretMotor", TurretConstants.motorID, SparkUtils.isConnected(turretMotor));
-        Alerts.turretDisconnected.set(!SparkUtils.isConnected(turretMotor));
-        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
-        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
-        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+
         Logger.logDouble(
                 TurretConstants.subsystemName,
                 "currentTurretDeg",
@@ -167,5 +163,17 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.subsystemName,
                 "isTargetLegal",
                 targetAngle.map((val) -> val.isLegal()).orElse(true));
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {
+        boolean turretConnected = SparkUtils.isConnected(turretMotor);
+
+        CANMonitor.logCANDeviceStatus("turretMotor", TurretConstants.motorID, turretConnected);
+        Alerts.turretDisconnected.set(!turretConnected);
+        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
     }
 }

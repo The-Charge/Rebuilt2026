@@ -42,6 +42,10 @@ public class LimelightSubsystem extends SubsystemBase {
         Logger.logSubsystem(cameraName, this);
     }
 
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {}
+
     public void setCameraOffset(Pose3d cameraOffset) {
         LimelightHelpers.setCameraPose_RobotSpace(
                 cameraName,
@@ -178,6 +182,6 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public void takeRewind() {
-        LimelightHelpers.triggerRewindCapture(cameraName, 150.0);
+        LimelightHelpers.triggerRewindCapture(cameraName, 155.0); // record starting 5 seconds before match starts
     }
 }

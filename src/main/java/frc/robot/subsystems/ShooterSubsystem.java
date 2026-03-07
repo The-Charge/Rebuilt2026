@@ -124,12 +124,6 @@ public class ShooterSubsystem extends SubsystemBase {
         Logger.logSubsystem(ShooterConstants.subsystemName, this);
 
         Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
-        CANMonitor.logCANDeviceStatus(
-                "shootMotor", ShooterConstants.ShootConfig.motorID, SparkUtils.isConnected(shootMotor));
-        Alerts.shooterDisconnected.set(!SparkUtils.isConnected(shootMotor));
-        Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
-        Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
-        Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
 
         // Logger.logSparkMotor(ShooterConstants.subsystemName, "hood", hoodMotor);
 
@@ -148,5 +142,17 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShooterConstants.subsystemName,
                 "shoot/isAtTarget",
                 isShooterAtTargetSpeed().orElse(true));
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {
+        boolean shootConnected = SparkUtils.isConnected(shootMotor);
+
+        CANMonitor.logCANDeviceStatus("shootMotor", ShooterConstants.ShootConfig.motorID, shootConnected);
+        Alerts.shooterDisconnected.set(!shootConnected);
+        Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
+        Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
+        Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
     }
 }

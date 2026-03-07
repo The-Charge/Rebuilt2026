@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
@@ -22,5 +23,10 @@ public class MiscUtils {
             }
         }
         sub.setDefaultCommand(newDefault);
+    }
+
+    public static boolean isPDPConnected(PowerDistribution pdp) {
+        if (pdp == null) return false;
+        return pdp.getVoltage() != 0;
     }
 }

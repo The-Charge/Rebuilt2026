@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -26,6 +27,7 @@ public class ControllerUtil {
 
     // can't have array of lists, have to use list of lists
     private static List<List<Rumble>> rumbles;
+    private static List<Pair<Double, Double>> lastOutputs;
 
     static {
         rumbles = new ArrayList<List<Rumble>>();
@@ -35,6 +37,14 @@ public class ControllerUtil {
         rumbles.add(3, new ArrayList<Rumble>());
         rumbles.add(4, new ArrayList<Rumble>());
         rumbles.add(5, new ArrayList<Rumble>());
+
+        lastOutputs = new ArrayList<Pair<Double, Double>>();
+        lastOutputs.add(0, new Pair<Double, Double>(0.0, 0.0));
+        lastOutputs.add(1, new Pair<Double, Double>(0.0, 0.0));
+        lastOutputs.add(2, new Pair<Double, Double>(0.0, 0.0));
+        lastOutputs.add(3, new Pair<Double, Double>(0.0, 0.0));
+        lastOutputs.add(4, new Pair<Double, Double>(0.0, 0.0));
+        lastOutputs.add(5, new Pair<Double, Double>(0.0, 0.0));
     }
 
     // prevent instantiating objects
@@ -77,8 +87,15 @@ public class ControllerUtil {
             leftSum = Math.min(Math.max(leftSum, 0), 1);
             rightSum = Math.min(Math.max(rightSum, 0), 1);
 
-            contr.setRumble(RumbleType.kLeftRumble, leftSum);
-            contr.setRumble(RumbleType.kRightRumble, rightSum);
+            Pair<Double, Double> prevOut = lastOutputs.get(contrId);
+
+            if (prevOut.getFirst() != leftSum) {
+                contr.setRumble(RumbleType.kLeftRumble, leftSum);
+            }
+            if (prevOut.getSecond() != rightSum) {
+                contr.setRumble(RumbleType.kRightRumble, rightSum);
+            }
+            lastOutputs.set(contrId, new Pair<Double, Double>(leftSum, rightSum));
         }
     }
 

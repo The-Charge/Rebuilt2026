@@ -13,6 +13,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.units.TurretAngle;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -73,20 +74,24 @@ public class AlignTurret extends Command {
 
     @Override
     public void execute() {
-        // If using Hub tag
         if (isRed.isPresent()) {
-            boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
+            // targeting alliance hub
 
-            // If can't see hub tag, use swervePose
-            if (!succeeded) {
+            boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
+            if (succeeded) {
+                Logger.logString(getName(), "alignMethod", "hubTag");
+            } else {
+                // If can't see hub tag, use swervePose
                 swerveAlign(FieldConstants.getHubLoc(isRed.get().getAsBoolean()));
+                Logger.logString(getName(), "alignMethod", "swerve");
             }
             return;
         }
 
-        // If supplied given pose
         if (targetPoint.isPresent()) {
+            // targeting given point
             swerveAlign(targetPoint.get().get());
+            Logger.logString(getName(), "alignMethod", "swerve");
         }
     }
 

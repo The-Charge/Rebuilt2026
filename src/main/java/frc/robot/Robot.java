@@ -45,23 +45,43 @@ public class Robot extends TimedRobot {
         });
 
         teleopLogic = Optional.empty();
+
+        addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
+        addPeriodic(this::verySlowRobotPeriodic, Seconds.of(0.5));
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        ControllerUtil.periodic(RobotContainer.getInstance().hidDriver1, RobotContainer.getInstance().hidDriver2);
+
+        Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
+        Logger.logBool("", "isReadyToShoot", RobotContainer.getInstance().isReadyToShoot());
+    }
+
+    public void slowRobotPeriodic() {
+        RobotContainer.getInstance().climber.slowPeriodic();
+        RobotContainer.getInstance().indexer.slowPeriodic();
+        RobotContainer.getInstance().intake.slowPeriodic();
+        RobotContainer.getInstance().ledSub.slowPeriodic();
+        RobotContainer.getInstance().otherLimelight.slowPeriodic();
+        RobotContainer.getInstance().turretLimelight.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
-        CANMonitor.logCANDeviceStatus(
-                "PDP",
-                RobotContainer.getInstance().pdp.getModule() + 1,
-                CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
-        Alerts.pdpDisconnected.set(!CANMonitor.isPDPConnected(RobotContainer.getInstance().pdp));
 
-        Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
-        Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
-        Alerts.fmsConnected.set(DriverStation.isFMSAttached());
+        ControllerUtil.periodic(RobotContainer.getInstance().hidDriver1, RobotContainer.getInstance().hidDriver2);
+    }
+
+    public void verySlowRobotPeriodic() {
+        RobotContainer.getInstance().climber.verySlowPeriodic();
+        RobotContainer.getInstance().indexer.verySlowPeriodic();
+        RobotContainer.getInstance().intake.verySlowPeriodic();
+        RobotContainer.getInstance().ledSub.verySlowPeriodic();
+        RobotContainer.getInstance().otherLimelight.verySlowPeriodic();
+        RobotContainer.getInstance().turretLimelight.verySlowPeriodic();
+
+        boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
+        CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
+        Alerts.pdpDisconnected.set(!pdpConnected);
 
         double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
         if (batteryVoltage <= 10) {
@@ -75,8 +95,9 @@ public class Robot extends TimedRobot {
             Alerts.criticalBattery.set(false);
         }
 
-        Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
-        Logger.logBool("", "isReadyToShoot", RobotContainer.getInstance().isReadyToShoot());
+        Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
+        Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
+        Alerts.fmsConnected.set(DriverStation.isFMSAttached());
     }
 
     @Override
@@ -93,7 +114,7 @@ public class Robot extends TimedRobot {
         ControllerUtil.cancelControllerRumbles(0);
         ControllerUtil.cancelControllerRumbles(1);
 
-        if(DriverStation.isFMSAttached()) {
+        if (DriverStation.isFMSAttached()) {
             RobotContainer.getInstance().turretLimelight.takeRewind();
             RobotContainer.getInstance().otherLimelight.takeRewind();
         }

@@ -1,7 +1,6 @@
 package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,7 +20,7 @@ public class LimelightCommand extends Command {
     private boolean enabledLast;
 
     StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault()
-            .getStructTopic("/MySubsystem/MyPose", Pose2d.struct)
+            .getStructTopic(String.format("/%s/poseDeviation", getName()), Pose2d.struct)
             .publish();
 
     public LimelightCommand(
@@ -77,7 +76,6 @@ public class LimelightCommand extends Command {
     }
 
     // Use both cameras together (CTRE Swerve; kalman filter)
-    @SuppressWarnings("unused")
     private void multiple() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);

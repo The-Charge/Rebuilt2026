@@ -1,6 +1,5 @@
 package frc.robot.utils;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,10 +52,5 @@ public class CANMonitor {
 
     public static void removeConnectionChangeCallback() {
         connectionChangeCallback = Optional.empty();
-    }
-
-    public static boolean isPDPConnected(PowerDistribution pdp) {
-        if (pdp == null) return false;
-        return pdp.getVoltage() != 0;
     }
 }
