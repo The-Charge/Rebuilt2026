@@ -133,7 +133,7 @@ public class ControllerUtil {
     }
 
     public static double applyLinearDeadband(double raw, double deadband) {
-        return Math.abs(raw) <= deadband ? 0 : (raw - deadband * Math.signum(raw)) / (1 - deadband);
+        return Math.abs(raw) <= deadband ? 0 : ((raw - deadband * Math.signum(raw)) / (1 - deadband));
     }
 
     public static double applyExponentialDeadband(double raw, double deadband, int power) {

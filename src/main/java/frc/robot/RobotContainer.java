@@ -10,7 +10,6 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -70,6 +69,7 @@ import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
@@ -84,6 +84,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.AutoDisplayUtil;
+import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
 import java.util.function.BiConsumer;
@@ -118,31 +119,23 @@ public class RobotContainer {
     public final LimelightSubsystem otherLimelight;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
-
-    private double MaxSpeed =
-            1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate =
-            RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1)
-            .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-    public final CommandSwerveDrivetrain swerve = TunerConstants.createDrivetrain();
+    public final CommandSwerveDrivetrain swerve;
+    public final Telemetry swerveTelem;
 
     public final ActiveAtHubLED activeAtHubLEDCommand;
     public final ActiveAtFZoneLED activeAtFZoneLEDCommand;
     public final InactiveLED inactiveLEDCommand;
     public final IdleLED idleLEDCommand;
-    // public TeleopDrive teleopDrive;
     public final BlinkLED autoLEDCommand;
     public final AlignTurret pointAtHubCommand;
     public final CenterTurret centerTurretCommand;
     public final PrepShootAtPoint prepShootAtFZoneCommand;
     public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
-    private final Telemetry logger = new Telemetry(MaxSpeed);
+
+    private SwerveRequest.FieldCentric swerveFieldCentricDrive;
+    private SwerveRequest.SwerveDriveBrake swerveBrake;
+    private SwerveRequest.Idle swerveIdle;
 
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
@@ -162,24 +155,8 @@ public class RobotContainer {
         otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
-
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        swerve.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                swerve.applyRequest(
-                        () -> drive.withVelocityX(-commandDriver1.getLeftY()
-                                        * MaxSpeed) // Drive forward with negative Y (forward)
-                                .withVelocityY(
-                                        -commandDriver1.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                                .withRotationalRate(-commandDriver1.getRightX()
-                                        * MaxAngularRate) // Drive counterclockwise with negative X (left)
-                        ));
-
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(swerve.applyRequest(() -> idle).ignoringDisable(true));
+        swerve = TunerConstants.createDrivetrain();
+        swerveTelem = new Telemetry(SwerveConstants.maxTranslationVel.in(MetersPerSecond));
 
         activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());
         activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
@@ -207,11 +184,46 @@ public class RobotContainer {
                 .schedule(
                         new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled()));
 
+        setupSwerve();
         configureBindings();
         configureAutonomous();
         addNamedCommands();
 
-        swerve.registerTelemetry(logger::telemeterize);
+        swerve.registerTelemetry(swerveTelem::telemeterize);
+    }
+
+    private void setupSwerve() {
+        swerveFieldCentricDrive = new SwerveRequest.FieldCentric()
+                .withDeadband(MetersPerSecond.of(0.01))
+                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+        swerveBrake = new SwerveRequest.SwerveDriveBrake();
+        swerveIdle = new SwerveRequest.Idle();
+
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        swerve.setDefaultCommand(
+                // Drivetrain will execute this command periodically
+                swerve.applyRequest(
+                        () -> swerveFieldCentricDrive
+                                .withVelocityX(
+                                        SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                                -hidDriver1.getLeftY(),
+                                                SwerveConstants.joystickDeadband,
+                                                SwerveConstants
+                                                        .joystickExponent))) // Drive forward with negative Y (forward)
+                                .withVelocityY(
+                                        SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                                -hidDriver1.getLeftX(),
+                                                SwerveConstants.joystickDeadband,
+                                                SwerveConstants.joystickExponent))) // Drive left with negative X (left)
+                                .withRotationalRate(0) // Drive counterclockwise with negative X (left)
+                        ));
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        RobotModeTriggers.disabled()
+                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true));
     }
 
     private void configureBindings() {
