@@ -139,7 +139,6 @@ public class LimelightCommand extends Command {
     }
 
     // Use both cameras together (CTRE Swerve; kalman filter)
-    @SuppressWarnings("unused")
     private void multiple() {
         Optional<VisionMeasurement> turretVisionEstimateOptional = turretLimelight.getVisionMeasurement(swerve);
         Optional<VisionMeasurement> sideVisionEstimateOptional = sideLimelight.getVisionMeasurement(swerve);
