@@ -21,6 +21,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -223,6 +224,15 @@ public class RobotContainer {
                                                 SwerveConstants.joystickDeadband))) // Drive counterclockwise with
                         // negative X (left)
                         ));
+        commandDriver1
+                .b()
+                .onTrue(new InstantCommand(() -> {
+                            swerve.resetRotation(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                            ? Rotation2d.kZero
+                                            : Rotation2d.k180deg);
+                        })
+                        .ignoringDisable(true));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
