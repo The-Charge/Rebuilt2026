@@ -32,6 +32,9 @@ public class LimelightSubsystem extends SubsystemBase {
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
+        LimelightHelpers.setRewindEnabled(name, true);
+        // LimelightHelpers.SetIMUMode(name, 3);
+        // LimelightHelpers.SetIMUAssistAlpha(name, 1);
     }
 
     @Override
@@ -65,8 +68,16 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public Optional<Pose3d> getMegaTag1() {
-        Pose3d pose = LimelightHelpers.getBotPose3d_wpiBlue("");
+        Pose3d pose = LimelightHelpers.getBotPose3d_wpiBlue(cameraName);
         if (pose.equals(new Pose3d())) {
+            return Optional.empty();
+        }
+        return Optional.of(pose);
+    }
+
+    public Optional<Pose2d> getMegaTag2() {
+        Pose2d pose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cameraName).pose;
+        if (pose.equals(new Pose2d())) {
             return Optional.empty();
         }
         return Optional.of(pose);
@@ -149,7 +160,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
-        double rotStdDev = Double.MAX_VALUE; // never trust rotation under any circumstances
+        double rotStdDev = LimelightConstants.krotStdDev; // never trust rotation under any circumstances, but maybe do
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
@@ -159,6 +170,14 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public void setThrottle(boolean enabled) {
-        LimelightHelpers.SetThrottle(cameraName, enabled ? 100 : 0);
+        LimelightHelpers.SetThrottle(cameraName, enabled ? 200 : 0);
+    }
+
+    public void setPipeline(int pipe) {
+        LimelightHelpers.setPipelineIndex(cameraName, pipe);
+    }
+
+    public void takeRewind() {
+        LimelightHelpers.triggerRewindCapture(cameraName, 150.0);
     }
 }

@@ -92,6 +92,11 @@ public class Robot extends TimedRobot {
 
         ControllerUtil.cancelControllerRumbles(0);
         ControllerUtil.cancelControllerRumbles(1);
+
+        if(DriverStation.isFMSAttached()) {
+            RobotContainer.getInstance().turretLimelight.takeRewind();
+            RobotContainer.getInstance().otherLimelight.takeRewind();
+        }
     }
 
     @Override
