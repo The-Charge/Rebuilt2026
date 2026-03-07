@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
         // set Callback function to log reconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
-                Logger.println(String.format("Reconnected to CAN device %d", id));
+                Logger.println(String.format("Connected to CAN device %d", id));
                 return;
             }
 
@@ -178,4 +178,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.removeDefaultCommand();
         RobotContainer.getInstance().climber.removeDefaultCommand();
     }
+
+    @Override
+    public void testPeriodic() {}
 }
