@@ -10,7 +10,10 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -18,7 +21,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -27,12 +30,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -40,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
@@ -60,27 +64,35 @@ import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
 import frc.robot.commands.turret.ManualTurret;
+import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
+import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
+import frc.robot.subsystems.AuxSwerveSubsystem;
 import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.AutoDisplayUtil;
+import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class RobotContainer {
@@ -106,23 +118,35 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final SwerveSubsystem swerve;
-    // public final LimelightSubsystem reeflimelight;
-    public final LimelightSubsystem funnellimelight;
+    public final LimelightSubsystem turretLimelight;
+    public final LimelightSubsystem otherLimelight;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
+    public final CommandSwerveDrivetrain swerve;
+    public final Telemetry swerveTelem;
+    public final AuxSwerveSubsystem auxSwerve;
 
     public final ActiveAtHubLED activeAtHubLEDCommand;
     public final ActiveAtFZoneLED activeAtFZoneLEDCommand;
     public final InactiveLED inactiveLEDCommand;
     public final IdleLED idleLEDCommand;
-    // public TeleopDrive teleopDrive;
     public final BlinkLED autoLEDCommand;
     public final AlignTurret pointAtHubCommand;
     public final CenterTurret centerTurretCommand;
     public final PrepShootAtPoint prepShootAtFZoneCommand;
     public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
+    public final LimelightCommand limelightCommand;
+
+    private SwerveRequest.FieldCentric swerveFieldCentricDrive;
+    private SwerveRequest.RobotCentric swerveRobotCentricDrive;
+    private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
+    private SwerveRequest.SwerveDriveBrake swerveBrake;
+    private SwerveRequest.Idle swerveIdle;
+    public Command swerveFieldCentricDriveCommand;
+    public Command swerveRobotCentricDriveCommand;
+    public Command swerveFieldCentricFacingAngleDriveCommand;
+    private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
 
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
@@ -138,36 +162,152 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        swerve = new SwerveSubsystem();
-        // reeflimelight = new LimelightSubsystem("reef", new Pose3d());
-        funnellimelight = new LimelightSubsystem("funnel", new Pose3d());
+        turretLimelight = new LimelightSubsystem("turret", LimelightConstants.turretPose);
+        otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
+        swerve = TunerConstants.createDrivetrain();
+        swerveTelem = new Telemetry(SwerveConstants.maxTranslationVel.in(MetersPerSecond));
+        auxSwerve = new AuxSwerveSubsystem();
 
         activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());
         activeAtFZoneLEDCommand = new ActiveAtFZoneLED(ledSub);
         inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
-        pointAtHubCommand = AlignTurret.atHub(turret, swerve, funnellimelight, () -> DriverStation.getAlliance()
+        pointAtHubCommand = AlignTurret.atHub(turret, swerve, otherLimelight, () -> DriverStation.getAlliance()
                 .orElse(Alliance.Blue));
         centerTurretCommand = new CenterTurret(turret);
         prepShootAtFZoneCommand = new PrepShootAtPoint(
                 shooter,
                 swerve,
-                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
-        prepShootAtHubCommand = new PrepShootAtHub(shooter, funnellimelight, swerve, () -> DriverStation.getAlliance());
+                () -> TeleopLogic.getFriendlyZoneTarget(
+                        swerve.getStateCopy().Pose.getTranslation()));
+        prepShootAtHubCommand = new PrepShootAtHub(shooter, otherLimelight, swerve, () -> DriverStation.getAlliance());
         pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,
-                funnellimelight,
-                () -> TeleopLogic.getFriendlyZoneTarget(swerve.getPose().getTranslation()));
+                otherLimelight,
+                () -> TeleopLogic.getFriendlyZoneTarget(
+                        swerve.getStateCopy().Pose.getTranslation()));
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
+        limelightCommand =
+                new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
+        CommandScheduler.getInstance().schedule(limelightCommand);
+
+        setupSwerve();
         configureBindings();
         configureAutonomous();
         addNamedCommands();
+
+        swerve.registerTelemetry(swerveTelem::telemeterize);
+    }
+
+    private void setupSwerve() {
+        swerveFieldCentricDrive = new SwerveRequest.FieldCentric()
+                .withDeadband(MetersPerSecond.of(0.01))
+                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+        swerveRobotCentricDrive = new SwerveRequest.RobotCentric()
+                .withDeadband(MetersPerSecond.of(0.01))
+                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+        swerveFieldCentricFacingAngleDrive = new SwerveRequest.FieldCentricFacingAngle()
+                .withDeadband(MetersPerSecond.of(0.01))
+                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+        swerveBrake = new SwerveRequest.SwerveDriveBrake();
+        swerveIdle = new SwerveRequest.Idle();
+
+        DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
+
+        swerveFieldCentricDriveCommand = swerve.applyRequest(() -> swerveFieldCentricDrive
+                .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                -hidDriver1.getLeftY(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                -hidDriver1.getLeftX(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withRotationalRate(SwerveConstants.maxAngularVel.times(
+                        ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
+                                * speedShifter.getAsDouble())));
+
+        swerveRobotCentricDriveCommand = swerve.applyRequest(() -> swerveRobotCentricDrive
+                .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                -hidDriver1.getLeftY(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                -hidDriver1.getLeftX(),
+                                SwerveConstants.joystickDeadband,
+                                SwerveConstants.joystickExponent)
+                        * speedShifter.getAsDouble()))
+                .withRotationalRate(SwerveConstants.maxAngularVel.times(
+                        ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
+                                * speedShifter.getAsDouble())));
+
+        swerveFieldCentricFacingAngleDriveCommand = swerve.applyRequest(() -> {
+            ChassisSpeeds speed = swerve.getStateCopy().Speeds;
+            if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.01) {
+                lastDefinedRotation =
+                        Optional.of(new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
+            }
+
+            var req = swerveFieldCentricFacingAngleDrive
+                    .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                    -hidDriver1.getLeftY(),
+                                    SwerveConstants.joystickDeadband,
+                                    SwerveConstants.joystickExponent)
+                            * speedShifter.getAsDouble()))
+                    .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
+                                    -hidDriver1.getLeftX(),
+                                    SwerveConstants.joystickDeadband,
+                                    SwerveConstants.joystickExponent)
+                            * speedShifter.getAsDouble()));
+            if (lastDefinedRotation.isPresent()) {
+                req = req.withTargetDirection(lastDefinedRotation.get());
+            }
+
+            return req;
+        });
+
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
+        commandDriver1
+                .b()
+                .onTrue(new InstantCommand(() -> {
+                            swerve.resetRotation(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                            ? Rotation2d.kZero
+                                            : Rotation2d.k180deg);
+                        })
+                        .ignoringDisable(true));
+        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
+        commandDriver1
+                .leftTrigger()
+                .onTrue(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
+                        .ignoringDisable(true))
+                .onFalse(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
+                        .ignoringDisable(true));
+
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
+        RobotModeTriggers.disabled()
+                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true))
+                .onTrue(new InstantCommand(() -> {
+                            lastDefinedRotation = Optional.empty();
+                        })
+                        .ignoringDisable(true)); // reset snake mode
     }
 
     private void configureBindings() {
@@ -194,11 +334,11 @@ public class RobotContainer {
         // commandButtonBox.disableOdo().onTrue();
         commandButtonBox
                 .turretLeft()
-                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .turretRight()
-                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
@@ -284,7 +424,6 @@ public class RobotContainer {
         setupAutoDisplay();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
-        SmartDashboard.putData("Field", new Field2d());
     }
 
     private void setupAutoDisplay() {

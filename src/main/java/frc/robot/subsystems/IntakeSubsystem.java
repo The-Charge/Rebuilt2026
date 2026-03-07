@@ -71,14 +71,21 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.logSubsystem(IntakeConstants.name, this);
 
         Logger.logTalonFX(IntakeConstants.name, "rollerMotor", rollerMotor);
-        CANMonitor.logCANDeviceStatus("rollerMotor", IntakeConstants.Roller.motorID, rollerMotor.isConnected());
-        Alerts.rollerDisconnected.set(!rollerMotor.isConnected());
-        Alerts.rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().in(Celsius) >= Roller.overheatingTemp);
-        Alerts.rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
 
         Logger.logServo(IntakeConstants.name, "leftDeployer", leftDeployer);
         Logger.logServo(IntakeConstants.name, "rightDeployer", rightDeployer);
 
         Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {
+        boolean rollerConnected = rollerMotor.isConnected();
+
+        CANMonitor.logCANDeviceStatus("rollerMotor", IntakeConstants.Roller.motorID, rollerConnected);
+        Alerts.rollerDisconnected.set(!rollerConnected);
+        Alerts.rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().in(Celsius) >= Roller.overheatingTemp);
+        Alerts.rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
     }
 }

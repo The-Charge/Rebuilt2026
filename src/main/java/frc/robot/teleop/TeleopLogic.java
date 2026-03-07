@@ -79,7 +79,7 @@ public class TeleopLogic {
         }
 
         // get robot pose
-        Pose2d robotPose = RobotContainer.getInstance().swerve.getPosition();
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getStateCopy().Pose;
 
         // get zone and alliance info
         FieldZone zone = FieldZone.fromRobotPose(robotPose);
@@ -197,7 +197,7 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtHubCommand, false);
         MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtHubCommand, true);
+                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtHubCommand, false);
     }
 
     private void enterActiveAtFZoneMode() {
@@ -209,7 +209,10 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtFZoneCommand, false);
         MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, true);
+                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, false);
+
+        // put the swerve in "Snake Mode" so that it is easier to pick up fuel
+        // MiscUtils.changeSubsystemDefaultCommand(RobotContainer.getInstance().swerve, false);
     }
 
     private void enterInactiveMode() {

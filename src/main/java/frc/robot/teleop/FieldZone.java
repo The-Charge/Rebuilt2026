@@ -5,6 +5,7 @@ import edu.wpi.first.units.measure.Distance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.utils.Logger;
 
+// Get the FieldZone (Blue, Neutral, Red) the Robot is in based on its Pose
 public enum FieldZone {
     BLUE,
     NEUTRAL,

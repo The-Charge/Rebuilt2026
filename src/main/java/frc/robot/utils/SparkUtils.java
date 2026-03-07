@@ -31,12 +31,7 @@ public class SparkUtils {
     public static boolean hasCriticalWarnings(Warnings warnings) {
         if (warnings == null) return false;
 
-        return warnings.brownout
-                || warnings.escEeprom
-                || warnings.extEeprom
-                || warnings.other
-                || warnings.overcurrent
-                || warnings.sensor;
+        return warnings.escEeprom || warnings.extEeprom || warnings.other || warnings.overcurrent || warnings.sensor;
     }
 
     public static boolean isConnected(SparkBase motor) {

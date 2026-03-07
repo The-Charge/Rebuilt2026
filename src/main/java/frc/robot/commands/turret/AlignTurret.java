@@ -4,22 +4,25 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.TurretConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.units.TurretAngle;
+import frc.robot.utils.Logger;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class AlignTurret extends Command {
-    private final SwerveSubsystem swerveSub;
+    private final CommandSwerveDrivetrain swerveSub;
     private final TurretSubsystem turretSub;
     private final LimelightSubsystem limelightSub;
 
@@ -28,7 +31,7 @@ public class AlignTurret extends Command {
 
     private AlignTurret(
             TurretSubsystem turret,
-            SwerveSubsystem swerve,
+            CommandSwerveDrivetrain swerve,
             LimelightSubsystem limelight,
             Optional<Supplier<Translation2d>> point,
             Optional<Supplier<Alliance>> alliance) {
@@ -53,14 +56,17 @@ public class AlignTurret extends Command {
 
     public static AlignTurret atPoint(
             TurretSubsystem turret,
-            SwerveSubsystem swerve,
+            CommandSwerveDrivetrain swerve,
             LimelightSubsystem limelight,
             Supplier<Translation2d> point) {
         return new AlignTurret(turret, swerve, limelight, Optional.of(point), Optional.empty());
     }
 
     public static AlignTurret atHub(
-            TurretSubsystem turret, SwerveSubsystem swerve, LimelightSubsystem limelight, Supplier<Alliance> alliance) {
+            TurretSubsystem turret,
+            CommandSwerveDrivetrain swerve,
+            LimelightSubsystem limelight,
+            Supplier<Alliance> alliance) {
         return new AlignTurret(turret, swerve, limelight, Optional.empty(), Optional.of(alliance));
     }
 
@@ -71,49 +77,66 @@ public class AlignTurret extends Command {
 
     @Override
     public void execute() {
-        // If using Hub tag
         if (isRed.isPresent()) {
-            boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
+            // targeting alliance hub
 
-            // If can't see hub tag, use swervePose
-            if (!succeeded) {
+            boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
+            if (succeeded) {
+                Logger.logString(getName(), "alignMethod", "hubTag");
+            } else {
+                // If can't see hub tag, use swervePose
                 swerveAlign(FieldConstants.getHubLoc(isRed.get().getAsBoolean()));
+                Logger.logString(getName(), "alignMethod", "swerve");
             }
             return;
         }
 
-        // If supplied given pose
         if (targetPoint.isPresent()) {
+            // targeting given point
             swerveAlign(targetPoint.get().get());
+            Logger.logString(getName(), "alignMethod", "swerve");
         }
     }
 
     //
     public boolean hubTagAlign(boolean isRed) {
+        return false;
+
         // Get Detection (safe)
         // change based on which alliance
-        Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
+        // Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
-        // Gets actual pose (safe)
-        if (poseOpt.isEmpty()) return false; // TODO: log that this failed
-        Pose3d pose = poseOpt.get();
+        // // Gets actual pose (safe)
+        // if (poseOpt.isEmpty()) return false;
+        // Pose3d pose = poseOpt.get();
 
+        // Shift by distance of turret to center; shift needs to rotate with robot rotation, so using swerve rotation
+        // here
+        // but camera is close enough so ...
+        // Pose2d p2d = pose.toPose2d();
+        // Rotation2d swerveRot = RobotContainer.getInstance().swerve.getStateCopy().Pose.getRotation();
+        // p2d = p2d.plus(new Transform2d(TurretConstants.turretCenterOffset.rotateBy(swerveRot), new Rotation2d()));
         // Set turret angle to robotToHub vector
-        Angle rotationToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
+        // Angle angleToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
 
-        SmartDashboard.putNumber("rotation given to turret", rotationToHub.in(Radians));
-        turretSub.setTurretAngle(rotationToHub);
+        // turretSub.setTurretAngle(TurretAngle.fromMechanismAngle(angleToHub));
 
-        return true;
+        // return true;
     }
 
     public void swerveAlign(Translation2d targetLoc) {
-        Pose2d robotPose = swerveSub.getPose();
+        Pose2d robotPose = swerveSub.getStateCopy().Pose;
+        // add turret offset from center, rotate offset by robot orientation
+        robotPose = robotPose.plus(new Transform2d(
+                TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()),
+                new Rotation2d())); // shift turret from center of robot
         Translation2d vectorDifference = targetLoc.minus(robotPose.getTranslation());
-        Angle angleFieldRelative = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
-        Angle absoluteAngle =
-                angleFieldRelative.plus(Degrees.of(robotPose.getRotation().getDegrees()));
-        turretSub.setTurretAngle(absoluteAngle);
+        Angle fieldCentricAngle = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
+        Angle robotCentricAngle =
+                fieldCentricAngle.minus(robotPose.getRotation().getMeasure());
+
+        Logger.logDouble(getName(), "fieldCentricAngle", fieldCentricAngle.in(Degrees));
+        turretSub.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));
     }
 
     @Override

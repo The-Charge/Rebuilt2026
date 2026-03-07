@@ -39,13 +39,17 @@ public class LEDSubsystem extends SubsystemBase {
                 LEDConstants.subsystemName,
                 "currentPattern",
                 pattern.map((val) -> val.getClass().getTypeName()).orElse("None"));
+    }
 
+    public void slowPeriodic() {
         if (pattern != null && pattern.isPresent()) {
             pattern.get().applyTo(buffer);
         }
 
         led.setData(buffer);
     }
+
+    public void verySlowPeriodic() {}
 
     public void solidColor(Color col) {
         pattern = Optional.of(LEDPattern.solid(col));
