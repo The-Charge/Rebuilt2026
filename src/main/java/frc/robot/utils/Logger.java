@@ -11,8 +11,12 @@ import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
@@ -89,6 +93,12 @@ public class Logger {
         boolean loggingToFlash = logDir == null ? false : logDir.toLowerCase().startsWith("/u");
         logBool("Logger", "loggingToFlashdrive", loggingToFlash);
         Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
+    }
+
+    public static Optional<NetworkTable> getLoggerTable() {
+        if (!hasInited) return Optional.empty();
+
+        return Optional.of(nt);
     }
 
     /**
@@ -474,7 +484,7 @@ public class Logger {
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void logPose3d(String subsystem, String key, Pose3d val) {
+    public static void logPose3dAsDoubleArray(String subsystem, String key, Pose3d val) {
         if (loggingDisabled) return;
 
         if (subsystem == null) subsystem = "";
@@ -495,7 +505,7 @@ public class Logger {
         String normalized = subsystem + "/" + key;
         if (!nt.getEntry(normalized).setDoubleArray(ret)) {
             reportWarning(
-                    "attempted to log double value to entry '" + key + "' of type "
+                    "attempted to log double[] value to entry '" + key + "' of type "
                             + nt.getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -822,6 +832,42 @@ public class Logger {
         String table = subsystem + "/" + name;
 
         logDouble(table, "position", servo.get());
+    }
+
+    public static <T extends StructSerializable, S extends Struct<T>> Optional<StructPublisher<T>> makeStructPublisher(
+            String subsystem, String name, S struct) {
+        if (loggingDisabled) return Optional.empty();
+
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return Optional.empty();
+        }
+
+        if (getLoggerTable().isEmpty()) return Optional.empty();
+
+        return Optional.of(getLoggerTable()
+                .get()
+                .getStructTopic(subsystem + "/" + name, struct)
+                .publish());
+    }
+
+    public static <T extends StructSerializable, S extends Struct<T>>
+            Optional<StructArrayPublisher<T>> makeStructArrayPublisher(String subsystem, String name, S struct) {
+        if (loggingDisabled) return Optional.empty();
+
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return Optional.empty();
+        }
+
+        if (getLoggerTable().isEmpty()) return Optional.empty();
+
+        return Optional.of(getLoggerTable()
+                .get()
+                .getStructArrayTopic(subsystem + "/" + name, struct)
+                .publish());
     }
 
     private static class StackTrace {

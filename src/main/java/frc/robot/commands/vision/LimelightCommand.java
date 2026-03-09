@@ -1,7 +1,6 @@
 package frc.robot.commands.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,9 +20,7 @@ public class LimelightCommand extends Command {
     private boolean enabledLast;
     private boolean isSeeded;
 
-    StructPublisher<Pose3d> publisher = NetworkTableInstance.getDefault()
-            .getStructTopic(String.format("/%s/poseDeviation", getName()), Pose3d.struct)
-            .publish();
+    private final Optional<StructPublisher<Pose3d>> diffPublisher;
 
     public LimelightCommand(
             LimelightSubsystem turretLimelightSubsystem,
@@ -36,6 +33,8 @@ public class LimelightCommand extends Command {
         enabled = enabledSup;
         isSeeded = false;
         addRequirements(turretLimelight, sideLimelight);
+
+        diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
     }
 
     @Override
@@ -198,14 +197,16 @@ public class LimelightCommand extends Command {
     }
 
     private void calcMT1diff() {
+        if (diffPublisher.isEmpty()) return;
+
         Optional<Pose3d> turret = turretLimelight.getMegaTag1();
         Optional<Pose3d> side = sideLimelight.getMegaTag1();
         if (turret.isEmpty() || side.isEmpty()) {
             return;
         }
         Pose3d diff = new Pose3d().plus(side.get().minus(turret.get()));
-        // Logger.logPose3d(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
-        publisher.set(diff);
+        // Logger.logPose3dAsDoubleArray(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
+        diffPublisher.get().set(diff);
     }
 
     @Override

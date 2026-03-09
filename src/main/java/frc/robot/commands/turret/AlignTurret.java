@@ -4,14 +4,11 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
-import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -80,12 +77,15 @@ public class AlignTurret extends Command {
         if (isRed.isPresent()) {
             // targeting alliance hub
 
+            Translation2d hubLoc = FieldConstants.getHubLoc(isRed.get().getAsBoolean());
+            turretSub.logTargetPoint(Optional.of(hubLoc));
+
             boolean succeeded = hubTagAlign(isRed.get().getAsBoolean());
             if (succeeded) {
                 Logger.logString(getName(), "alignMethod", "hubTag");
             } else {
                 // If can't see hub tag, use swervePose
-                swerveAlign(FieldConstants.getHubLoc(isRed.get().getAsBoolean()));
+                swerveAlign(hubLoc);
                 Logger.logString(getName(), "alignMethod", "swerve");
             }
             return;
@@ -93,13 +93,15 @@ public class AlignTurret extends Command {
 
         if (targetPoint.isPresent()) {
             // targeting given point
-            swerveAlign(targetPoint.get().get());
+            Translation2d point = targetPoint.get().get();
+            turretSub.logTargetPoint(Optional.of(point));
+
+            swerveAlign(point);
             Logger.logString(getName(), "alignMethod", "swerve");
         }
     }
 
-    //
-    public boolean hubTagAlign(boolean isRed) {
+    private boolean hubTagAlign(boolean isRed) {
         return false;
 
         // Get Detection (safe)
@@ -124,13 +126,11 @@ public class AlignTurret extends Command {
         // return true;
     }
 
-    public void swerveAlign(Translation2d targetLoc) {
+    private void swerveAlign(Translation2d targetLoc) {
         Pose2d robotPose = swerveSub.getStateCopy().Pose;
-        // add turret offset from center, rotate offset by robot orientation
-        robotPose = robotPose.plus(new Transform2d(
-                TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()),
-                new Rotation2d())); // shift turret from center of robot
-        Translation2d vectorDifference = targetLoc.minus(robotPose.getTranslation());
+        Pose2d turretPose = turretSub.getTurretPoseOnField();
+
+        Translation2d vectorDifference = targetLoc.minus(turretPose.getTranslation());
         Angle fieldCentricAngle = Radians.of(Math.atan2(vectorDifference.getY(), vectorDifference.getX()));
         Angle robotCentricAngle =
                 fieldCentricAngle.minus(robotPose.getRotation().getMeasure());

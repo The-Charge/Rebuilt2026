@@ -24,7 +24,7 @@ public class ManualShoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        shoot.stopShoot();
+        // shoot.stopShoot();
     }
 
     @Override

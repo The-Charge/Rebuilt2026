@@ -99,6 +99,7 @@ public class Robot extends TimedRobot {
 
         Alerts.driver1Missing.set(!RobotContainer.getInstance().hidDriver1.isConnected());
         Alerts.driver2Missing.set(!RobotContainer.getInstance().hidDriver2.isConnected());
+        Alerts.buttonBoxConnected.set(RobotContainer.getInstance().hidButtonBox.isConnected());
         Alerts.fmsConnected.set(DriverStation.isFMSAttached());
     }
 

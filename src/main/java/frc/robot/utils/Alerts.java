@@ -2,6 +2,7 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.RobotContainer;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.IntakeConstants;
@@ -14,6 +15,7 @@ public class Alerts {
     // general alerts
     public static final Alert driver1Missing,
             driver2Missing,
+            buttonBoxConnected,
             fmsConnected,
             lowBattery,
             criticalBattery,
@@ -60,27 +62,20 @@ public class Alerts {
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
-        driver1Missing.set(false);
-
         driver2Missing = new Alert("Driver 2 controller is not plugged in to port 1", AlertType.kWarning);
-        driver2Missing.set(false);
+        buttonBoxConnected = new Alert("Manual control button box is connected", AlertType.kInfo);
 
         fmsConnected = new Alert("FMS connected", AlertType.kInfo);
-        fmsConnected.set(false);
 
         lowBattery = new Alert("Low battery", AlertType.kWarning);
-        lowBattery.set(false);
-
         criticalBattery = new Alert("Very low battery", AlertType.kError);
-        criticalBattery.set(false);
 
-        pdpDisconnected = new Alert("Missing connection to PDP", AlertType.kError);
-        pdpDisconnected.set(false);
+        pdpDisconnected =
+                makeDisconnectAlert("PDP", RobotContainer.getInstance().pdp.getModule() + 1);
 
         notLoggingToFlashdrive = new Alert(
                 "Logger is not logging to a flash drive. Please confirm that the flash drive is securely plugged in and was plugged in before the robot was turned on",
                 AlertType.kError);
-        notLoggingToFlashdrive.set(false);
 
         rollerConfigFail = makeConfigFailAlert("roller motor", IntakeConstants.Roller.motorID);
         rollerDisconnected = makeDisconnectAlert("roller motor", IntakeConstants.Roller.motorID);
@@ -136,27 +131,27 @@ public class Alerts {
 
     private Alerts() {}
 
-    private static Alert makeConfigFailAlert(String motorName, int can) {
-        return new Alert(String.format("Failed to update %s (CAN %d) config", motorName, can), AlertType.kError);
+    private static Alert makeConfigFailAlert(String deviceName, int can) {
+        return new Alert(String.format("Failed to update %s (CAN %d) config", deviceName, can), AlertType.kError);
     }
 
-    private static Alert makeDisconnectAlert(String motorName, int can) {
-        return new Alert(String.format("Missing connection to %s (CAN %d)", motorName, can), AlertType.kError);
+    private static Alert makeDisconnectAlert(String deviceName, int can) {
+        return new Alert(String.format("Missing connection to %s (CAN %d)", deviceName, can), AlertType.kError);
     }
 
-    private static Alert makeOverheatingAlert(String motorName, int can) {
-        return new Alert(String.format("%s (CAN %d) is overheating", motorName, can), AlertType.kWarning);
+    private static Alert makeOverheatingAlert(String deviceName, int can) {
+        return new Alert(String.format("%s (CAN %d) is overheating", deviceName, can), AlertType.kWarning);
     }
 
-    private static Alert makeCriticalFaultsAlert(String motorName, int can) {
+    private static Alert makeCriticalFaultsAlert(String deviceName, int can) {
         return new Alert(
-                String.format("Potentially critical faults are active on %s (CAN %d)", motorName, can),
+                String.format("Potentially critical faults are active on %s (CAN %d)", deviceName, can),
                 AlertType.kWarning);
     }
 
-    private static Alert makeCriticalWarningsAlert(String motorName, int can) {
+    private static Alert makeCriticalWarningsAlert(String deviceName, int can) {
         return new Alert(
-                String.format("Potentially critical warnings are active on %s (CAN %d)", motorName, can),
+                String.format("Potentially critical warnings are active on %s (CAN %d)", deviceName, can),
                 AlertType.kWarning);
     }
 }

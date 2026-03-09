@@ -2,6 +2,7 @@ package frc.robot.commands.turret;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.TurretSubsystem;
+import java.util.Optional;
 
 public class ManualTurret extends Command {
 
@@ -18,6 +19,7 @@ public class ManualTurret extends Command {
     @Override
     public void initialize() {
         turret.dutyCycle(duty);
+        turret.logTargetPoint(Optional.empty());
     }
 
     @Override

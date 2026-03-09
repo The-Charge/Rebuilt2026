@@ -3,6 +3,7 @@ package frc.robot.commands.turret;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.units.TurretAngle;
+import java.util.Optional;
 
 public class CenterTurret extends Command {
 
@@ -17,6 +18,7 @@ public class CenterTurret extends Command {
     @Override
     public void initialize() {
         turret.setTurretAngle(TurretAngle.fromMechanismRotations(0));
+        turret.logTargetPoint(Optional.empty());
     }
 
     @Override

@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.TurretSubsystem;
+import java.util.Optional;
 
 // Calibrates Turret by sending it to hard stop, pausing for a small amount of time, and setting position as zero
 public class CalibrateTurret extends Command {
@@ -22,7 +23,9 @@ public class CalibrateTurret extends Command {
         turretSub.dutyCycle(TurretConstants.calibrationSpeed);
         endConditionDelay = new Timer();
         endConditionDelay.start();
+
         turretSub.setIsCalibrated(false);
+        turretSub.logTargetPoint(Optional.empty());
     }
 
     @Override

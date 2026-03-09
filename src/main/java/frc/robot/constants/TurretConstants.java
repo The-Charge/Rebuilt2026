@@ -15,7 +15,7 @@ public class TurretConstants { // split into shooter, spinner, and hood
 
     // public static final int hoodChannel = 17;
 
-    public static final int forwardLimitChannel = 9;
+    // public static final int forwardLimitChannel = 9;
 
     public static final int motorID = 15;
     public static final int maxCurrent = 10;
@@ -46,7 +46,7 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final TurretAngle maxLegalAngle = TurretAngle.fromMechanismRotations(0.5);
 
     public static Translation2d turretCenterOffset =
-            new Translation2d(Inches.of(-5.5), Inches.of(-5.5)); // vector from center of robot to turret
+            new Translation2d(Inches.of(-5.5), Inches.of(-5.5)); // vector from center of robot to center of turret
 
     public static final double manualSpeed = 0.1;
 

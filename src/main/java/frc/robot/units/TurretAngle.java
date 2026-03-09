@@ -50,17 +50,17 @@ public class TurretAngle {
 
     // ask Marcos
     public TurretAngle wrap() {
+        // TODO: confirm that this is correct
         final double centerMechRots = TurretConstants.calibrationEndPos.asMechanismRotations();
         return fromMechanismRotations(((((asMechanismRotations() - centerMechRots) % 1) + 1) % 1) + centerMechRots);
         // Examples: 3.2 -> 0.2 -> 1.2 -> 0.2
         //          -3.2 -> -0.2 -> 0.8 -> 0.8
     }
 
-    // Wraps angle, then checks if between bounds
+    // Checks if between bounds
     public boolean isLegal() {
-        TurretAngle wrapped = wrap();
-        return wrapped.asMotorRotations() >= TurretConstants.minLegalAngle.asMotorRotations()
-                && wrapped.asMotorRotations() <= TurretConstants.maxLegalAngle.asMotorRotations();
+        return asMotorRotations() >= TurretConstants.minLegalAngle.asMotorRotations()
+                && asMotorRotations() <= TurretConstants.maxLegalAngle.asMotorRotations();
     }
 
     public TurretAngle add(TurretAngle b) {

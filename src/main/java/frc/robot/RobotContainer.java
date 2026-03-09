@@ -123,7 +123,7 @@ public class RobotContainer {
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
-    public final Telemetry swerveTelem;
+    public final SwerveTelemetry swerveTelem;
     public final AuxSwerveSubsystem auxSwerve;
 
     public final ActiveAtHubLED activeAtHubLEDCommand;
@@ -167,7 +167,7 @@ public class RobotContainer {
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
-        swerveTelem = new Telemetry(SwerveConstants.maxTranslationVel.in(MetersPerSecond));
+        swerveTelem = new SwerveTelemetry(SwerveConstants.maxTranslationVel.in(MetersPerSecond));
         auxSwerve = new AuxSwerveSubsystem();
 
         activeAtHubLEDCommand = new ActiveAtHubLED(ledSub, () -> isReadyToShoot());

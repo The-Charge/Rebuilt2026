@@ -9,8 +9,12 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.constants.TurretConstants;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Alerts;
@@ -19,19 +23,20 @@ import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
 import java.util.Optional;
 
-// shoot angle, turret
 public class TurretSubsystem extends SubsystemBase {
-    // private final SparkFlex shooter;
-    // private final Servo hood;
 
     private final SparkMax turretMotor;
-    private final DigitalInput forwardLimit;
+    // private final DigitalInput forwardLimit;
 
     private Optional<TurretAngle> targetAngle;
     private boolean isCalibrated;
 
+    private final Optional<StructPublisher<Pose2d>> turretPosePublisher;
+    private final Optional<StructPublisher<Pose2d>> targetTurretPosePublisher;
+    private final Optional<StructPublisher<Translation2d>> targetPointPublisher;
+
     public TurretSubsystem() {
-        forwardLimit = new DigitalInput(TurretConstants.forwardLimitChannel);
+        // forwardLimit = new DigitalInput(TurretConstants.forwardLimitChannel);
 
         turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless); // port number under IndexerConstants
         SparkMaxConfig turretConfig = new SparkMaxConfig();
@@ -70,10 +75,11 @@ public class TurretSubsystem extends SubsystemBase {
         targetAngle = Optional.empty();
         isCalibrated = false;
 
-        // SmartDashboard.putNumber("gearRatio", 27);
-
-        // shooter = new SparkFlex(TurretConstants.shooterId, MotorType.kBrushless);
-        // hood = new Servo(TurretConstants.hoodChannel);
+        turretPosePublisher = Logger.makeStructPublisher(TurretConstants.subsystemName, "turretPose", Pose2d.struct);
+        targetTurretPosePublisher =
+                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetTurretPose", Pose2d.struct);
+        targetPointPublisher =
+                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPoint", Translation2d.struct);
     }
 
     public void setTurretAngle(TurretAngle angle) {
@@ -129,6 +135,20 @@ public class TurretSubsystem extends SubsystemBase {
         return isCalibrated;
     }
 
+    public void logTargetPoint(Optional<Translation2d> point) {
+        if (targetPointPublisher.isEmpty()) return;
+        targetPointPublisher.get().set(point == null ? null : point.orElse(null));
+    }
+
+    public Pose2d getTurretPoseOnField() {
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getState().Pose;
+        Translation2d turretCenter =
+                robotPose.getTranslation().plus(TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()));
+        Pose2d turretPose = new Pose2d(
+                turretCenter, new Rotation2d(getTurretAngle().asMechanismAngle()).plus(robotPose.getRotation()));
+        return turretPose;
+    }
+
     @Override
     public void periodic() {
         Logger.logSubsystem(TurretConstants.subsystemName, this);
@@ -154,6 +174,30 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.subsystemName,
                 "isTargetLegal",
                 targetAngle.map((val) -> val.isLegal()).orElse(true));
+
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getState().Pose;
+        Translation2d turretCenter =
+                robotPose.getTranslation().plus(TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()));
+
+        if (turretPosePublisher.isPresent()) {
+            turretPosePublisher.get().set(getTurretPoseOnField());
+        }
+        if (targetTurretPosePublisher.isPresent()) {
+            Optional<Pose2d> targetTurretPose;
+            if (targetAngle.isPresent()) {
+                targetTurretPose = Optional.of(new Pose2d(
+                        turretCenter,
+                        new Rotation2d(targetAngle.get().asMechanismAngle()).plus(robotPose.getRotation())));
+            } else {
+                targetTurretPose = Optional.empty();
+            }
+
+            targetTurretPosePublisher.get().set(targetTurretPose.orElse(null));
+        }
+
+        if (getCurrentCommand() == null) {
+            logTargetPoint(Optional.empty());
+        }
     }
 
     public void slowPeriodic() {}
