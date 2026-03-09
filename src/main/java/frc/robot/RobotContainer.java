@@ -331,7 +331,7 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        // commandButtonBox.disableOdo().onTrue();
+        commandButtonBox.seed().onTrue(new InstantCommand(limelightCommand::seedFromIMU));
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)

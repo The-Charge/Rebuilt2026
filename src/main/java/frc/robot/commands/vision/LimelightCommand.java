@@ -116,7 +116,7 @@ public class LimelightCommand extends Command {
      * Seed from PathPlanner pose at beginning of auton
      * aka seed from Swerve
      */
-    public void seedFromPP() {
+    public void seedFromIMU() {
         Angle rot = swerve.getStateCopy().Pose.getRotation().getMeasure();
         turretLimelight.seedInternalIMU(rot);
         sideLimelight.seedInternalIMU(rot);

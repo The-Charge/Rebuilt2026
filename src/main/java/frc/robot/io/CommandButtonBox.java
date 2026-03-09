@@ -43,12 +43,12 @@ public class CommandButtonBox extends CommandGenericHID {
         return button(ButtonBox.Button.DEPLOY_INTAKE.value, loop);
     }
 
-    public Trigger disableOdo() {
-        return disableOdo(CommandScheduler.getInstance().getDefaultButtonLoop());
+    public Trigger seed() {
+        return seed(CommandScheduler.getInstance().getDefaultButtonLoop());
     }
 
-    public Trigger disableOdo(EventLoop loop) {
-        return button(ButtonBox.Button.DISABLE_ODO.value, loop);
+    public Trigger seed(EventLoop loop) {
+        return new Trigger(m_hid.seed(loop));
     }
 
     public Trigger turretLeft() {

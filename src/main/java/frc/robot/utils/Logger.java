@@ -34,19 +34,35 @@ import java.util.Optional;
 
 public class Logger {
 
+    private static enum LoggingLevel {
+        ENABLED(true, true),
+        NT_ONLY(true, false),
+        DISABLED(false, false);
+
+        final boolean logToFile;
+        final boolean logToNT;
+
+        LoggingLevel(boolean nt, boolean file) {
+            logToNT = nt;
+            logToFile = file;
+        }
+    };
+
     private static final String PREFIX = "[Logger] ";
     private static final Optional<Time> loopOverrunPeriod = Optional.of(Seconds.of(0.2));
     private static final boolean showJoystickDisconnectWarnings = false;
     private static final boolean ctreLoggingEnabled = false;
     private static final boolean revLoggingEnabled = false;
-    private static final boolean loggingDisabled = false;
+    private static final LoggingLevel loggingLevel = LoggingLevel.ENABLED;
 
     private static boolean hasInited;
-    private static NetworkTableInstance ntInstance;
-    private static NetworkTable nt;
+    private static Optional<NetworkTableInstance> ntInstance;
+    private static Optional<NetworkTable> nt;
 
     static {
         hasInited = false;
+        ntInstance = Optional.empty();
+        nt = Optional.empty();
     }
 
     private Logger() {}
@@ -73,39 +89,39 @@ public class Logger {
             StatusLogger.disableAutoLogging();
         }
 
-        if (loggingDisabled) return;
+        if (loggingLevel.logToFile) {
+            DataLogManager.start();
+            DataLogManager.logConsoleOutput(true);
+            DataLogManager.logNetworkTables(true);
+            DriverStation.startDataLog(DataLogManager.getLog(), true);
 
-        DataLogManager.start();
-        DataLogManager.logConsoleOutput(true);
-        DataLogManager.logNetworkTables(true);
-        DriverStation.startDataLog(DataLogManager.getLog(), true);
+            String logDir = DataLogManager.getLogDir();
+            logString("Logger", "loggingDirectory", logDir);
 
-        ntInstance = NetworkTableInstance.getDefault();
-        nt = ntInstance.getTable("Logger"); // root table
+            boolean loggingToFlash =
+                    logDir == null ? false : logDir.toLowerCase().startsWith("/u");
+            logBool("Logger", "loggingToFlashdrive", loggingToFlash);
+            Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
+        }
+
+        if (loggingLevel.logToNT) {
+            ntInstance = Optional.of(NetworkTableInstance.getDefault());
+            nt = Optional.of(ntInstance.get().getTable("Logger")); // root table
+        }
 
         println("Logging started");
-
         hasInited = true;
-
-        String logDir = DataLogManager.getLogDir();
-        logString("Logger", "loggingDirectory", logDir);
-
-        boolean loggingToFlash = logDir == null ? false : logDir.toLowerCase().startsWith("/u");
-        logBool("Logger", "loggingToFlashdrive", loggingToFlash);
-        Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
     }
 
     public static Optional<NetworkTable> getLoggerTable() {
-        if (!hasInited) return Optional.empty();
-
-        return Optional.of(nt);
+        return nt;
     }
 
     /**
      * Use instead of System.out.println
      */
     public static void println(String msg) {
-        if (loggingDisabled) {
+        if (!loggingLevel.logToFile) {
             System.out.println(msg);
             return;
         }
@@ -207,7 +223,7 @@ public class Logger {
     }
 
     public static void logBool(String subsystem, String key, boolean val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -216,16 +232,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setBoolean(val)) {
+        if (!nt.get().getEntry(normalized).setBoolean(val)) {
             reportWarning(
                     "attempted to log boolean value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logBoolArray(String subsystem, String key, boolean[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -238,16 +254,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setBooleanArray(val)) {
+        if (!nt.get().getEntry(normalized).setBooleanArray(val)) {
             reportWarning(
                     "attempted to log boolean[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logDouble(String subsystem, String key, double val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -256,16 +272,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setDouble(val)) {
+        if (!nt.get().getEntry(normalized).setDouble(val)) {
             reportWarning(
                     "attempted to log double value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logDoubleArray(String subsystem, String key, double[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -278,16 +294,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setDoubleArray(val)) {
+        if (!nt.get().getEntry(normalized).setDoubleArray(val)) {
             reportWarning(
                     "attempted to log double[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logFloat(String subsystem, String key, float val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -296,16 +312,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setFloat(val)) {
+        if (!nt.get().getEntry(normalized).setFloat(val)) {
             reportWarning(
                     "attempted to log float value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logFloatArray(String subsystem, String key, float[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -318,16 +334,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setFloatArray(val)) {
+        if (!nt.get().getEntry(normalized).setFloatArray(val)) {
             reportWarning(
                     "attempted to log float[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logLong(String subsystem, String key, long val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -336,16 +352,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setInteger(val)) {
+        if (!nt.get().getEntry(normalized).setInteger(val)) {
             reportWarning(
                     "attempted to log int value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logLongArray(String subsystem, String key, long[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -358,16 +374,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setIntegerArray(val)) {
+        if (!nt.get().getEntry(normalized).setIntegerArray(val)) {
             reportWarning(
                     "attempted to log int[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logRaw(String subsystem, String key, ByteBuffer val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -380,16 +396,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setRaw(val)) {
+        if (!nt.get().getEntry(normalized).setRaw(val)) {
             reportWarning(
                     "attempted to log raw value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logRaw(String subsystem, String key, byte[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -402,16 +418,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setRaw(val)) {
+        if (!nt.get().getEntry(normalized).setRaw(val)) {
             reportWarning(
                     "attempted to log raw value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logString(String subsystem, String key, String val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -421,16 +437,16 @@ public class Logger {
         if (val == null) val = "";
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setString(val)) {
+        if (!nt.get().getEntry(normalized).setString(val)) {
             reportWarning(
                     "attempted to log String value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logStringArray(String subsystem, String key, String[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -443,16 +459,16 @@ public class Logger {
         }
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setStringArray(val)) {
+        if (!nt.get().getEntry(normalized).setStringArray(val)) {
             reportWarning(
                     "attempted to log String[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logEnum(String subsystem, String key, Enum<?> val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -468,7 +484,7 @@ public class Logger {
     }
 
     public static void logEnumArray(String subsystem, String key, Enum<?>[] val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -485,7 +501,7 @@ public class Logger {
     }
 
     public static void logPose3dAsDoubleArray(String subsystem, String key, Pose3d val) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (key == null) {
@@ -503,16 +519,16 @@ public class Logger {
         };
 
         String normalized = subsystem + "/" + key;
-        if (!nt.getEntry(normalized).setDoubleArray(ret)) {
+        if (!nt.get().getEntry(normalized).setDoubleArray(ret)) {
             reportWarning(
                     "attempted to log double[] value to entry '" + key + "' of type "
-                            + nt.getEntry(normalized).getType().getValueStr(),
+                            + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
     }
 
     public static void logTalonFXReduced(String subsystem, String name, TalonFX motor) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
@@ -533,7 +549,7 @@ public class Logger {
     }
 
     public static void logTalonFX(String subsystem, String name, TalonFX motor) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
@@ -635,7 +651,7 @@ public class Logger {
     }
 
     public static void logSparkMotor(String subsystem, String name, SparkBase motor) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
@@ -713,7 +729,7 @@ public class Logger {
     }
 
     public static <T extends Subsystem> void logSubsystem(String subsystemName, T subsystem) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystemName == null) {
             reportWarning("Cannot log to an empty subsytemName", true);
@@ -740,7 +756,7 @@ public class Logger {
     }
 
     public static void logPDP(PowerDistribution pdp) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (pdp == null) {
             reportWarning("Cannot log a null PDP", true);
@@ -817,7 +833,7 @@ public class Logger {
     }
 
     public static void logServo(String subsystem, String name, Servo servo) {
-        if (loggingDisabled) return;
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
@@ -836,7 +852,7 @@ public class Logger {
 
     public static <T extends StructSerializable, S extends Struct<T>> Optional<StructPublisher<T>> makeStructPublisher(
             String subsystem, String name, S struct) {
-        if (loggingDisabled) return Optional.empty();
+        if (!loggingLevel.logToNT || nt.isEmpty()) return Optional.empty();
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
@@ -854,7 +870,7 @@ public class Logger {
 
     public static <T extends StructSerializable, S extends Struct<T>>
             Optional<StructArrayPublisher<T>> makeStructArrayPublisher(String subsystem, String name, S struct) {
-        if (loggingDisabled) return Optional.empty();
+        if (!loggingLevel.logToNT || nt.isEmpty()) return Optional.empty();
 
         if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
