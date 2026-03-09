@@ -1,5 +1,7 @@
 package frc.robot.commands.vision;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -9,9 +11,6 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.utils.Logger;
-
-import static edu.wpi.first.units.Units.Degrees;
-
 import java.util.Optional;
 import java.util.function.Supplier;
 
