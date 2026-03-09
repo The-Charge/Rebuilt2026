@@ -1,6 +1,9 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import edu.wpi.first.units.measure.Time;
 import java.util.Optional;
 
 public class IndexerConstants {
@@ -28,6 +31,8 @@ public class IndexerConstants {
         public static final Optional<Double> nominalVoltage = Optional.empty();
     }
 
-    public static final double spindexerVoltage = 0.3 * 12;
     public static final double exchangeVoltage = 0.4 * 12;
+    public static final double spindexerVoltage = 0.45 * 12 * 0.75;
+    public static final double spindexerAmplitudeVoltage = 0.1 * 12;
+    public static final Time spindexerPeriod = Seconds.of(1);
 }

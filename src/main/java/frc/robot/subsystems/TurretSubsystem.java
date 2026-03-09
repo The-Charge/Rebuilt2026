@@ -82,26 +82,13 @@ public class TurretSubsystem extends SubsystemBase {
             return;
         }
         angle = angle.wrap();
+        if (!angle.isLegal()) return;
 
         targetAngle = Optional.of(angle);
 
-        TurretAngle limitedAngle;
-        if (!angle.isLegal()) {
-            if (angle.asMotorRotations() > TurretConstants.maxLegalAngle.asMotorRotations()) {
-                limitedAngle = TurretConstants.maxLegalAngle;
-            } else {
-                limitedAngle = TurretConstants.minLegalAngle;
-            }
-        } else {
-            limitedAngle = angle;
-        }
-        Logger.logDouble(
-                TurretConstants.subsystemName,
-                "limitedTurretDegs",
-                limitedAngle.asMechanismAngle().in(Degrees));
-        Logger.logDouble(TurretConstants.subsystemName, "limitedMotorRots", limitedAngle.asMotorRotations());
+        Logger.logDouble(TurretConstants.subsystemName, "limitedMotorRots", angle.asMotorRotations());
 
-        turretMotor.getClosedLoopController().setSetpoint(limitedAngle.asMotorRotations(), ControlType.kPosition);
+        turretMotor.getClosedLoopController().setSetpoint(angle.asMotorRotations(), ControlType.kPosition);
     }
 
     public void stop() {
@@ -110,8 +97,9 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     // Checks if turret is at hard stop by checking if output current is greater than threshold
-    public boolean isAtForwardLimit() {
-        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent;
+    public boolean isAtReverseLimit() {
+        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent
+                || Math.abs(turretMotor.getEncoder().getVelocity()) < 1;
     }
 
     public TurretAngle getTurretAngle() {
@@ -160,7 +148,7 @@ public class TurretSubsystem extends SubsystemBase {
                 TurretConstants.subsystemName,
                 "targetMotorRots",
                 targetAngle.map((val) -> val.asMechanismRotations()).orElse(Double.NaN));
-        Logger.logBool(TurretConstants.subsystemName, "forwardLimit", isAtForwardLimit());
+        Logger.logBool(TurretConstants.subsystemName, "forwardLimit", isAtReverseLimit());
         Logger.logBool(TurretConstants.subsystemName, "isCalibrated", getIsCalibrated());
         Logger.logBool(
                 TurretConstants.subsystemName,
