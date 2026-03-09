@@ -9,6 +9,9 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.utils.Logger;
+
+import static edu.wpi.first.units.Units.Degrees;
+
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -83,6 +86,10 @@ public class LimelightCommand extends Command {
         // }
     }
 
+    /**
+     * Seed from MT1; chooses best MT1 from the two cameras,
+     * sets that as the seed for both cameras
+     */
     private void seed() {
         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
         Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
@@ -106,9 +113,21 @@ public class LimelightCommand extends Command {
             isSeeded = true;
         }
     }
-
+    /**
+     * Seed from PathPlanner pose at beginning of auton
+     * aka seed from Swerve
+     */
     public void seedFromPP() {
         Angle rot = swerve.getStateCopy().Pose.getRotation().getMeasure();
+        turretLimelight.seedInternalIMU(rot);
+        sideLimelight.seedInternalIMU(rot);
+        isSeeded = true;
+    }
+    /**
+     * Seed from absolute driver position
+     */
+    public void seedFromAbsolute(double deg) {
+        Angle rot = (Degrees.of(deg));
         turretLimelight.seedInternalIMU(rot);
         sideLimelight.seedInternalIMU(rot);
         isSeeded = true;

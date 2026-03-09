@@ -141,7 +141,8 @@ public class Robot extends TimedRobot {
         }
 
         RobotContainer.getInstance().displayAuto();
-        // RobotContainer.getInstance().limelightCommand.seedPP();
+        
+        RobotContainer.getInstance().limelightCommand.seedFromPP();
     }
 
     @Override
