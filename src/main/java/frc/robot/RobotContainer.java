@@ -180,10 +180,9 @@ public class RobotContainer {
         centerTurretCommand = new CenterTurret(turret);
         prepShootAtFZoneCommand = new PrepShootAtPoint(
                 shooter,
-                swerve,
                 () -> TeleopLogic.getFriendlyZoneTarget(
                         swerve.getStateCopy().Pose.getTranslation()));
-        prepShootAtHubCommand = new PrepShootAtHub(shooter, otherLimelight, swerve, () -> DriverStation.getAlliance());
+        prepShootAtHubCommand = new PrepShootAtHub(shooter, () -> DriverStation.getAlliance());
         pointAtFZoneCommand = AlignTurret.atPoint(
                 turret,
                 swerve,

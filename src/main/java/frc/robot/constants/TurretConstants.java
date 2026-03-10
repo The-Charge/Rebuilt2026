@@ -39,6 +39,8 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final Optional<Voltage> kA = Optional.empty();
     public static final Optional<Double> iZone = Optional.empty();
 
+    public static final boolean overrideStopHubTagAlign = true;
+
     public static final double motorRotsPerMechRots = (46.713913 - -19.690401) * 2;
     public static final double mechRotsPerMotorRot = 1 / motorRotsPerMechRots;
 

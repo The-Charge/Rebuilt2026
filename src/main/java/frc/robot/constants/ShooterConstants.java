@@ -37,6 +37,8 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         public static final AngularVelocity maxManualSpeed = RPM.of(7000);
     }
 
+    public static final boolean manualShootUseSmartdashboard = true;
+
     // public static class HoodConfig {
     //     public static int ID = 1000;
 
@@ -51,15 +53,13 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     //     public static double ticksPerRadian;
     // }
 
-
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
-
 
     static {
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();
         // distanceToRPMPlot.put(1.9413, 2620.0d);  // post-fix
-        
-        distanceToRPMPlot.put(1.9505, 2500.0d);  // post-fix
+
+        distanceToRPMPlot.put(1.9505, 2500.0d); // post-fix
 
         // distanceToRPMPlot.put(2.116197, 2500.0d); // not that reliable
 
@@ -68,11 +68,11 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         // distanceToRPMPlot.put(2.291396, 2570.0d); // prefix
         // distanceToRPMPlot.put(2.531513, 2600.0d); // prefix
         // 2.7
-        
+
         distanceToRPMPlot.put(2.860123, 2900.0d);
 
         distanceToRPMPlot.put(3.084457, 2700.0d); // prefix
-        distanceToRPMPlot.put(3.203391, 2800.0d);  // prefix
+        distanceToRPMPlot.put(3.203391, 2800.0d); // prefix
         distanceToRPMPlot.put(3.40251, 2900.0d); // prefix
         distanceToRPMPlot.put(3.672000, 3000.0d); // prefix
         // 3.9
@@ -80,11 +80,9 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         // 4.3
         // 4.5
         distanceToRPMPlot.put(4.876027, 3500.0d); // prefix
-        distanceToRPMPlot.put(5.181369, 3700.0d);// prefix
+        distanceToRPMPlot.put(5.181369, 3700.0d); // prefix
         // 5.4
         distanceToRPMPlot.put(5.610685, 4000.0d); // prefix
-
-
     }
 
     public static final String subsystemName = "Shooter";

@@ -4,11 +4,16 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.TurretConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -102,28 +107,31 @@ public class AlignTurret extends Command {
     }
 
     private boolean hubTagAlign(boolean isRed) {
-        return false;
+        if (TurretConstants.overrideStopHubTagAlign) {
+            return false;
+        }
 
-        // Get Detection (safe)
-        // change based on which alliance
-        // Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
+        // Get Detection (safe) change based on which alliance
+        Optional<Pose3d> poseOpt = limelightSub.getTransformToTag(FieldConstants.getHubTag(isRed));
 
-        // // Gets actual pose (safe)
-        // if (poseOpt.isEmpty()) return false;
-        // Pose3d pose = poseOpt.get();
+        // Gets actual pose (safe)
+        if (poseOpt.isEmpty()) return false;
+        Pose3d pose = poseOpt.get();
 
         // Shift by distance of turret to center; shift needs to rotate with robot rotation, so using swerve rotation
-        // here
-        // but camera is close enough so ...
-        // Pose2d p2d = pose.toPose2d();
-        // Rotation2d swerveRot = RobotContainer.getInstance().swerve.getStateCopy().Pose.getRotation();
-        // p2d = p2d.plus(new Transform2d(TurretConstants.turretCenterOffset.rotateBy(swerveRot), new Rotation2d()));
+        // here but camera is close enough so ...
+        Pose2d p2d = pose.toPose2d();
+        Rotation2d swerveRot =
+                RobotContainer.getInstance().swerve.getStateCopy().Pose.getRotation();
+        p2d = p2d.plus(new Transform2d(TurretConstants.turretCenterOffset.rotateBy(swerveRot), new Rotation2d()));
+        // TODO: should add the transform from the tag to the center of the hub here, but were not using this
+
         // Set turret angle to robotToHub vector
-        // Angle angleToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
+        Angle angleToHub = Radians.of(Math.atan2(pose.getY(), pose.getX()));
 
-        // turretSub.setTurretAngle(TurretAngle.fromMechanismAngle(angleToHub));
+        turretSub.setTurretAngle(TurretAngle.fromMechanismAngle(angleToHub));
 
-        // return true;
+        return true;
     }
 
     private void swerveAlign(Translation2d targetLoc) {
