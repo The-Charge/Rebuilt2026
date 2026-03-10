@@ -42,7 +42,7 @@ public class PrepShootAtPoint extends Command {
 
         shoot.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
     }
-
+c
     @Override
     public boolean isFinished() {
         return false;
