@@ -11,10 +11,10 @@ public class ClimberConstants {
     public static final String subsystemName = "Climber";
 
     public static final int motorID = 3;
-    public static final double mechanismInchesPerMotorRotation = -6 / 313.35;
+    public static final double mechanismInchesPerMotorRotation = 1; // TODO: climber conversion factor
 
     public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;
-    public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
     public static final double maxCurrent = 40;
     public static final double maxDutyCycle = 1;
     public static final Optional<Double> maxVoltage = Optional.of(12d);
@@ -24,8 +24,10 @@ public class ClimberConstants {
     public static final Optional<Double> kG = Optional.empty();
     public static final Optional<GravityTypeValue> kGType = Optional.empty();
 
-    public static final ClimberPosition upPosition = ClimberPosition.fromMechanismInches(0);
-    public static final ClimberPosition downPosition = ClimberPosition.fromMechanismInches(-6);
-    public static final ClimberPosition targetTolerance = ClimberPosition.fromMechanismInches(0.1);
+    public static final ClimberPosition upPosition = ClimberPosition.fromMotorRotations(415.21);
+    public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(145.88);
+    public static final ClimberPosition downPosition = ClimberPosition.fromMotorRotations(0);
+
+    public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5);
     public static final double manualSpoolSpeed = 0.2;
 }

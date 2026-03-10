@@ -32,7 +32,7 @@ public class IndexerConstants {
     }
 
     public static final double exchangeVoltage = 0.4 * 12;
-    public static final double spindexerVoltage = 0.45 * 12 * 0.75;
+    public static final double spindexerVoltage = 12;
     public static final double spindexerAmplitudeVoltage = 0.1 * 12;
     public static final Time spindexerPeriod = Seconds.of(1);
 }

@@ -70,9 +70,6 @@ public class Alerts {
         lowBattery = new Alert("Low battery", AlertType.kWarning);
         criticalBattery = new Alert("Very low battery", AlertType.kError);
 
-        pdpDisconnected =
-                makeDisconnectAlert("PDP", RobotContainer.getInstance().pdp.getModule() + 1);
-
         notLoggingToFlashdrive = new Alert(
                 "Logger is not logging to a flash drive. Please confirm that the flash drive is securely plugged in and was plugged in before the robot was turned on",
                 AlertType.kError);
@@ -127,6 +124,10 @@ public class Alerts {
         brDriveOverheating = makeOverheatingAlert("brDrive motor", TunerConstants.BackRight.DriveMotorId);
         brAzimuthDisconnected = makeDisconnectAlert("brAzimuth motor", TunerConstants.BackRight.SteerMotorId);
         brAzimuthOverheating = makeOverheatingAlert("brAzimuth motor", TunerConstants.BackRight.SteerMotorId);
+
+        // ALWAYS RUN LAST
+        pdpDisconnected =
+                makeDisconnectAlert("PDP", RobotContainer.getInstance().pdp.getModule() + 1);
     }
 
     private Alerts() {}

@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.RPM;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
@@ -46,7 +47,9 @@ public class PrepShootAtHub extends Command {
     }
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+        // SmartDashboard.putNumber(getName(), 0)
+    }
 
     @Override
     public void execute() {

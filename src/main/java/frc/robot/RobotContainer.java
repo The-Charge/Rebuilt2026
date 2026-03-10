@@ -5,7 +5,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -22,7 +21,6 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -44,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
@@ -143,6 +142,7 @@ public class RobotContainer {
     private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
     private SwerveRequest.SwerveDriveBrake swerveBrake;
     private SwerveRequest.Idle swerveIdle;
+    private SwerveRequest.ApplyRobotSpeeds swerveApplyRobotSpeeds;
     public Command swerveFieldCentricDriveCommand;
     public Command swerveRobotCentricDriveCommand;
     public Command swerveFieldCentricFacingAngleDriveCommand;
@@ -317,6 +317,7 @@ public class RobotContainer {
                 .whileTrue(new ParallelCommandGroup(
                         new RunRoller(intake), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
+        commandDriver2.povRight().or(commandDriver2.povLeft()).onTrue(new ClimbClimb(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
@@ -392,35 +393,44 @@ public class RobotContainer {
                     Pounds.of(125), // 110 lbs + ~15 lbs for bumpers and battery
                     KilogramSquareMeters.of(6.883),
                     new ModuleConfig(
-                            Inches.of(2), MetersPerSecond.of(5.45), 1.2, DCMotor.getKrakenX60(1), Amps.of(60), 4),
-                    new Translation2d[] {
-                        new Translation2d(Meters.of(0.276), Meters.of(0.276)),
-                        new Translation2d(Meters.of(0.276), Meters.of(-0.276)),
-                        new Translation2d(Meters.of(-0.276), Meters.of(0.276)),
-                        new Translation2d(Meters.of(-0.276), Meters.of(-0.276))
-                    });
+                            Meters.of(TunerConstants.FrontLeft.WheelRadius),
+                            MetersPerSecond.of(TunerConstants.FrontLeft.SpeedAt12Volts),
+                            1.2,
+                            DCMotor.getKrakenX60(1),
+                            Amps.of(60),
+                            1),
+                    swerve.getModuleLocations());
         }
 
-        final Supplier<Pose2d> poseSupplier = () -> Pose2d.kZero;
-        final Consumer<Pose2d> poseReset = (pose) -> {};
-        final Supplier<ChassisSpeeds> robotRelativeSpeedsSupplier = () -> new ChassisSpeeds(0, 0, 0);
-        final BiConsumer<ChassisSpeeds, DriveFeedforwards> outputConsumer = (speeds, ff) -> {};
-        final BooleanSupplier shouldFlipSupplier = () ->
-                DriverStation.getAlliance().map((val) -> val == Alliance.Red).orElse(false);
-        final PIDConstants translationPID = new PIDConstants(0);
-        final PIDConstants rotationPID = new PIDConstants(0);
+        try {
+            final Supplier<Pose2d> poseSupplier = () -> swerve.getState().Pose;
+            final Consumer<Pose2d> poseReset = (pose) -> swerve.resetPose(pose);
+            final Supplier<ChassisSpeeds> robotRelativeSpeedsSupplier = () -> swerve.getState().Speeds;
+            final BiConsumer<ChassisSpeeds, DriveFeedforwards> outputConsumer =
+                    (speeds, ff) -> swerve.setControl(swerveApplyRobotSpeeds
+                            .withSpeeds(ChassisSpeeds.discretize(speeds, 0.02))
+                            .withWheelForceFeedforwardsX(ff.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(ff.robotRelativeForcesYNewtons()));
+            final BooleanSupplier shouldFlipSupplier = () -> DriverStation.getAlliance()
+                    .map((val) -> val == Alliance.Red)
+                    .orElse(false);
+            final PIDConstants translationPID = new PIDConstants(10, 0, 0);
+            final PIDConstants rotationPID = new PIDConstants(7, 0, 0);
 
-        AutoBuilder.configure(
-                poseSupplier,
-                poseReset,
-                robotRelativeSpeedsSupplier,
-                outputConsumer,
-                new PPHolonomicDriveController(translationPID, rotationPID),
-                config,
-                shouldFlipSupplier,
-                swerve);
+            AutoBuilder.configure(
+                    poseSupplier,
+                    poseReset,
+                    robotRelativeSpeedsSupplier,
+                    outputConsumer,
+                    new PPHolonomicDriveController(translationPID, rotationPID),
+                    config,
+                    shouldFlipSupplier,
+                    swerve);
 
-        autoChooser = AutoBuilder.buildAutoChooser();
+            autoChooser = AutoBuilder.buildAutoChooser();
+        } catch (Exception e) {
+            Logger.reportWarning(e, true);
+        }
         setupAutoDisplay();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);

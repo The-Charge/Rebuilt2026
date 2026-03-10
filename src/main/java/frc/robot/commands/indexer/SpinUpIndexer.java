@@ -1,7 +1,5 @@
 package frc.robot.commands.indexer;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.IndexerConstants;
@@ -28,9 +26,7 @@ public class SpinUpIndexer extends Command {
 
     @Override
     public void execute() {
-        indexer.setSpindexerVoltage(IndexerConstants.spindexerVoltage
-                + Math.sin(startTimer.get() * 2 * Math.PI / IndexerConstants.spindexerPeriod.in(Seconds))
-                        * IndexerConstants.spindexerAmplitudeVoltage);
+        indexer.setSpindexerVoltage(IndexerConstants.spindexerVoltage);
     }
 
     @Override

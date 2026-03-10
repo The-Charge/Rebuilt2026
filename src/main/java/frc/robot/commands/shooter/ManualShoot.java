@@ -1,8 +1,12 @@
 package frc.robot.commands.shooter;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsystem;
+
+import static edu.wpi.first.units.Units.RPM;
+
 import java.util.function.Supplier;
 
 public class ManualShoot extends Command {
@@ -18,8 +22,15 @@ public class ManualShoot extends Command {
     }
 
     @Override
+    public void initialize() {
+        SmartDashboard.putNumber("speed", 0);
+
+    }
+
+    @Override
     public void execute() {
-        shoot.shoot(targetVel.get());
+
+        shoot.shoot(RPM.of(SmartDashboard.getNumber("speed", 0)));
     }
 
     @Override
