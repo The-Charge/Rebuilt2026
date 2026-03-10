@@ -57,7 +57,9 @@ public class ShooterConstants { // split into shooter, spinner, and hood
 
     static {
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();
-        distanceToRPMPlot.put(1.9413, 2620.0d);  // post-fix
+        // distanceToRPMPlot.put(1.9413, 2620.0d);  // post-fix
+        
+        distanceToRPMPlot.put(1.9505, 2500.0d);  // post-fix
 
         // distanceToRPMPlot.put(2.116197, 2500.0d); // not that reliable
 
