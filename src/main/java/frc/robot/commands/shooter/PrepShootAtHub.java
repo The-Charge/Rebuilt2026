@@ -3,11 +3,11 @@ package frc.robot.commands.shooter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -53,16 +53,19 @@ public class PrepShootAtHub extends Command {
         Translation2d offsetToHub;
 
         // Use HubTag directly for distance
-        Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed.getAsBoolean()));
+        // Optional<Pose3d> hubTagPose = vSub.getTransformToTag(FieldConstants.getHubTag(isRed.getAsBoolean()));
 
         // Otherwise use swerve positioning
-        if (hubTagPose.isPresent()) {
-            offsetToHub = hubTagPose.get().getTranslation().toTranslation2d();
-        } else {
-            // Get Swerve Distance to Hub
-            offsetToHub = FieldConstants.getHubLoc(isRed.getAsBoolean())
-                    .minus(swerveSub.getStateCopy().Pose.getTranslation());
-        }
+        // if (hubTagPose.isPresent()) {
+        //     offsetToHub = hubTagPose.get().getTranslation().toTranslation2d();
+        // } else {
+        // Get Swerve Distance to Hub
+        offsetToHub = FieldConstants.getHubLoc(isRed.getAsBoolean())
+                .minus(RobotContainer.getInstance()
+                        .turret
+                        .getTurretPoseOnField()
+                        .getTranslation());
+        // }
         Distance distToTarget = Meters.of(Math.hypot(
                 offsetToHub.getMeasureX().in(Meters), offsetToHub.getMeasureY().in(Meters)));
 
