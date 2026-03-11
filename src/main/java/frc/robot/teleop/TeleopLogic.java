@@ -18,7 +18,6 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.DualBlinkLED;
 import frc.robot.commands.leds.RainbowLED;
-import frc.robot.commands.shooter.PreSpinShooter;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.constants.FieldConstants;
@@ -163,10 +162,10 @@ public class TeleopLogic {
                                 ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 0.25);
                             })));
 
-            MiscUtils.changeSubsystemDefaultCommand(
-                    RobotContainer.getInstance().shooter,
-                    new PreSpinShooter(RobotContainer.getInstance().shooter),
-                    false);
+            // MiscUtils.changeSubsystemDefaultCommand(
+            //         RobotContainer.getInstance().shooter,
+            //         new PreSpinShooter(RobotContainer.getInstance().shooter),
+            //         true);
         }
         if (hasPhaseChanged && phase == TeleopPhase.ENDGAME) {
             CommandScheduler.getInstance().schedule(new RainbowLED(RobotContainer.getInstance().ledSub, Seconds.of(5)));
@@ -203,7 +202,7 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtHubCommand, false);
         MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtHubCommand, false);
+                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtHubCommand, true);
     }
 
     private void enterActiveAtFZoneMode() {
@@ -215,7 +214,7 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtFZoneCommand, false);
         MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, false);
+                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, true);
 
         // put the swerve in "Snake Mode" so that it is easier to pick up fuel
         // MiscUtils.changeSubsystemDefaultCommand(RobotContainer.getInstance().swerve, false);

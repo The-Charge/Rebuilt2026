@@ -89,6 +89,11 @@ public class Logger {
             StatusLogger.disableAutoLogging();
         }
 
+        if (loggingLevel.logToNT) {
+            ntInstance = Optional.of(NetworkTableInstance.getDefault());
+            nt = Optional.of(ntInstance.get().getTable("Logger")); // root table
+        }
+
         if (loggingLevel.logToFile) {
             DataLogManager.start();
             DataLogManager.logConsoleOutput(true);
@@ -102,11 +107,6 @@ public class Logger {
                     logDir == null ? false : logDir.toLowerCase().startsWith("/u");
             logBool("Logger", "loggingToFlashdrive", loggingToFlash);
             Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
-        }
-
-        if (loggingLevel.logToNT) {
-            ntInstance = Optional.of(NetworkTableInstance.getDefault());
-            nt = Optional.of(ntInstance.get().getTable("Logger")); // root table
         }
 
         println("Logging started");

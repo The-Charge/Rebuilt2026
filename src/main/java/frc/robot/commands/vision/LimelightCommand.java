@@ -2,6 +2,7 @@ package frc.robot.commands.vision;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -23,6 +24,10 @@ public class LimelightCommand extends Command {
     private boolean isSeeded;
 
     private final Optional<StructPublisher<Pose3d>> diffPublisher;
+    private final Optional<StructPublisher<Pose2d>> turretPub =
+            Logger.makeStructPublisher(LimelightConstants.subsystemName, "turretPose", Pose2d.struct);
+    private final Optional<StructPublisher<Pose2d>> sidePub =
+            Logger.makeStructPublisher(LimelightConstants.subsystemName, "sidePose", Pose2d.struct);
 
     public LimelightCommand(
             LimelightSubsystem turretLimelightSubsystem,
@@ -135,6 +140,14 @@ public class LimelightCommand extends Command {
     private void setRobotOrientation() {
         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
         Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
+
+        if (MT1turret.isPresent() && turretPub.isPresent()) {
+            turretPub.get().set(MT1turret.get().pose());
+        }
+        if (MT1side.isPresent() && sidePub.isPresent()) {
+            sidePub.get().set(MT1side.get().pose());
+        }
+
         if (MT1turret.isPresent() || MT1side.isPresent()) {
             Angle rots;
             if (MT1turret.isPresent() && MT1side.isPresent()) {
@@ -150,6 +163,8 @@ public class LimelightCommand extends Command {
             } else {
                 rots = MT1side.get().pose().getRotation().getMeasure();
             }
+
+            Logger.logDouble(LimelightConstants.subsystemName, "Angle of Bot", rots.in(Degrees));
             turretLimelight.setRobotOrientation(rots);
             sideLimelight.setRobotOrientation(rots);
         }

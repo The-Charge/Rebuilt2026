@@ -172,7 +172,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
-        double rotStdDev = LimelightConstants.krotStdDev; // never trust rotation under any circumstances, but maybe do
+        double rotStdDev = LimelightConstants.krotStdDev / 4; // never trust rotation under any circumstances, but maybe do
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
