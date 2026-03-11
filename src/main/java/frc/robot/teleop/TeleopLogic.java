@@ -18,6 +18,7 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.DualBlinkLED;
 import frc.robot.commands.leds.RainbowLED;
+import frc.robot.commands.shooter.PreSpinShooter;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.constants.FieldConstants;
@@ -161,6 +162,11 @@ public class TeleopLogic {
                                 ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, 0.25);
                                 ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 0.25);
                             })));
+
+            MiscUtils.changeSubsystemDefaultCommand(
+                    RobotContainer.getInstance().shooter,
+                    new PreSpinShooter(RobotContainer.getInstance().shooter),
+                    false);
         }
         if (hasPhaseChanged && phase == TeleopPhase.ENDGAME) {
             CommandScheduler.getInstance().schedule(new RainbowLED(RobotContainer.getInstance().ledSub, Seconds.of(5)));

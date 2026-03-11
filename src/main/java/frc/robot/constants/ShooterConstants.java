@@ -53,6 +53,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
     //     public static double ticksPerRadian;
     // }
 
+    public static final AngularVelocity preSpinSpeed = RPM.of((2500 + 4000) / 2);
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
     static {

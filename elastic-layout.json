@@ -18,14 +18,14 @@
             },
             "children": [
               {
-                "title": "14_rollerMotor",
+                "title": "10_flDrive",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/14_rollerMotor",
+                  "topic": "/Logger/CAN/10_flDrive",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -35,14 +35,31 @@
                 }
               },
               {
-                "title": "15_turretMotor",
+                "title": "11_flAzimuth",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/15_turretMotor",
+                  "topic": "/Logger/CAN/11_flAzimuth",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "14_rollerMotor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/14_rollerMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -86,6 +103,74 @@
                 }
               },
               {
+                "title": "18_frAzimuth",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/18_frAzimuth",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "19_frDrive",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/19_frDrive",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "1_blAzimuth",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/1_blAzimuth",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "2_blDrive",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/2_blDrive",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
                 "title": "30_PDP",
                 "x": 0.0,
                 "y": 0.0,
@@ -120,14 +205,31 @@
                 }
               },
               {
-                "title": "4_shootMotor",
+                "title": "8_brAzimuth",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/4_shootMotor",
+                  "topic": "/Logger/CAN/8_brAzimuth",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "9_brDrive",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/9_brDrive",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -171,30 +273,16 @@
             }
           },
           {
-            "title": "limelight-turret",
+            "title": "limelight-reef",
             "x": 448.0,
             "y": 0.0,
             "width": 384.0,
             "height": 384.0,
             "type": "Camera Stream",
             "properties": {
-              "topic": "/CameraPublisher/limelight-turret",
+              "topic": "/CameraPublisher/limelight-reef",
               "period": 0.06,
               "rotation_turns": 0
-            }
-          },
-          {
-            "title": "selectedAuto",
-            "x": 1024.0,
-            "y": 128.0,
-            "width": 192.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Logger/selectedAuto",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
             }
           },
           {
@@ -273,6 +361,20 @@
               "data_type": "string",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "selectedAuto",
+            "x": 1024.0,
+            "y": 128.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Logger//selectedAuto",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -313,23 +415,6 @@
             }
           },
           {
-            "title": "Hub Active",
-            "x": 832.0,
-            "y": 0.0,
-            "width": 192.0,
-            "height": 256.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/Logger/isFriendlyHubActive",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "FMSInfo",
             "x": 0.0,
             "y": 576.0,
@@ -349,7 +434,7 @@
             "height": 448.0,
             "type": "Camera Stream",
             "properties": {
-              "topic": "/CameraPublisher/limelight-turret",
+              "topic": "/CameraPublisher/limelight-reef",
               "period": 0.06,
               "rotation_turns": 0
             }
@@ -389,49 +474,94 @@
             }
           },
           {
-            "title": "Time Until Next Shift",
+            "title": "secsLeftInPhase",
             "x": 832.0,
             "y": 256.0,
             "width": 192.0,
             "height": 192.0,
             "type": "Match Time",
             "properties": {
-              "topic": "/Logger/secsLeftInTeleopPhase",
+              "topic": "/Logger/Teleop/secsLeftInPhase",
               "period": 0.06,
               "data_type": "double",
-              "time_display_mode": "Seconds Only",
+              "time_display_mode": "Minutes and Seconds",
               "red_start_time": 5,
               "yellow_start_time": 10
             }
           },
           {
-            "title": "Match Time",
-            "x": 384.0,
-            "y": 448.0,
-            "width": 640.0,
-            "height": 256.0,
-            "type": "Match Time",
-            "properties": {
-              "topic": "/Logger/matchTime",
-              "period": 0.06,
-              "data_type": "double",
-              "time_display_mode": "Minutes and Seconds",
-              "red_start_time": 20,
-              "yellow_start_time": 30
-            }
-          },
-          {
-            "title": "Teleop Phase",
+            "title": "phase",
             "x": 256.0,
             "y": 448.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/Logger/teleopPhase",
+              "topic": "/Logger/Teleop/phase",
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
+            }
+          },
+          {
+            "title": "zone",
+            "x": 128.0,
+            "y": 448.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Logger/Teleop/zone",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "isFriendlyHubActive",
+            "x": 832.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 256.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/Logger/Teleop/isFriendlyHubActive",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "autoWinningAlliance",
+            "x": 0.0,
+            "y": 448.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Logger/Teleop/autoWinningAlliance",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "matchTime",
+            "x": 384.0,
+            "y": 448.0,
+            "width": 640.0,
+            "height": 256.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/Logger//matchTime",
+              "period": 0.06,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 20,
+              "yellow_start_time": 30
             }
           }
         ]

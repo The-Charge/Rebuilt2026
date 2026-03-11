@@ -9,11 +9,11 @@ import edu.wpi.first.wpilibj.util.Color;
 public class LEDConstants {
     public static final String subsystemName = "LED";
 
-    public static final int port = 9;
-    public static final int ledCount = 43;
-    // Our LED strip has a density of 720 LEDs per meter
-    public static final Distance kLedSpacing = Meters.of(1 / 120.0);
-    public static final ColorOrder colorOrder = ColorOrder.kGRB;
+    public static final int port = 0;
+    public static final int ledCount = 20 * 5;
+    // Our LED strip has a density of 20 ICs per meter
+    public static final Distance kLedSpacing = Meters.of(1 / 20.0);
+    public static final ColorOrder colorOrder = ColorOrder.kRGB;
 
     public static final Color chargeGreen = new Color("#008800");
     public static final Color chargeGold = new Color("#ffaa00");
