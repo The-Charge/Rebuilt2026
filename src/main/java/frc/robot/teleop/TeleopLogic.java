@@ -21,7 +21,6 @@ import frc.robot.commands.leds.RainbowLED;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.constants.FieldConstants;
-import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
@@ -49,7 +48,6 @@ public class TeleopLogic {
         lastAssistMode = Optional.empty();
 
         CommandScheduler.getInstance().schedule(new DeployIntake(RobotContainer.getInstance().intake));
-        AutoDisplayUtil.clearAutoPath();
 
         if (!RobotContainer.getInstance().turret.getIsCalibrated()) {
             CommandScheduler.getInstance()

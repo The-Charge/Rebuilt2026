@@ -14,6 +14,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -83,7 +84,6 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.teleop.TeleopLogic;
-import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
@@ -196,10 +196,10 @@ public class RobotContainer {
                 new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
         CommandScheduler.getInstance().schedule(limelightCommand);
 
+        addNamedCommands();
         setupSwerve();
         configureBindings();
         configureAutonomous();
-        addNamedCommands();
 
         swerve.registerTelemetry(swerveTelem::telemeterize);
     }
@@ -219,6 +219,7 @@ public class RobotContainer {
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
         swerveBrake = new SwerveRequest.SwerveDriveBrake();
         swerveIdle = new SwerveRequest.Idle();
+        swerveApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
         DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
 
@@ -287,12 +288,10 @@ public class RobotContainer {
                                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
+                            limelightCommand.seedFromAbsolute(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
                         })
                         .ignoringDisable(true));
-        commandDriver1.b().onTrue(new InstantCommand(() -> {
-            limelightCommand.seedFromAbsolute(
-                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
-        }));
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
         commandDriver1
                 .leftTrigger()
@@ -365,15 +364,21 @@ public class RobotContainer {
     }
 
     private void addNamedCommands() {
-        // NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
-        // NamedCommands.registerCommand("ClimbDown", new ClimbDown(climber, true));
-        // NamedCommands.registerCommand(
-        //         "PrepShootAtHub", new ParallelCommandGroup(prepShootAtHubCommand, pointAtHubCommand));
-        // NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer, false));
-        // NamedCommands.registerCommand(
-        //         "StopShoot", new ParallelCommandGroup(new StopShooter(shooter), new SpinDownIndexer(indexer)));
-        // NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
-        // NamedCommands.registerCommand("WaitForReadyToShoot", new WaitUntilCommand(() -> isReadyToShoot()));
+        NamedCommands.registerCommand("ClimbClimb", new ClimbClimb(climber, true));
+        NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
+        NamedCommands.registerCommand("PrepShootAtHub", new InstantCommand(() -> {
+            CommandScheduler.getInstance().schedule(prepShootAtHubCommand);
+            CommandScheduler.getInstance().schedule(pointAtHubCommand);
+        }));
+        NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer));
+        NamedCommands.registerCommand("StopShoot", new InstantCommand(() -> {
+            CommandScheduler.getInstance().schedule(new StopShooter(shooter));
+            CommandScheduler.getInstance().schedule(new SpinDownIndexer(indexer));
+        }));
+        NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
+        NamedCommands.registerCommand("WaitForReadyToShoot", Commands.none());
+        NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
+        // NamedCommands.registerCommand("Intake", )
     }
 
     public Command getAutonomousCommand() {
@@ -469,16 +474,21 @@ public class RobotContainer {
     }
 
     public void displayAuto() {
-        Command auto = autoChooser.getSelected();
+        try {
+            Command auto = autoChooser.getSelected();
 
-        if (auto == null || auto.getName().equals("InstantCommand")) {
-            AutoDisplayUtil.clearAutoPath();
-            return;
+            if (auto == null || auto.getName().equals("InstantCommand")) {
+                // AutoDisplayUtil.clearAutoPath();
+                return;
+            }
+
+            boolean isRed = DriverStation.getAlliance()
+                    .map((val) -> val == Alliance.Red)
+                    .orElse(false);
+            // AutoDisplayUtil.displayAutoPath(auto, isRed);
+        } catch (Exception e) {
+            Logger.reportError(e);
         }
-
-        boolean isRed =
-                DriverStation.getAlliance().map((val) -> val == Alliance.Red).orElse(false);
-        AutoDisplayUtil.displayAutoPath(auto, isRed);
     }
 
     public boolean isReadyToShoot() {
