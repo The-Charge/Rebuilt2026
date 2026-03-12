@@ -35,7 +35,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.cameraName = "limelight-" + name;
         setCameraOffset(cameraOffset);
         LimelightHelpers.setRewindEnabled(name, true);
-        LimelightHelpers.SetIMUMode(name, 4);
+        LimelightHelpers.SetIMUMode(name, 3);
         // LimelightHelpers.SetIMUAssistAlpha(name, 0.1);
     }
 
@@ -172,7 +172,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
-        double rotStdDev = LimelightConstants.krotStdDev / 4; // never trust rotation under any circumstances, but maybe do
+        // double rotStdDev = LimelightConstants.krotStdDev / 4; // never trust rotation under any circumstances, but
+        // maybe do
+        double rotStdDev = Double.MAX_VALUE;
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
@@ -180,7 +182,7 @@ public class LimelightSubsystem extends SubsystemBase {
     public void seedInternalIMU(Angle yaw) {
         LimelightHelpers.SetIMUMode(cameraName, 1);
         LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
-        LimelightHelpers.SetIMUMode(cameraName, 4);
+        LimelightHelpers.SetIMUMode(cameraName, 3);
     }
 
     public void setRobotOrientation(Angle yaw) {

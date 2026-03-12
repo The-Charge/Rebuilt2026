@@ -76,9 +76,9 @@ public class LimelightCommand extends Command {
             seed();
         }
 
-        setRobotOrientation();
+        // setRobotOrientation();
 
-        calcMT1diff();
+        // calcMT1diff();
 
         multiple();
 

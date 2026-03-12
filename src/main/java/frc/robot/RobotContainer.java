@@ -289,6 +289,10 @@ public class RobotContainer {
                                             : Rotation2d.k180deg);
                         })
                         .ignoringDisable(true));
+        commandDriver1.b().onTrue(new InstantCommand(() -> {
+            limelightCommand.seedFromAbsolute(
+                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
+        }));
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
         commandDriver1
                 .leftTrigger()
