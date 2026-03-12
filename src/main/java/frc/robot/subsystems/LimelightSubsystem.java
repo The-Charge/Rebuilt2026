@@ -9,11 +9,14 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
@@ -28,6 +31,7 @@ import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
     private final String cameraName;
+    private final Optional<StructArrayPublisher<Pose2d>> visionTargets;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
@@ -37,11 +41,13 @@ public class LimelightSubsystem extends SubsystemBase {
         LimelightHelpers.setRewindEnabled(name, true);
         LimelightHelpers.SetIMUMode(name, 3);
         // LimelightHelpers.SetIMUAssistAlpha(name, 0.1);
+        visionTargets = Logger.makeStructArrayPublisher("Limelight" + name, "visionTargets", Pose2d.struct);
     }
 
     @Override
     public void periodic() {
         Logger.logSubsystem(cameraName, this);
+        // logVisionTargets(); //TODO: log vision targets after migrating to YALL
     }
 
     public void slowPeriodic() {}
@@ -71,6 +77,26 @@ public class LimelightSubsystem extends SubsystemBase {
         }
 
         return Optional.empty();
+    }
+
+    public void logVisionTargets() {
+        LimelightResults results = LimelightHelpers.getLatestResults(cameraName);
+        LimelightTarget_Fiducial[] targetFiducials = results.targets_Fiducials;
+        Pose2d[] targets = new Pose2d[targetFiducials.length];
+        // Logger.println(Integer.toString(targetFiducials.length));
+
+        for (int i = 0; i < targets.length; i++) {
+            Pose2d targetFieldSpace = targetFiducials[i]
+                    .getTargetPose_RobotSpace2D()
+                    .plus(new Transform2d(
+                            RobotContainer.getInstance().swerve.getState().Pose.getTranslation(),
+                            RobotContainer.getInstance().swerve.getState().Pose.getRotation()));
+            targets[i] = targetFieldSpace;
+        }
+
+        if (visionTargets.isPresent()) {
+            visionTargets.get().set(targets);
+        }
     }
 
     public Optional<Pose3d> getMegaTag1() {

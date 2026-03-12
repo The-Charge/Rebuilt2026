@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Left Start to Corner"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Left Start to Corner"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "DeployIntake"
+                }
+              }
+            ]
           }
         }
       ]

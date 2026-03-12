@@ -139,7 +139,7 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
 
-        RobotContainer.getInstance().displayAuto();
+        // RobotContainer.getInstance().displayAuto();
 
         RobotContainer.getInstance().limelightCommand.seedFromIMU();
     }
@@ -156,6 +156,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        try {
+            // AutoDisplayUtil.clearAutoPath();
+        } catch (Exception e) {
+            Logger.reportError(e);
+        }
+
         teleopLogic = Optional.of(new TeleopLogic());
         teleopLogic.get().startTeleop();
     }
