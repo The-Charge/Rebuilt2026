@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.AutoPrepShootAtHub;
+import frc.robot.commands.AutoShoot;
 import frc.robot.commands.AutoStopShoot;
 import frc.robot.commands.WaitForReadyToShoot;
 import frc.robot.commands.climb.ClimbClimb;
@@ -382,8 +383,8 @@ public class RobotContainer {
         NamedCommands.registerCommand(
                 "PrepShootAtHub", new AutoPrepShootAtHub(shooter, turret, () -> DriverStation.getAlliance()
                         .orElse(Alliance.Blue)));
-        NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer));
-        NamedCommands.registerCommand("StopShoot", new AutoStopShoot(shooter, indexer));
+        NamedCommands.registerCommand("Shoot", new AutoShoot(indexer, intake));
+        NamedCommands.registerCommand("StopShoot", new AutoStopShoot(shooter, indexer, intake));
         NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
         NamedCommands.registerCommand("WaitForReadyToShoot", new WaitForReadyToShoot(Optional.of(Seconds.of(4))));
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
@@ -457,25 +458,25 @@ public class RobotContainer {
     private void setupAutoDisplay() {
         // update the displayed auto path in smartdashboard when ever the selection is changed
         // display is cleared in teleopInit
-        if (autoChooser.getSelected() != null
-                && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-            Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-        } else {
-            Logger.logString("", "selectedAuto", "None");
-        }
+        // if (autoChooser.getSelected() != null
+        //         && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+        //     Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+        // } else {
+        //     Logger.logString("", "selectedAuto", "None");
+        // }
 
-        autoChooser.onChange((selected) -> {
-            if (DriverStation.isTeleopEnabled()) return;
+        // autoChooser.onChange((selected) -> {
+        //     if (DriverStation.isTeleopEnabled()) return;
 
-            displayAuto();
+        //     displayAuto();
 
-            if (autoChooser.getSelected() != null
-                    && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-                Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-            } else {
-                Logger.logString("", "selectedAuto", "None");
-            }
-        });
+        //     if (autoChooser.getSelected() != null
+        //             && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+        //         Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+        //     } else {
+        //         Logger.logString("", "selectedAuto", "None");
+        //     }
+        // });
 
         /*
          * Robot.teleopInit clears the display

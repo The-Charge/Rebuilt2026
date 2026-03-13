@@ -1,27 +1,29 @@
-package frc.robot.commands.indexer;
+package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.IndexerConstants;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
-public class SpinUpIndexer extends Command {
+public class AutoShoot extends Command {
 
     private final IndexerSubsystem indexer;
+    private final IntakeSubsystem intake;
 
-    public SpinUpIndexer(IndexerSubsystem indexerSub) {
-        indexer = indexerSub; // so we can use indexer here
+    public AutoShoot(IndexerSubsystem indexerSub, IntakeSubsystem intakeSub) {
+        indexer = indexerSub;
+        intake = intakeSub;
 
-        addRequirements(indexer); // reserves the table for indexer
+        addRequirements(indexer); //TODO: fix
     }
 
     @Override
     public void initialize() {
         indexer.setExchangeMotorVoltage(IndexerConstants.exchangeVoltage);
         indexer.setSpindexerVoltage(IndexerConstants.spindexerVoltage);
+        intake.setRollerVoltage(IntakeConstants.Roller.intakeVoltage);
     }
-
-    @Override
-    public void execute() {}
 
     @Override
     public boolean isFinished() {
