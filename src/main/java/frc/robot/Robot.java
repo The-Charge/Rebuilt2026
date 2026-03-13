@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -25,6 +26,7 @@ public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
     private Optional<TeleopLogic> teleopLogic;
+    private Optional<Timer> autoGyroTimer;
 
     public Robot() {
         Logger.init(this); // DO NOT DELETE ; start logger
@@ -45,6 +47,7 @@ public class Robot extends TimedRobot {
         });
 
         teleopLogic = Optional.empty();
+        autoGyroTimer = Optional.empty();
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
         addPeriodic(this::verySlowRobotPeriodic, Seconds.of(0.5));
@@ -141,11 +144,19 @@ public class Robot extends TimedRobot {
 
         // RobotContainer.getInstance().displayAuto();
 
-        RobotContainer.getInstance().limelightCommand.seedFromIMU();
+        autoGyroTimer = Optional.of(new Timer());
+        autoGyroTimer.get().start();
+        RobotContainer.getInstance().limelightCommand.cancel();
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
+            CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
+            RobotContainer.getInstance().limelightCommand.seedFromIMU();
+            autoGyroTimer = Optional.empty();
+        }
+    }
 
     @Override
     public void autonomousExit() {

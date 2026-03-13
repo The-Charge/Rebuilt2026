@@ -39,9 +39,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.AutoPrepShootAtHub;
@@ -227,18 +225,21 @@ public class RobotContainer {
         swerveApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
         DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
+        DoubleSupplier intakeMultiplier = () -> hidDriver2.getLeftTriggerAxis() >= 0.5 ? 0.5 : 1;
 
         swerveFieldCentricDriveCommand = swerve.applyRequest(() -> swerveFieldCentricDrive
                 .withVelocityX(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
                                 -hidDriver1.getLeftY(),
                                 SwerveConstants.joystickDeadband,
                                 SwerveConstants.joystickExponent)
-                        * speedShifter.getAsDouble()))
+                        * speedShifter.getAsDouble()
+                        * intakeMultiplier.getAsDouble()))
                 .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
                                 -hidDriver1.getLeftX(),
                                 SwerveConstants.joystickDeadband,
                                 SwerveConstants.joystickExponent)
-                        * speedShifter.getAsDouble()))
+                        * speedShifter.getAsDouble()
+                        * intakeMultiplier.getAsDouble()))
                 .withRotationalRate(SwerveConstants.maxAngularVel.times(
                         ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
                                 * speedShifter.getAsDouble())));
@@ -248,12 +249,14 @@ public class RobotContainer {
                                 -hidDriver1.getLeftY(),
                                 SwerveConstants.joystickDeadband,
                                 SwerveConstants.joystickExponent)
-                        * speedShifter.getAsDouble()))
+                        * speedShifter.getAsDouble()
+                        * intakeMultiplier.getAsDouble()))
                 .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
                                 -hidDriver1.getLeftX(),
                                 SwerveConstants.joystickDeadband,
                                 SwerveConstants.joystickExponent)
-                        * speedShifter.getAsDouble()))
+                        * speedShifter.getAsDouble()
+                        * intakeMultiplier.getAsDouble()))
                 .withRotationalRate(SwerveConstants.maxAngularVel.times(
                         ControllerUtil.applyLinearDeadband(-hidDriver1.getRightX(), SwerveConstants.joystickDeadband)
                                 * speedShifter.getAsDouble())));
@@ -270,12 +273,14 @@ public class RobotContainer {
                                     -hidDriver1.getLeftY(),
                                     SwerveConstants.joystickDeadband,
                                     SwerveConstants.joystickExponent)
-                            * speedShifter.getAsDouble()))
+                            * speedShifter.getAsDouble()
+                            * intakeMultiplier.getAsDouble()))
                     .withVelocityY(SwerveConstants.maxTranslationVel.times(ControllerUtil.applyExponentialDeadband(
                                     -hidDriver1.getLeftX(),
                                     SwerveConstants.joystickDeadband,
                                     SwerveConstants.joystickExponent)
-                            * speedShifter.getAsDouble()));
+                            * speedShifter.getAsDouble()
+                            * intakeMultiplier.getAsDouble()));
             if (lastDefinedRotation.isPresent()) {
                 req = req.withTargetDirection(lastDefinedRotation.get());
             }
@@ -321,8 +326,8 @@ public class RobotContainer {
         // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
         commandDriver2
                 .leftTrigger()
-                .whileTrue(new ParallelCommandGroup(
-                        new RunRoller(intake, false), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
+                .whileTrue(new RunRoller(intake, false))
+                .whileTrue(new BlinkLED(ledSub, Color.kWhite));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povRight().or(commandDriver2.povLeft()).onTrue(new ClimbClimb(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
@@ -363,11 +368,11 @@ public class RobotContainer {
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolDown()
-                .whileTrue(new ManualSpool(climber, ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, -ClimberConstants.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolUp()
-                .whileTrue(new ManualSpool(climber, -ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, ClimberConstants.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
@@ -442,7 +447,7 @@ public class RobotContainer {
 
             autoChooser = AutoBuilder.buildAutoChooser();
         } catch (Exception e) {
-            Logger.reportWarning(e, true);
+            Logger.reportError(e);
         }
         setupAutoDisplay();
 

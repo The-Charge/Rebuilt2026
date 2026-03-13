@@ -243,18 +243,6 @@
         ],
         "containers": [
           {
-            "title": "Alerts",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 448.0,
-            "height": 384.0,
-            "type": "Alerts",
-            "properties": {
-              "topic": "/SmartDashboard/Alerts",
-              "period": 0.06
-            }
-          },
-          {
             "title": "batteryVoltage",
             "x": 1216.0,
             "y": 0.0,
@@ -270,19 +258,6 @@
               "divisions": 7,
               "inverted": false,
               "orientation": "vertical"
-            }
-          },
-          {
-            "title": "limelight-reef",
-            "x": 448.0,
-            "y": 0.0,
-            "width": 384.0,
-            "height": 384.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-reef",
-              "period": 0.06,
-              "rotation_turns": 0
             }
           },
           {
@@ -350,7 +325,7 @@
           },
           {
             "title": "loggingDirectory",
-            "x": 832.0,
+            "x": 1024.0,
             "y": 256.0,
             "width": 192.0,
             "height": 128.0,
@@ -374,6 +349,44 @@
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
+            }
+          },
+          {
+            "title": "limelight-turret",
+            "x": 448.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-turret",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "limelight-other",
+            "x": 640.0,
+            "y": 320.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-other",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 448.0,
+            "height": 384.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.06
             }
           }
         ]
@@ -424,19 +437,6 @@
             "properties": {
               "topic": "/FMSInfo",
               "period": 0.06
-            }
-          },
-          {
-            "title": "Camera",
-            "x": 1024.0,
-            "y": 256.0,
-            "width": 512.0,
-            "height": 448.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-reef",
-              "period": 0.06,
-              "rotation_turns": 0
             }
           },
           {
@@ -562,6 +562,19 @@
               "time_display_mode": "Minutes and Seconds",
               "red_start_time": 20,
               "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "limelight-turret",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 512.0,
+            "height": 448.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-turret",
+              "period": 0.06,
+              "rotation_turns": 0
             }
           }
         ]

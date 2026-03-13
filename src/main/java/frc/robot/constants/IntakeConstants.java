@@ -28,6 +28,6 @@ public class IntakeConstants {
     public static class RightDeployer {
         public static final int port = 3;
 
-        public static final double deployedPosition = 0.5;
+        public static final double deployedPosition = 0.25;
     }
 }

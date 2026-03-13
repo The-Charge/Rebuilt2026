@@ -228,6 +228,6 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public void takeRewind() {
-        LimelightHelpers.triggerRewindCapture(cameraName, 155.0); // record starting 5 seconds before match starts
+        LimelightHelpers.triggerRewindCapture(cameraName, 200.0);
     }
 }

@@ -39,7 +39,7 @@ public class RainbowLED extends Command {
             timer.get().start();
         }
 
-        ledSub.rainbow(MetersPerSecond.of(1));
+        ledSub.rainbow(MetersPerSecond.of(4));
     }
 
     @Override

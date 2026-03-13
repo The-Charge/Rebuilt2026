@@ -18,16 +18,16 @@ public class ActiveAtHubLED extends Command {
     }
 
     @Override
-    public void initialize() {
+    public void initialize() {}
+
+    @Override
+    public void execute() {
         if (isReady.getAsBoolean()) {
             ledSub.solidColor(LEDConstants.chargeGreen);
         } else {
             ledSub.solidColor(LEDConstants.orange);
         }
     }
-
-    @Override
-    public void execute() {}
 
     @Override
     public void end(boolean interrupted) {
