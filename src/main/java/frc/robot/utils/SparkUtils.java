@@ -1,11 +1,14 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.Faults;
 import com.revrobotics.spark.SparkBase.Warnings;
 import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
 public class SparkUtils {
@@ -28,12 +31,7 @@ public class SparkUtils {
     public static boolean hasCriticalWarnings(Warnings warnings) {
         if (warnings == null) return false;
 
-        return warnings.brownout
-                || warnings.escEeprom
-                || warnings.extEeprom
-                || warnings.other
-                || warnings.overcurrent
-                || warnings.sensor;
+        return warnings.escEeprom || warnings.extEeprom || warnings.other || warnings.overcurrent || warnings.sensor;
     }
 
     public static boolean isConnected(SparkBase motor) {
@@ -85,11 +83,12 @@ public class SparkUtils {
             double kP,
             double kI,
             double kD,
-            Optional<Double> kStaticG,
-            Optional<Double> kCos,
-            Optional<Double> kS,
-            Optional<Double> kV,
-            Optional<Double> kA) {
+            Optional<Voltage> kStaticG,
+            Optional<Voltage> kCos,
+            Optional<Voltage> kS,
+            Optional<Voltage> kV,
+            Optional<Voltage> kA,
+            Optional<Double> iZone) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
@@ -97,19 +96,22 @@ public class SparkUtils {
 
         config.closedLoop.pid(kP, kI, kD);
         if (kStaticG != null && kStaticG.isPresent()) {
-            config.closedLoop.feedForward.kG(kStaticG.get());
+            config.closedLoop.feedForward.kG(kStaticG.get().in(Volts));
         }
         if (kCos != null && kCos.isPresent()) {
-            config.closedLoop.feedForward.kCos(kCos.get());
+            config.closedLoop.feedForward.kCos(kCos.get().in(Volts));
         }
         if (kS != null && kS.isPresent()) {
-            config.closedLoop.feedForward.kS(kS.get());
+            config.closedLoop.feedForward.kS(kS.get().in(Volts));
         }
         if (kV != null && kV.isPresent()) {
-            config.closedLoop.feedForward.kV(kV.get());
+            config.closedLoop.feedForward.kV(kV.get().in(Volts));
         }
         if (kA != null && kA.isPresent()) {
-            config.closedLoop.feedForward.kA(kA.get());
+            config.closedLoop.feedForward.kA(kA.get().in(Volts));
+        }
+        if (iZone != null && iZone.isPresent()) {
+            config.closedLoop.iZone(iZone.get());
         }
     }
 
