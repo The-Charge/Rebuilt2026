@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -47,6 +48,8 @@ public class LimelightCommand extends Command {
     @Override
     public void initialize() {
         enabledLast = !enabled.get();
+        turretLimelight.setIMUMode(0);
+        sideLimelight.setIMUMode(0);
     }
 
     @Override
@@ -72,13 +75,22 @@ public class LimelightCommand extends Command {
             enabledLast = false;
         }
 
-        if (!isSeeded) {
-            seed();
-        }
+        // if (!isSeeded) {
+        //     seed();
+        // }
 
         // setRobotOrientation();
 
-        // calcMT1diff();
+        Angle yaw = RobotContainer.getInstance()
+                .swerve
+                .getState()
+                .Pose
+                .getRotation()
+                .getMeasure();
+        turretLimelight.setRobotOrientation(yaw);
+        sideLimelight.setRobotOrientation(yaw);
+
+        calcMT1diff();
 
         multiple();
 

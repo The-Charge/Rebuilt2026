@@ -298,8 +298,8 @@ public class RobotContainer {
                                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
-                            limelightCommand.seedFromAbsolute(
-                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
+                            // limelightCommand.seedFromAbsolute(
+                            //         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
                         })
                         .ignoringDisable(true));
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));

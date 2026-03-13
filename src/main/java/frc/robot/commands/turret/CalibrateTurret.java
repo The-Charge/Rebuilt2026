@@ -11,6 +11,7 @@ public class CalibrateTurret extends Command {
 
     private final TurretSubsystem turretSub;
     private Timer endConditionDelay;
+    private Timer expirationTimer;
 
     public CalibrateTurret(TurretSubsystem turretSubsystem) {
         turretSub = turretSubsystem;
@@ -26,6 +27,9 @@ public class CalibrateTurret extends Command {
 
         turretSub.setIsCalibrated(false);
         turretSub.logTargetPoint(Optional.empty());
+
+        expirationTimer = new Timer();
+        expirationTimer.start();
     }
 
     @Override
@@ -34,7 +38,8 @@ public class CalibrateTurret extends Command {
     // Once timer finishes, the command ends
     @Override
     public boolean isFinished() {
-        return endConditionDelay.hasElapsed(TurretConstants.calibrationEndDelay) && turretSub.isAtReverseLimit();
+        return endConditionDelay.hasElapsed(TurretConstants.calibrationEndDelay) && turretSub.isAtReverseLimit()
+                || expirationTimer.hasElapsed(5);
     }
 
     // Once command ends, set as end position.
