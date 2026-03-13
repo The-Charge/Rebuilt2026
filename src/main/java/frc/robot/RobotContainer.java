@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -43,6 +44,9 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.commands.AutoPrepShootAtHub;
+import frc.robot.commands.AutoStopShoot;
+import frc.robot.commands.WaitForReadyToShoot;
 import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
@@ -51,6 +55,7 @@ import frc.robot.commands.indexer.SpinDownIndexer;
 import frc.robot.commands.indexer.SpinUpIndexer;
 import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.intake.RunRoller;
+import frc.robot.commands.intake.StopRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
 import frc.robot.commands.leds.BlinkLED;
@@ -317,7 +322,7 @@ public class RobotContainer {
         commandDriver2
                 .leftTrigger()
                 .whileTrue(new ParallelCommandGroup(
-                        new RunRoller(intake), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
+                        new RunRoller(intake, false), new ScheduleCommand(new BlinkLED(ledSub, Color.kWhite))));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povRight().or(commandDriver2.povLeft()).onTrue(new ClimbClimb(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
@@ -326,6 +331,9 @@ public class RobotContainer {
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
                         new SpinUpIndexer(indexer), new SpinDownIndexer(indexer), () -> isReadyToShoot())))
                 .onFalse(new SpinDownIndexer(indexer));
+        commandDriver2
+                .x()
+                .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
         commandButtonBox
                 .resetTurret()
@@ -366,19 +374,16 @@ public class RobotContainer {
     private void addNamedCommands() {
         NamedCommands.registerCommand("ClimbClimb", new ClimbClimb(climber, true));
         NamedCommands.registerCommand("ClimbUp", new ClimbUp(climber, true));
-        NamedCommands.registerCommand("PrepShootAtHub", new InstantCommand(() -> {
-            CommandScheduler.getInstance().schedule(prepShootAtHubCommand);
-            CommandScheduler.getInstance().schedule(pointAtHubCommand);
-        }));
+        NamedCommands.registerCommand(
+                "PrepShootAtHub", new AutoPrepShootAtHub(shooter, turret, () -> DriverStation.getAlliance()
+                        .orElse(Alliance.Blue)));
         NamedCommands.registerCommand("Shoot", new SpinUpIndexer(indexer));
-        NamedCommands.registerCommand("StopShoot", new InstantCommand(() -> {
-            CommandScheduler.getInstance().schedule(new StopShooter(shooter));
-            CommandScheduler.getInstance().schedule(new SpinDownIndexer(indexer));
-        }));
+        NamedCommands.registerCommand("StopShoot", new AutoStopShoot(shooter, indexer));
         NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
-        NamedCommands.registerCommand("WaitForReadyToShoot", Commands.none());
+        NamedCommands.registerCommand("WaitForReadyToShoot", new WaitForReadyToShoot(Optional.of(Seconds.of(4))));
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
-        // NamedCommands.registerCommand("Intake", )
+        NamedCommands.registerCommand("Intake", new RunRoller(intake, true));
+        NamedCommands.registerCommand("StopIntake", new StopRoller(intake));
     }
 
     public Command getAutonomousCommand() {

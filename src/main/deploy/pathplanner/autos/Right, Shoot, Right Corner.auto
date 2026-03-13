@@ -21,56 +21,70 @@
                 }
               },
               {
-                "type": "sequential",
+                "type": "deadline",
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "CalibrateTurret"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "PrepShootAtHub"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "WaitForReadyToShoot"
-                      }
-                    },
-                    {
-                      "type": "deadline",
+                      "type": "sequential",
                       "data": {
                         "commands": [
                           {
-                            "type": "wait",
+                            "type": "named",
                             "data": {
-                              "waitTime": 5.0
+                              "name": "WaitForReadyToShoot"
                             }
                           },
                           {
-                            "type": "named",
+                            "type": "deadline",
                             "data": {
-                              "name": "Shoot"
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 5.0
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "Shoot"
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "sequential",
                       "data": {
-                        "name": "StopShoot"
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "CalibrateTurret"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "PrepShootAtHub"
+                            }
+                          }
+                        ]
                       }
                     }
                   ]
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShoot"
           }
         },
         {
