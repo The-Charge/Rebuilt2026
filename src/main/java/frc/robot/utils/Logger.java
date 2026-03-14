@@ -685,6 +685,7 @@ public class Logger {
                 table,
                 "closedLoopControlType",
                 motor.getClosedLoopController().getControlType().toString());
+        logDouble(table, "iAccum", motor.getClosedLoopController().getIAccum());
         // logBool(table, "connected", SparkUtils.isConnected(motor));
 
         // logBool(table + "/faults", "can", activeFaults.can);

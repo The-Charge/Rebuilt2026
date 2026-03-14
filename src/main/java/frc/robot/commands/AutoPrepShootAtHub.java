@@ -18,6 +18,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Logger;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class AutoPrepShootAtHub extends Command {
@@ -39,11 +40,9 @@ public class AutoPrepShootAtHub extends Command {
     public void execute() {
         Pose2d robotPose = RobotContainer.getInstance().swerve.getStateCopy().Pose;
 
-        Translation2d offsetToHub = FieldConstants.getHubLoc(alliance.get() == Alliance.Red)
-                .minus(RobotContainer.getInstance()
-                        .turret
-                        .getTurretPoseOnField()
-                        .getTranslation());
+        Translation2d hubLoc = FieldConstants.getHubLoc(alliance.get() == Alliance.Red);
+        Translation2d offsetToHub = hubLoc.minus(
+                RobotContainer.getInstance().turret.getTurretPoseOnField().getTranslation());
         Distance distToTarget = Meters.of(Math.hypot(
                 offsetToHub.getMeasureX().in(Meters), offsetToHub.getMeasureY().in(Meters)));
 
@@ -53,6 +52,7 @@ public class AutoPrepShootAtHub extends Command {
 
         Logger.logDouble(ShooterConstants.subsystemName, "distToTarget", distToTarget.in(Meters));
         Logger.logDouble("AlignTurret", "fieldCentricAngle", fieldCentricAngle.in(Degrees));
+        turret.logTargetPoint(Optional.of(hubLoc));
 
         shooter.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
         turret.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));

@@ -15,7 +15,7 @@ public class AutoShoot extends Command {
         indexer = indexerSub;
         intake = intakeSub;
 
-        addRequirements(indexer); //TODO: fix
+        addRequirements(indexer); // TODO: fix
     }
 
     @Override

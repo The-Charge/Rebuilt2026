@@ -30,7 +30,7 @@ public class ShooterConstants { // split into shooter, spinner, and hood
         public static final Optional<Double> iZone = Optional.of(2000d);
 
         public static boolean inverted = false;
-        public static int currentLimit = 30;
+        public static int currentLimit = 40;
         public static IdleMode idleMode = IdleMode.kCoast;
 
         public static final AngularVelocity targetTolerance = RPM.of(100);

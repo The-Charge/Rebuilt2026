@@ -2,6 +2,7 @@ package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.TunerConstants;
@@ -17,4 +18,7 @@ public class SwerveConstants {
 
     public static final double joystickDeadband = 0.1;
     public static final int joystickExponent = 3;
+
+    public static final PIDConstants pathplannerTranslationPID = new PIDConstants(10, 0, 0);
+    public static final PIDConstants pathplannerRotationPID = new PIDConstants(7, 0, 0);
 }

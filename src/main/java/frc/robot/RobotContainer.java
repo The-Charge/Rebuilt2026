@@ -17,7 +17,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
@@ -94,7 +93,6 @@ import frc.robot.utils.MiscUtils;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -423,7 +421,6 @@ public class RobotContainer {
 
         try {
             final Supplier<Pose2d> poseSupplier = () -> swerve.getState().Pose;
-            final Consumer<Pose2d> poseReset = (pose) -> swerve.resetPose(pose);
             final Supplier<ChassisSpeeds> robotRelativeSpeedsSupplier = () -> swerve.getState().Speeds;
             final BiConsumer<ChassisSpeeds, DriveFeedforwards> outputConsumer =
                     (speeds, ff) -> swerve.setControl(swerveApplyRobotSpeeds
@@ -433,15 +430,14 @@ public class RobotContainer {
             final BooleanSupplier shouldFlipSupplier = () -> DriverStation.getAlliance()
                     .map((val) -> val == Alliance.Red)
                     .orElse(false);
-            final PIDConstants translationPID = new PIDConstants(10, 0, 0);
-            final PIDConstants rotationPID = new PIDConstants(7, 0, 0);
 
             AutoBuilder.configure(
                     poseSupplier,
-                    poseReset,
+                    swerve::resetPose,
                     robotRelativeSpeedsSupplier,
                     outputConsumer,
-                    new PPHolonomicDriveController(translationPID, rotationPID),
+                    new PPHolonomicDriveController(
+                            SwerveConstants.pathplannerTranslationPID, SwerveConstants.pathplannerRotationPID),
                     config,
                     shouldFlipSupplier,
                     swerve);
