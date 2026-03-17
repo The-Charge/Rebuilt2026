@@ -54,7 +54,7 @@ public class AutoPrepShootAtHub extends Command {
         Logger.logDouble("AlignTurret", "fieldCentricAngle", fieldCentricAngle.in(Degrees));
         turret.logTargetPoint(Optional.of(hubLoc));
 
-        shooter.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
+        shooter.setTargetVelocity(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
         turret.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));
     }
 

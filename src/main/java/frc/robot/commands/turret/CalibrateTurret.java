@@ -38,14 +38,14 @@ public class CalibrateTurret extends Command {
     // Once timer finishes, the command ends
     @Override
     public boolean isFinished() {
-        return endConditionDelay.hasElapsed(TurretConstants.calibrationEndDelay) && turretSub.isAtReverseLimit()
+        return endConditionDelay.hasElapsed(TurretConstants.calibrationEndDelay) && turretSub.isAtCalibrationLimit()
                 || expirationTimer.hasElapsed(5);
     }
 
     // Once command ends, set as end position.
     @Override
     public void end(boolean interrupted) {
-        turretSub.stop();
+        turretSub.stopTurret();
         if (!interrupted) {
             turretSub.setEncoderPosition(TurretConstants.calibrationEndPos);
             turretSub.setIsCalibrated(true);

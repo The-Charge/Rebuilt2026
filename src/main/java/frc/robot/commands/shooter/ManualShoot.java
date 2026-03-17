@@ -29,9 +29,9 @@ public class ManualShoot extends Command {
     @Override
     public void execute() {
         if (ShooterConstants.manualShootUseSmartdashboard) {
-            shoot.shoot(RPM.of(SmartDashboard.getNumber("speed", 0)));
+            shoot.setTargetVelocity(RPM.of(SmartDashboard.getNumber("speed", 0)));
         } else {
-            shoot.shoot(targetVel.get());
+            shoot.setTargetVelocity(targetVel.get());
         }
     }
 

@@ -36,7 +36,7 @@ public class PrepShootAtPoint extends Command {
 
         Logger.logDouble(ShooterConstants.subsystemName, "distToTarget", distToTarget.in(Meters));
 
-        shoot.shoot(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
+        shoot.setTargetVelocity(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
     }
 
     @Override

@@ -16,7 +16,7 @@ public class PreSpinShooter extends Command {
 
     @Override
     public void initialize() {
-        shooter.shoot(ShooterConstants.preSpinSpeed);
+        shooter.setTargetVelocity(ShooterConstants.preSpinSpeed);
     }
 
     @Override

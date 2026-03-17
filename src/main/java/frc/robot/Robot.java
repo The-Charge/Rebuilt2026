@@ -111,8 +111,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.stopAll();
         RobotContainer.getInstance().intake.stopRoller();
         RobotContainer.getInstance().climber.stopAll();
-        RobotContainer.getInstance().shooter.stopShoot();
-        RobotContainer.getInstance().turret.stop();
+        RobotContainer.getInstance().shooter.stopShooter();
+        RobotContainer.getInstance().turret.stopTurret();
 
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);

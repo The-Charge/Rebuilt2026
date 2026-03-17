@@ -10,12 +10,8 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.units.TurretAngle;
 import java.util.Optional;
 
-public class TurretConstants { // split into shooter, spinner, and hood
+public class TurretConstants {
     public static final String subsystemName = "Turret";
-
-    // public static final int hoodChannel = 17;
-
-    // public static final int forwardLimitChannel = 9;
 
     public static final int motorID = 15;
     public static final int maxCurrent = 10;
@@ -38,8 +34,6 @@ public class TurretConstants { // split into shooter, spinner, and hood
     public static final Optional<Voltage> kV = Optional.empty();
     public static final Optional<Voltage> kA = Optional.empty();
     public static final Optional<Double> iZone = Optional.empty();
-
-    public static final boolean overrideStopHubTagAlign = true;
 
     public static final double motorRotsPerMechRots = (46.713913 - -19.690401) * 2;
     public static final double mechRotsPerMotorRot = 1 / motorRotsPerMechRots;

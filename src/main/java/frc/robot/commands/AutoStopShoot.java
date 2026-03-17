@@ -21,7 +21,7 @@ public class AutoStopShoot extends Command {
 
     @Override
     public void initialize() {
-        shooter.stopShoot();
+        shooter.stopShooter();
         indexer.stopAll();
         intake.stopRoller();
     }

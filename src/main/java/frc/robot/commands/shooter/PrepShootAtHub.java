@@ -69,7 +69,7 @@ public class PrepShootAtHub extends Command {
         //     shooterSub.setHoodPos(HoodPos.UP);
         // }
 
-        shooterSub.shoot(
+        shooterSub.setTargetVelocity(
                 RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters)))); // Used to be: RPM.of(10)
     }
 
