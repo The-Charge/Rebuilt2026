@@ -1,11 +1,13 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -13,12 +15,14 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.Logger;
 import java.util.Optional;
 import limelight.Limelight;
@@ -46,7 +50,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private final Optional<StructPublisher<Pose3d>> diffPublisher;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
-
+    private boolean isSeeded = false;
     public LimelightSubsystem(
             String turretLimelight, String sideLimelight, Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
         this.turretLimelight = new Limelight("limelight-" + turretLimelight);
@@ -119,43 +123,7 @@ public class LimelightSubsystem extends SubsystemBase {
         //     seed();
         // }
 
-        // setRobotOrientation();
-
-        Angle yaw = RobotContainer.getInstance()
-                .swerve
-                .getState()
-                .Pose
-                .getRotation()
-                .getMeasure();
-
-        AngularVelocity3d angularVelocity = new AngularVelocity3d(
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityXWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityYWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityZWorld()
-                        .getValue());
-        // new AngularVelocity3d(new Angular, 0.0, 0.0))
-        turretLimelight
-                .getSettings()
-                .withRobotOrientation(
-                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
-                .save();
-        sideLimelight
-                .getSettings()
-                .withRobotOrientation(
-                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
-                .save();
-
+        setRobotOrientation();
         calcMT1diff();
 
         multiple();
@@ -182,6 +150,91 @@ public class LimelightSubsystem extends SubsystemBase {
     //     return Optional.empty();
     // }
 
+    private void setRobotOrientation() {
+
+        AngularVelocity3d angularVelocity = new AngularVelocity3d(
+                RobotContainer.getInstance()
+                        .swerve
+                        .getPigeon2()
+                        .getAngularVelocityXWorld()
+                        .getValue(),
+                RobotContainer.getInstance()
+                        .swerve
+                        .getPigeon2()
+                        .getAngularVelocityYWorld()
+                        .getValue(),
+                RobotContainer.getInstance()
+                        .swerve
+                        .getPigeon2()
+                        .getAngularVelocityZWorld()
+                        .getValue());
+        turretLimelight
+                .getSettings()
+                .withRobotOrientation(
+                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
+                .save();
+        sideLimelight
+                .getSettings()
+                .withRobotOrientation(
+                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
+                .save();
+    }
+
+    public void seed() {
+        CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
+
+        Optional<VisionMeasurement> MT1turret = getVisionMeasurementTurret(swerve, false);
+        Optional<VisionMeasurement> MT1side = getVisionMeasurementSide(swerve, false);
+        if (MT1turret.isPresent() || MT1side.isPresent()) {
+            Angle rots;
+            if (MT1turret.isPresent() && MT1side.isPresent()) {
+                if (MT1turret.get().stdDevs().get(0, 0)
+                        > MT1side.get().stdDevs().get(0, 0)) {
+                    rots = MT1turret.get().pose().getRotation().getMeasure();
+
+                } else {
+                    rots = MT1side.get().pose().getRotation().getMeasure();
+                }
+            } else if (MT1turret.isPresent()) {
+                rots = MT1turret.get().pose().getRotation().getMeasure();
+            } else {
+                rots = MT1side.get().pose().getRotation().getMeasure();
+            }
+            seedInternalIMUTurret(rots);
+            seedInternalIMUSide(rots);
+            isSeeded = true;
+        }
+    }
+    /**
+     *
+     * @param imuMode
+     */
+    public void seedInternalIMUTurret(Angle yaw) {
+        turretLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
+        turretLimelight
+                .getSettings()
+                .withRobotOrientation(new Orientation3d(
+                        new Rotation3d(Angle.ofBaseUnits(0, Degrees), Angle.ofBaseUnits(0, Degrees), yaw),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond)))
+                .save();
+        turretLimelight.getSettings().withImuMode(ImuMode.InternalImuMT1Assist).save();
+    }
+
+    public void seedInternalIMUSide(Angle yaw) {
+        sideLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
+        sideLimelight
+                .getSettings()
+                .withRobotOrientation(new Orientation3d(
+                        new Rotation3d(Angle.ofBaseUnits(0, Degrees), Angle.ofBaseUnits(0, Degrees), yaw),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond),
+                        AngularVelocity.ofBaseUnits(0, RadiansPerSecond)))
+                .save();
+        sideLimelight.getSettings().withImuMode(ImuMode.InternalImuMT1Assist).save();
+    }
+    public boolean getIsSeeded() {return isSeeded;}
     /**
      * Field relative pose logged
      *
@@ -269,6 +322,7 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * YALL getVisionMeasurement for Turret Camera
      * NOTE:: REMOVED MAX DISTANCE!!!!
+     * NEED TO MAKE BOOL MEGATAG2 DO SOMETHING!!
      * @param swerve
      * @param useMegaTag2
      * @return
@@ -415,17 +469,6 @@ public class LimelightSubsystem extends SubsystemBase {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-
-    /**
-     *
-     * MAYBE SEEDING BACK??
-     * @param imuMode
-     */
-    // public void seedInternalIMU(Angle yaw) {
-    //     LimelightHelpers.SetIMUMode(cameraName, 1);
-    //     LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
-    //     LimelightHelpers.SetIMUMode(cameraName, 3);
-    // }
 
     // public void setRobotOrientation(Angle yaw) {
     //     LimelightHelpers.SetRobotOrientation(cameraName, yaw.in(Degrees), 0, 0, 0, 0, 0);
