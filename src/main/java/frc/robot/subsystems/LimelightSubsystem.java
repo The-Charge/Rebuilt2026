@@ -325,18 +325,29 @@ public class LimelightSubsystem extends SubsystemBase {
 
     private void multiple() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
-        getVisionMeasurementTurret(swerve, true);
-        getVisionMeasurementSide(swerve, true);
+        Optional<VisionMeasurement> vmt = getVisionMeasurementTurret(swerve, true);
+        Optional<VisionMeasurement> vms = getVisionMeasurementSide(swerve, true);
+        if (!vmt.isEmpty()) {
+            swerve.addVisionMeasurement(vmt.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
+        }
+        if (!vms.isEmpty()) {
+            swerve.addVisionMeasurement(vms.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
+        }
     }
 
     /**
-     * NEED NULL CHECK !!!!
+     * YALL Mt1 std
      * @param poseEstimate
      * @param swerve
      * @return
      */
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
             PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
+        if (poseEstimate == null
+                || !poseEstimate.hasData
+                || poseEstimate.rawFiducials == null
+                || poseEstimate.rawFiducials.length == 0) return Optional.empty();
+
         // Optional<PoseEstimate> opt = turretPoseEstimator.getPoseEstimate();
         // PoseEstimate poseEstimate = opt.get();
         // if (opt.isEmpty()) return Optional.empty();
@@ -370,15 +381,17 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     /**
-     * NEED NULL CHECK !!!!
+     * YALL std mt2
      * @param poseEstimate
      * @param swerve
      * @return
      */
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
             PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
-        // if (!LimelightHelpers.validPoseEstimate(poseEstimate)) return Optional.empty();
-
+        if (poseEstimate == null
+                || !poseEstimate.hasData
+                || poseEstimate.rawFiducials == null
+                || poseEstimate.rawFiducials.length == 0) return Optional.empty();
         boolean isGoingTooFast = Math.abs(swerve.getStateCopy().Speeds.omegaRadiansPerSecond)
                 > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
         if (isGoingTooFast) return Optional.empty();
