@@ -43,7 +43,7 @@ public class TurretConstants {
     public static final TurretAngle maxLegalAngle = TurretAngle.fromMechanismRotations(0.5);
 
     public static Translation2d turretCenterOffset =
-            new Translation2d(Inches.of(-5.5), Inches.of(-5.5)); // vector from center of robot to center of turret
+            new Translation2d(Inches.of(-6), Inches.of(-6)); // vector from center of robot to center of turret
 
     public static final double manualSpeed = 0.1;
 

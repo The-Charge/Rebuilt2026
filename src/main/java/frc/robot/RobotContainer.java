@@ -43,7 +43,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.AimAtTarget;
 import frc.robot.commands.AutoShoot;
-import frc.robot.commands.WaitForReadyToShoot;
+import frc.robot.commands.AutoWaitForReadyToShoot;
 import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
@@ -244,29 +244,7 @@ public class RobotContainer {
             return req;
         });
 
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
         swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
-        commandDriver1
-                .b()
-                .onTrue(new InstantCommand(() -> {
-                            swerve.resetRotation(
-                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                            ? Rotation2d.kZero
-                                            : Rotation2d.k180deg);
-                            // limelightCommand.seedFromAbsolute(
-                            //         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
-                        })
-                        .ignoringDisable(true));
-        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
-        commandDriver1
-                .leftTrigger()
-                .onTrue(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
-                        .ignoringDisable(true))
-                .onFalse(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
-                        .ignoringDisable(true));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -281,7 +259,25 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
+        commandDriver1
+                .b()
+                .onTrue(new InstantCommand(() -> {
+                            swerve.resetRotation(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                            ? Rotation2d.kZero
+                                            : Rotation2d.k180deg);
+                        })
+                        .ignoringDisable(true));
+        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
+        commandDriver1
+                .leftTrigger()
+                .onTrue(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
+                        .ignoringDisable(true))
+                .onFalse(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
+                        .ignoringDisable(true));
+
         commandDriver2
                 .leftTrigger()
                 .whileTrue(new RunRoller(intake, false))
@@ -346,7 +342,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Shoot", new AutoShoot(indexer, intake));
         NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
         NamedCommands.registerCommand(
-                "WaitForReadyToShoot", new WaitForReadyToShoot(turret, Optional.of(Seconds.of(4))));
+                "WaitForReadyToShoot", new AutoWaitForReadyToShoot(turret, Optional.of(Seconds.of(4))));
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
         NamedCommands.registerCommand("Intake", new RunRoller(intake, false));
     }

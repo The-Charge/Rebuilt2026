@@ -95,7 +95,7 @@ public class TeleopLogic {
         // check if our hub is active
         boolean isHubActive;
         if (autoWinner.isPresent()) {
-            isHubActive = isFriendlyHubActive(alliance, autoWinner.get(), phase);
+            isHubActive = isFriendlyHubActive(autoWinner.get(), phase);
         } else {
             isHubActive = true;
         }
@@ -187,7 +187,6 @@ public class TeleopLogic {
     public void endTeleop() {}
 
     private void enterActiveAtHubMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtHubLEDCommand, false);
 
@@ -195,24 +194,21 @@ public class TeleopLogic {
     }
 
     private void enterActiveAtFZoneMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtFZoneLEDCommand, false);
 
-        // prep shoot and turret to shoot at friendly zone
         CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtFZoneCommand);
     }
 
     private void enterInactiveMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().inactiveLEDCommand, false);
 
         CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
     }
 
-    private boolean isFriendlyHubActive(Alliance alliance, Alliance autoWinner, TeleopPhase phase) {
-        boolean isWinningAlliance = alliance == autoWinner;
+    private boolean isFriendlyHubActive(Alliance autoWinner, TeleopPhase phase) {
+        boolean isWinningAlliance = DriverStation.getAlliance().orElse(Alliance.Blue) == autoWinner;
 
         switch (phase) {
             case TRANSITION_SHIFT:
