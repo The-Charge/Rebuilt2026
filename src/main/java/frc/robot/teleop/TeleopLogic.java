@@ -18,7 +18,6 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.DualBlinkLED;
 import frc.robot.commands.leds.RainbowLED;
-import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.constants.FieldConstants;
 import frc.robot.utils.ControllerUtil;
@@ -34,18 +33,18 @@ public class TeleopLogic {
     private Optional<Alliance> autoWinner;
     private Optional<Time> lastTimeLeftInPhase;
     private Optional<TeleopPhase> lastPhase;
-    private Optional<TeleopAssistMode> lastAssistMode;
+    private Optional<TeleopTurretMode> lastTurretMode;
+    private Optional<Boolean> lastIsHubActive;
 
-    public TeleopLogic() {}
-
-    public void startTeleop() {
+    public TeleopLogic() {
         teleopTimer = new Timer();
         teleopTimer.restart();
 
         autoWinner = Optional.empty(); // default until teleopPerodic assigns it a value
         lastTimeLeftInPhase = Optional.empty();
         lastPhase = Optional.empty();
-        lastAssistMode = Optional.empty();
+        lastTurretMode = Optional.empty();
+        lastIsHubActive = Optional.empty();
 
         CommandScheduler.getInstance().schedule(new DeployIntake(RobotContainer.getInstance().intake));
 
@@ -113,19 +112,19 @@ public class TeleopLogic {
         // determine what assist mode the robot should be in
         // fallback behavior is to be ready to shoot so that if the teleop logic bugs out, the drivers should still be
         // able to shoot
-        TeleopAssistMode assistMode = TeleopAssistMode.ACTIVE_TURRET_AT_HUB;
+        TeleopTurretMode turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
         if (isInFriendlyZone && isHubActive) {
-            assistMode = TeleopAssistMode.ACTIVE_TURRET_AT_HUB;
+            turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
         } else if (isInEnemyZone || isInFriendlyZone && !isHubActive) {
-            assistMode = TeleopAssistMode.INACTIVE_TURRET;
+            turretMode = TeleopTurretMode.INACTIVE_TURRET;
         } else if (isInNeutralZone) {
-            assistMode = TeleopAssistMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
+            turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
         }
 
         // handle mode changes, it's just a state machine
-        boolean assistModeChanged = lastAssistMode.isEmpty() || lastAssistMode.get() != assistMode;
-        if (assistModeChanged) {
-            switch (assistMode) {
+        boolean turretModeChanged = lastTurretMode.isEmpty() || lastTurretMode.get() != turretMode;
+        if (turretModeChanged) {
+            switch (turretMode) {
                 case ACTIVE_TURRET_AT_HUB: {
                     enterActiveAtHubMode();
                     break;
@@ -159,11 +158,6 @@ public class TeleopLogic {
                                 ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, 0.25);
                                 ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 0.25);
                             })));
-
-            // MiscUtils.changeSubsystemDefaultCommand(
-            //         RobotContainer.getInstance().shooter,
-            //         new PreSpinShooter(RobotContainer.getInstance().shooter),
-            //         true);
         }
         if (hasPhaseChanged && phase == TeleopPhase.ENDGAME) {
             CommandScheduler.getInstance().schedule(new RainbowLED(RobotContainer.getInstance().ledSub, Seconds.of(5)));
@@ -177,7 +171,7 @@ public class TeleopLogic {
         Logger.logString(subsystemName, "phase", phase.toString());
         Logger.logDouble(subsystemName, "secsLeftInPhase", timeLeftInPhase.in(Seconds));
         Logger.logBool(subsystemName, "isFriendlyHubActive", isHubActive);
-        Logger.logString(subsystemName, "assistMode", assistMode.toString());
+        Logger.logString(subsystemName, "assistMode", turretMode.toString());
         Logger.logString(
                 subsystemName,
                 "autoWinningAlliance",
@@ -186,7 +180,8 @@ public class TeleopLogic {
 
         lastTimeLeftInPhase = Optional.of(timeLeftInPhase);
         lastPhase = Optional.of(phase);
-        lastAssistMode = Optional.of(assistMode);
+        lastTurretMode = Optional.of(turretMode);
+        lastIsHubActive = Optional.of(isHubActive);
     }
 
     public void endTeleop() {}
@@ -196,11 +191,7 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtHubLEDCommand, false);
 
-        // prep shoot and turret to shoot at hub
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtHubCommand, false);
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtHubCommand, true);
+        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
     }
 
     private void enterActiveAtFZoneMode() {
@@ -209,13 +200,7 @@ public class TeleopLogic {
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtFZoneLEDCommand, false);
 
         // prep shoot and turret to shoot at friendly zone
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().turret, RobotContainer.getInstance().pointAtFZoneCommand, false);
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().shooter, RobotContainer.getInstance().prepShootAtFZoneCommand, true);
-
-        // put the swerve in "Snake Mode" so that it is easier to pick up fuel
-        // MiscUtils.changeSubsystemDefaultCommand(RobotContainer.getInstance().swerve, false);
+        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtFZoneCommand);
     }
 
     private void enterInactiveMode() {
@@ -223,11 +208,7 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().inactiveLEDCommand, false);
 
-        // center turret and stop shooter
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().turret, RobotContainer.getInstance().centerTurretCommand, false);
-        RobotContainer.getInstance().shooter.removeDefaultCommand();
-        CommandScheduler.getInstance().schedule(new StopShooter(RobotContainer.getInstance().shooter));
+        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
     }
 
     private boolean isFriendlyHubActive(Alliance alliance, Alliance autoWinner, TeleopPhase phase) {
@@ -250,6 +231,10 @@ public class TeleopLogic {
                 return true;
             }
         }
+    }
+
+    public Optional<Boolean> getIsHubActive() {
+        return lastIsHubActive;
     }
 
     public static Translation2d getFriendlyZoneTarget(Translation2d robotPose) {

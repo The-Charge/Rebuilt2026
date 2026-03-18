@@ -23,7 +23,9 @@ public class RunRoller extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        intake.stopRoller();
+        if (!instant) {
+            intake.stopRoller();
+        }
     }
 
     @Override

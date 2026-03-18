@@ -15,7 +15,7 @@ public class AutoShoot extends Command {
         indexer = indexerSub;
         intake = intakeSub;
 
-        addRequirements(indexer); // TODO: fix
+        addRequirements(indexer, intake);
     }
 
     @Override
@@ -23,6 +23,12 @@ public class AutoShoot extends Command {
         indexer.setExchangeMotorVoltage(IndexerConstants.exchangeVoltage);
         indexer.setSpindexerVoltage(IndexerConstants.spindexerVoltage);
         intake.setRollerVoltage(IntakeConstants.Roller.intakeVoltage);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        indexer.stopAll();
+        intake.stopRoller();
     }
 
     @Override

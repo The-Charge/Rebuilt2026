@@ -96,11 +96,11 @@ public class Alerts {
         climberFaults = makeCriticalFaultsAlert("climber motor", ClimberConstants.motorID);
         climberConfigFail = makeConfigFailAlert("climber motor", ClimberConstants.motorID);
 
-        shooterDisconnected = makeDisconnectAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
-        shooterOverheating = makeOverheatingAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
-        shooterFaults = makeCriticalFaultsAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
-        shooterWarnings = makeCriticalWarningsAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
-        shooterConfigFail = makeConfigFailAlert("shooter motor", ShooterConstants.ShootConfig.motorID);
+        shooterDisconnected = makeDisconnectAlert("shooter motor", ShooterConstants.motorID);
+        shooterOverheating = makeOverheatingAlert("shooter motor", ShooterConstants.motorID);
+        shooterFaults = makeCriticalFaultsAlert("shooter motor", ShooterConstants.motorID);
+        shooterWarnings = makeCriticalWarningsAlert("shooter motor", ShooterConstants.motorID);
+        shooterConfigFail = makeConfigFailAlert("shooter motor", ShooterConstants.motorID);
 
         turretDisconnected = makeDisconnectAlert("turret motor", TurretConstants.motorID);
         turretOverheating = makeOverheatingAlert("turret motor", TurretConstants.motorID);
