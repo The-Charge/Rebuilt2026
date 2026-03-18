@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.FieldConstants;
@@ -16,7 +17,6 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.teleop.TeleopLogic;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Logger;
 import java.util.Optional;
@@ -32,40 +32,39 @@ public class AimAtTarget extends Command {
     private AimAtTarget(
             TurretSubsystem turretSub,
             ShooterSubsystem shooterSub,
-            CommandSwerveDrivetrain swerveSub,
+            CommandSwerveDrivetrain noDepSwerveSub,
             Supplier<Translation2d> target) {
         turret = turretSub;
         shooter = shooterSub;
         addRequirements(turret, shooter);
-        swerve = swerveSub;
+        swerve = noDepSwerveSub;
 
         targetSupplier = target;
     }
 
     public static AimAtTarget atHub(
-            TurretSubsystem turretSub,
-            ShooterSubsystem shooterSub,
-            CommandSwerveDrivetrain swerveSub,
-            Supplier<Alliance> alliance) {
+            TurretSubsystem turretSub, ShooterSubsystem shooterSub, CommandSwerveDrivetrain noDepSwerveSub) {
         return new AimAtTarget(
-                turretSub, shooterSub, swerveSub, () -> FieldConstants.getHubLoc(alliance.get() == Alliance.Red));
+                turretSub,
+                shooterSub,
+                noDepSwerveSub,
+                () -> FieldConstants.getHubLoc(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red));
     }
 
     public static AimAtTarget atPoint(
             TurretSubsystem turretSub,
             ShooterSubsystem shooterSub,
-            CommandSwerveDrivetrain swerveSub,
+            CommandSwerveDrivetrain noDepSwerveSub,
             Supplier<Translation2d> point) {
-        return new AimAtTarget(turretSub, shooterSub, swerveSub, point);
+        return new AimAtTarget(turretSub, shooterSub, noDepSwerveSub, point);
     }
 
     public static AimAtTarget atFZone(
-            TurretSubsystem turretSub,
-            ShooterSubsystem shooterSub,
-            CommandSwerveDrivetrain swerveSub,
-            Supplier<Translation2d> robotLoc) {
-        return new AimAtTarget(
-                turretSub, shooterSub, swerveSub, () -> TeleopLogic.getFriendlyZoneTarget(robotLoc.get()));
+            TurretSubsystem turretSub, ShooterSubsystem shooterSub, CommandSwerveDrivetrain noDepSwerveSub) {
+        return new AimAtTarget(turretSub, shooterSub, noDepSwerveSub, () -> noDepSwerveSub
+                .getState()
+                .Pose
+                .getTranslation());
     }
 
     @Override
@@ -87,14 +86,21 @@ public class AimAtTarget extends Command {
         Distance distToTarget = Meters.of(vectorToTarget.getNorm());
 
         Logger.logDouble(getName(), "fieldCentricDeg", fieldCentricAngle.in(Degrees));
-        Logger.logDouble(ShooterConstants.subsystemName, "distToTarget", distToTarget.in(Meters));
+        Logger.logDouble(getName(), "distToTarget", distToTarget.in(Meters));
 
         turret.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));
         shooter.setTargetVelocity(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+        turret.logTargetPoint(Optional.empty());
+        Logger.logDouble(getName(), "fieldCentricDeg", Double.NaN);
+        Logger.logDouble(getName(), "distToTarget", Double.NaN);
+
+        turret.stopTurret();
+        shooter.stopShooter();
+    }
 
     @Override
     public boolean isFinished() {

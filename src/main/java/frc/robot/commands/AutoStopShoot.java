@@ -16,7 +16,7 @@ public class AutoStopShoot extends Command {
         indexer = indexerSub;
         intake = intakeSub;
 
-        // TODO: require subsystems
+        addRequirements(shooterSub, indexerSub, intakeSub);
     }
 
     @Override

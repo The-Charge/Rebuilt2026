@@ -80,69 +80,6 @@ public class TurretSubsystem extends SubsystemBase {
                 Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPoint", Translation2d.struct);
     }
 
-    public void setTurretAngle(TurretAngle angle) {
-        if (angle == null) {
-            Logger.reportWarning("Cannot set turret angle to a null angle", true);
-            return;
-        }
-
-        angle = angle.wrap();
-        if (!angle.isLegal()) return;
-
-        targetAngle = Optional.of(angle);
-
-        turretMotor.getClosedLoopController().setSetpoint(angle.asMotorRotations(), ControlType.kPosition);
-    }
-
-    public void stopTurret() {
-        turretMotor.set(0);
-        targetAngle = Optional.empty();
-    }
-
-    public boolean isAtCalibrationLimit() {
-        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent
-                || Math.abs(turretMotor.getEncoder().getVelocity()) < 1;
-    }
-
-    public TurretAngle getCurretAngle() {
-        return TurretAngle.fromMotorRotations(turretMotor.getEncoder().getPosition());
-    }
-
-    public Optional<TurretAngle> getTargetAngle() {
-        return targetAngle;
-    }
-
-    public void setEncoderPosition(TurretAngle angle) {
-        turretMotor.getEncoder().setPosition(angle.asMotorRotations());
-    }
-
-    public void dutyCycle(double duty) {
-        turretMotor.set(duty);
-        targetAngle = Optional.empty();
-    }
-
-    public void setIsCalibrated(boolean calibrated) {
-        isCalibrated = calibrated;
-    }
-
-    public boolean getIsCalibrated() {
-        return isCalibrated;
-    }
-
-    public void logTargetPoint(Optional<Translation2d> point) {
-        if (targetPointPublisher.isEmpty()) return;
-        targetPointPublisher.get().set(point == null ? null : point.orElse(null));
-    }
-
-    public Pose2d getTurretPoseOnField() {
-        Pose2d robotPose = RobotContainer.getInstance().swerve.getState().Pose;
-        Translation2d turretCenter =
-                robotPose.getTranslation().plus(TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()));
-        Pose2d turretPose = new Pose2d(
-                turretCenter, new Rotation2d(getCurretAngle().asMechanismAngle()).plus(robotPose.getRotation()));
-        return turretPose;
-    }
-
     @Override
     public void periodic() {
         Logger.logSubsystem(TurretConstants.subsystemName, this);
@@ -200,5 +137,78 @@ public class TurretSubsystem extends SubsystemBase {
         Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
         Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
         Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+    }
+
+    public void setTurretAngle(TurretAngle angle) {
+        if (angle == null) {
+            Logger.reportWarning("Cannot set turret angle to a null angle", true);
+            return;
+        }
+
+        angle = angle.wrap();
+        if (!angle.isLegal()) return;
+
+        targetAngle = Optional.of(angle);
+
+        turretMotor.getClosedLoopController().setSetpoint(angle.asMotorRotations(), ControlType.kPosition);
+    }
+
+    public void stopTurret() {
+        turretMotor.set(0);
+        targetAngle = Optional.empty();
+    }
+
+    public boolean isAtCalibrationLimit() {
+        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent
+                || Math.abs(turretMotor.getEncoder().getVelocity()) < 1;
+    }
+
+    public TurretAngle getCurretAngle() {
+        return TurretAngle.fromMotorRotations(turretMotor.getEncoder().getPosition());
+    }
+
+    public Optional<TurretAngle> getTargetAngle() {
+        return targetAngle;
+    }
+
+    public void setEncoderPosition(TurretAngle angle) {
+        turretMotor.getEncoder().setPosition(angle.asMotorRotations());
+    }
+
+    public void dutyCycle(double duty) {
+        turretMotor.set(duty);
+        targetAngle = Optional.empty();
+    }
+
+    public void setIsCalibrated(boolean calibrated) {
+        isCalibrated = calibrated;
+    }
+
+    public boolean getIsCalibrated() {
+        return isCalibrated;
+    }
+
+    public Optional<Boolean> isAtTarget() {
+        if (targetAngle.isEmpty()) return Optional.empty();
+
+        double tolerance = TurretConstants.targetTolerance.asMotorRotations();
+        double target = targetAngle.get().asMotorRotations();
+        double current = getCurretAngle().asMotorRotations();
+
+        return Optional.of(Math.abs(target - current) <= tolerance);
+    }
+
+    public void logTargetPoint(Optional<Translation2d> point) {
+        if (targetPointPublisher.isEmpty()) return;
+        targetPointPublisher.get().set(point == null ? null : point.orElse(null));
+    }
+
+    public Pose2d getTurretPoseOnField() {
+        Pose2d robotPose = RobotContainer.getInstance().swerve.getState().Pose;
+        Translation2d turretCenter =
+                robotPose.getTranslation().plus(TurretConstants.turretCenterOffset.rotateBy(robotPose.getRotation()));
+        Pose2d turretPose = new Pose2d(
+                turretCenter, new Rotation2d(getCurretAngle().asMechanismAngle()).plus(robotPose.getRotation()));
+        return turretPose;
     }
 }

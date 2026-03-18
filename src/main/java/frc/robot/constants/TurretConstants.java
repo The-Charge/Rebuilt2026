@@ -1,5 +1,6 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -50,4 +51,6 @@ public class TurretConstants {
     public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-35.213959);
     public static final Time calibrationEndDelay = Seconds.of(0.2);
     public static final double calibrationThresholdCurrent = 20; // AMPS
+
+    public static final TurretAngle targetTolerance = TurretAngle.fromMechanismAngle(Degrees.of(5));
 }

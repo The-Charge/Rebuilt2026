@@ -24,11 +24,15 @@ import java.util.Optional;
 
 public class Robot extends TimedRobot {
 
+    private static Robot instance;
+
     private Command m_autonomousCommand;
     private Optional<TeleopLogic> teleopLogic;
     private Optional<Timer> autoGyroTimer;
 
     public Robot() {
+        instance = this;
+
         Logger.init(this); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
@@ -51,6 +55,14 @@ public class Robot extends TimedRobot {
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
         addPeriodic(this::verySlowRobotPeriodic, Seconds.of(0.5));
+    }
+
+    public static Robot getInstance() {
+        return instance;
+    }
+
+    public Optional<TeleopLogic> getTeleopLogic() {
+        return teleopLogic;
     }
 
     @Override
@@ -174,7 +186,6 @@ public class Robot extends TimedRobot {
         }
 
         teleopLogic = Optional.of(new TeleopLogic());
-        teleopLogic.get().startTeleop();
     }
 
     @Override
