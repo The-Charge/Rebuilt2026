@@ -69,4 +69,6 @@ public class LimelightConstants {
     public static final AprilTagFieldLayout tagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     public static double krotStdDev = 0.3;
+
+    public static double imuAssistAlpha = 0.1;
 }
