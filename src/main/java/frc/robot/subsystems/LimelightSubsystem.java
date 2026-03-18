@@ -94,7 +94,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.logSubsystem(turretLimelight.limelightName, this); // is this correct?!?!?!
+        Logger.logSubsystem(LimelightConstants.subsystemName, this);
 
         // ****** FIX FIX FIX *******
         if (throttle && isChanged) {
