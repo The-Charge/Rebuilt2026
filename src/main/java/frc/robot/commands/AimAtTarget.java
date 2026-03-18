@@ -4,14 +4,17 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -74,6 +77,13 @@ public class AimAtTarget extends Command {
     public void execute() {
         Translation2d target = targetSupplier.get();
         turret.logTargetPoint(Optional.of(target));
+
+        ChassisSpeeds botSpeeds = RobotContainer.getInstance().swerve.getState().Speeds;
+        Translation2d drivebyBallDisplacement = new Translation2d(
+                botSpeeds.vxMetersPerSecond * ShooterConstants.ballAirTime.in(Seconds),
+                botSpeeds.vyMetersPerSecond * ShooterConstants.ballAirTime.in(Seconds));
+
+        target = target.minus(drivebyBallDisplacement);
 
         Pose2d robotPose = swerve.getState().Pose;
         Pose2d turretPose = turret.getTurretPoseOnField();
