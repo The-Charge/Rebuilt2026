@@ -78,8 +78,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.slowPeriodic();
         RobotContainer.getInstance().intake.slowPeriodic();
         RobotContainer.getInstance().ledSub.slowPeriodic();
-        RobotContainer.getInstance().otherLimelight.slowPeriodic();
-        RobotContainer.getInstance().turretLimelight.slowPeriodic();
+        RobotContainer.getInstance().limelightSubsystem.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
@@ -92,8 +91,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.verySlowPeriodic();
         RobotContainer.getInstance().intake.verySlowPeriodic();
         RobotContainer.getInstance().ledSub.verySlowPeriodic();
-        RobotContainer.getInstance().otherLimelight.verySlowPeriodic();
-        RobotContainer.getInstance().turretLimelight.verySlowPeriodic();
+        RobotContainer.getInstance().limelightSubsystem.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
@@ -133,8 +131,8 @@ public class Robot extends TimedRobot {
         ControllerUtil.cancelControllerRumbles(1);
 
         if (DriverStation.isFMSAttached()) {
-            RobotContainer.getInstance().turretLimelight.takeRewind();
-            RobotContainer.getInstance().otherLimelight.takeRewind();
+            // RobotContainer.getInstance().turretLimelight.takeRewind();
+            // RobotContainer.getInstance().otherLimelight.takeRewind();
         }
     }
 
