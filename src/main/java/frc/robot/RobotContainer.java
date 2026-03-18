@@ -67,7 +67,7 @@ import frc.robot.commands.turret.AlignTurret;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.CenterTurret;
 import frc.robot.commands.turret.ManualTurret;
-import frc.robot.commands.vision.LimelightCommand;
+// import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
@@ -119,8 +119,7 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final LimelightSubsystem turretLimelight;
-    public final LimelightSubsystem otherLimelight;
+    public final LimelightSubsystem limelightSubsystem;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
@@ -137,7 +136,7 @@ public class RobotContainer {
     public final PrepShootAtPoint prepShootAtFZoneCommand;
     public final PrepShootAtHub prepShootAtHubCommand;
     public final AlignTurret pointAtFZoneCommand;
-    public final LimelightCommand limelightCommand;
+//     public final LimelightCommand limelightCommand;
 
     private SwerveRequest.FieldCentric swerveFieldCentricDrive;
     private SwerveRequest.RobotCentric swerveRobotCentricDrive;
@@ -164,8 +163,8 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretLimelight = new LimelightSubsystem("turret", LimelightConstants.turretPose);
-        otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
+        limelightSubsystem = new LimelightSubsystem("turret", "other", LimelightConstants.turretPose, LimelightConstants.otherPose);
+        // otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
@@ -194,9 +193,9 @@ public class RobotContainer {
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
-        limelightCommand =
-                new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
-        CommandScheduler.getInstance().schedule(limelightCommand);
+        // limelightCommand =
+        //         new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
+        // CommandScheduler.getInstance().schedule(limelightCommand);
 
         addNamedCommands();
         setupSwerve();
@@ -346,7 +345,7 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox.seed().onTrue(new InstantCommand(limelightCommand::seedFromIMU));
+        commandButtonBox.seed().onTrue(new InstantCommand(limelightSubsystem::seedFromIMU));
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
