@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -14,6 +15,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
@@ -134,13 +136,16 @@ public class RobotContainer {
     private SwerveRequest.FieldCentric swerveFieldCentricDrive;
     private SwerveRequest.RobotCentric swerveRobotCentricDrive;
     private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
+    private SwerveRequest.FieldCentricFacingAngle swervePOVDrive;
     private SwerveRequest.SwerveDriveBrake swerveBrake;
     private SwerveRequest.Idle swerveIdle;
     private SwerveRequest.ApplyRobotSpeeds swerveApplyRobotSpeeds;
     public Command swerveFieldCentricDriveCommand;
     public Command swerveRobotCentricDriveCommand;
     public Command swerveFieldCentricFacingAngleDriveCommand;
+    public Command swervePOVDriveCommand;
     private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
+    private Optional<Rotation2d> lastDefinedPOVRotation = Optional.empty();
 
     public final Field2d ntField;
 
@@ -199,9 +204,13 @@ public class RobotContainer {
                 .withRotationalDeadband(RotationsPerSecond.of(0.01))
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
         swerveFieldCentricFacingAngleDrive = new SwerveRequest.FieldCentricFacingAngle()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+                .withHeadingPID(10, 0, 0)
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+        swervePOVDrive = new SwerveRequest.FieldCentricFacingAngle()
+                .withHeadingPID(10, 0, 0)
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
         swerveBrake = new SwerveRequest.SwerveDriveBrake();
         swerveIdle = new SwerveRequest.Idle();
         swerveApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -232,11 +241,24 @@ public class RobotContainer {
                 .withRotationalRate(
                         SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
 
+        swervePOVDriveCommand = swerve.applyRequest(() -> {
+            return swervePOVDrive
+                    .withTargetDirection(new Rotation2d(Degrees.of(-hidDriver1.getPOV())))
+                    .withVelocityX(SwerveConstants.maxTranslationVel.times(
+                            -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
+                    .withVelocityY(SwerveConstants.maxTranslationVel.times(
+                            -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()));
+        });
+
         swerveFieldCentricFacingAngleDriveCommand = swerve.applyRequest(() -> {
-            ChassisSpeeds speed = swerve.getStateCopy().Speeds;
-            if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.01) {
+            ChassisSpeeds speed =
+                    ChassisSpeeds.fromRobotRelativeSpeeds(swerve.getStateCopy().Speeds, swerve.getState().RawHeading);
+            if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1) {
                 lastDefinedRotation =
                         Optional.of(new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
+                // Logger.println("speed is high" + Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond));
+            } else {
+                // Logger.println("speed is low" + Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond));
             }
 
             var req = swerveFieldCentricFacingAngleDrive
@@ -246,6 +268,7 @@ public class RobotContainer {
                             -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()));
             if (lastDefinedRotation.isPresent()) {
                 req = req.withTargetDirection(lastDefinedRotation.get());
+                // Logger.println("I'm Working" + lastDefinedRotation.get().getDegrees());
             }
 
             return req;
@@ -278,12 +301,18 @@ public class RobotContainer {
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
         commandDriver1
                 .leftTrigger()
-                .onTrue(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
+                .onTrue(new InstantCommand(() -> MiscUtils.changeSubsystemDefaultCommand(
+                                swerve, swerveFieldCentricFacingAngleDriveCommand, false))
                         .ignoringDisable(true))
                 .onFalse(new InstantCommand(() ->
                                 MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
                         .ignoringDisable(true));
+
+        // commandDriver1
+        //         .povUp()
+        //         .onTrue(new InstantCommand(() -> MiscUtils.changeSubsystemDefaultCommand(
+        //                         swerve, swerveFieldCentricFacingAngleDriveCommand, false))
+        //                 .ignoringDisable(true));
 
         commandDriver2
                 .leftTrigger()
