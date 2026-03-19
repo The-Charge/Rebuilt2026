@@ -156,14 +156,14 @@ public class Robot extends TimedRobot {
 
         autoGyroTimer = Optional.of(new Timer());
         autoGyroTimer.get().start();
-        RobotContainer.getInstance().limelightCommand.cancel();
+        // RobotContainer.getInstance().limelightCommand.cancel();
     }
 
     @Override
     public void autonomousPeriodic() {
         if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
-            CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
-            // RobotContainer.getInstance().limelightCommand.seedFromIMU();
+            // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
+            RobotContainer.getInstance().limelightSubsystem.seedSwerve();
             autoGyroTimer = Optional.empty();
         }
     }

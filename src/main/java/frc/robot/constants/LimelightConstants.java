@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import limelight.networktables.LimelightSettings.ImuMode;
 
 public class LimelightConstants {
     public static final String subsystemName = "Limelight";
@@ -71,4 +72,6 @@ public class LimelightConstants {
     public static double krotStdDev = 0.3;
 
     public static double imuAssistAlpha = 0.1;
+
+    public static ImuMode imuMode = ImuMode.InternalImuMT1Assist;
 }

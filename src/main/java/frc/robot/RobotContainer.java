@@ -83,6 +83,8 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
+import limelight.networktables.LimelightSettings.ImuMode;
+
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -310,7 +312,7 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox.seed().onTrue(new InstantCommand(limelightSubsystem::seedFromIMU));
+        commandButtonBox.seed().onTrue(new InstantCommand(limelightSubsystem::seedSwerve));
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)

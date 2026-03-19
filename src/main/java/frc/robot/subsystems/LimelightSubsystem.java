@@ -222,7 +222,7 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * Seeds from MT1, then sets mode to imuMode
      */
-    public void seedMT1(ImuMode imuMode) {
+    public void seedMT1() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
 
         Optional<VisionMeasurement> MT1turret = getVisionMeasurementTurret(swerve, false);
@@ -242,22 +242,31 @@ public class LimelightSubsystem extends SubsystemBase {
             } else {
                 rots = MT1side.get().pose().getRotation().getMeasure();
             }
-            seedBothInternalIMU(rots, imuMode);
+            seedBothInternalIMU(rots);
             isSeeded = true;
         }
     }
     /**
-     *
+     * Seeds from MT1, then sets mode to imuMode set in Constants
+     */
+    public void seedSwerve() {
+        CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
+        seedBothInternalIMU(swerve.getStateCopy().Pose.getRotation().getMeasure());
+        isSeeded = true;
+    }
+
+    /**
+     * Seeds both parameters based on a known absolute angle, then sets the imuMode
      * @param imuMode
      */
-    public void seedBothInternalIMU(Angle yaw, ImuMode imuMode) {
+    public void seedBothInternalIMU(Angle yaw) {
         turretLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
         sideLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
 
         setRobotOrientationAbsolute(yaw);
 
-        sideLimelight.getSettings().withImuMode(imuMode).save();
-        turretLimelight.getSettings().withImuMode(imuMode).save();
+        sideLimelight.getSettings().withImuMode(LimelightConstants.imuMode).save();
+        turretLimelight.getSettings().withImuMode(LimelightConstants.imuMode).save();
     }
 
     public boolean getIsSeeded() {
