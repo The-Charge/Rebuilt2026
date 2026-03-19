@@ -119,7 +119,9 @@ public class TurretSubsystem extends SubsystemBase {
                 targetTurretPose = Optional.empty();
             }
 
-            targetTurretPosePublisher.get().set(targetTurretPose.orElse(null));
+            targetTurretPosePublisher
+                    .get()
+                    .set(targetTurretPose.orElse(new Pose2d(Double.NaN, Double.NaN, new Rotation2d(Double.NaN))));
         }
 
         if (getCurrentCommand() == null) {
@@ -200,7 +202,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void logTargetPoint(Optional<Translation2d> point) {
         if (targetPointPublisher.isEmpty()) return;
-        targetPointPublisher.get().set(point == null ? null : point.orElse(null));
+        targetPointPublisher.get().set(point == null ? null : point.orElse(new Translation2d(Double.NaN, Double.NaN)));
     }
 
     public Pose2d getTurretPoseOnField() {
