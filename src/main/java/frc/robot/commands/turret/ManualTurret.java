@@ -24,7 +24,7 @@ public class ManualTurret extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        turret.stop();
+        turret.stopTurret();
     }
 
     @Override

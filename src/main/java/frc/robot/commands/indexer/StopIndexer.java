@@ -3,11 +3,11 @@ package frc.robot.commands.indexer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IndexerSubsystem;
 
-public class SpinDownIndexer extends Command {
+public class StopIndexer extends Command {
 
     private final IndexerSubsystem indexer;
 
-    public SpinDownIndexer(IndexerSubsystem indexerSub) {
+    public StopIndexer(IndexerSubsystem indexerSub) {
         indexer = indexerSub;
         addRequirements(indexer);
     }

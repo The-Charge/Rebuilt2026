@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
@@ -24,11 +25,15 @@ import java.util.Optional;
 
 public class Robot extends TimedRobot {
 
+    private static Robot instance;
+
     private Command m_autonomousCommand;
     private Optional<TeleopLogic> teleopLogic;
     private Optional<Timer> autoGyroTimer;
 
     public Robot() {
+        instance = this;
+
         Logger.init(this); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
@@ -51,6 +56,14 @@ public class Robot extends TimedRobot {
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
         addPeriodic(this::verySlowRobotPeriodic, Seconds.of(0.5));
+    }
+
+    public static Robot getInstance() {
+        return instance;
+    }
+
+    public Optional<TeleopLogic> getTeleopLogic() {
+        return teleopLogic;
     }
 
     @Override
@@ -111,8 +124,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.stopAll();
         RobotContainer.getInstance().intake.stopRoller();
         RobotContainer.getInstance().climber.stopAll();
-        RobotContainer.getInstance().shooter.stopShoot();
-        RobotContainer.getInstance().turret.stop();
+        RobotContainer.getInstance().shooter.stopShooter();
+        RobotContainer.getInstance().turret.stopTurret();
 
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().idleLEDCommand, true);
@@ -142,7 +155,7 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
 
-        // RobotContainer.getInstance().displayAuto();
+        RobotContainer.getInstance().displayAuto();
 
         autoGyroTimer = Optional.of(new Timer());
         autoGyroTimer.get().start();
@@ -168,13 +181,12 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         try {
-            // AutoDisplayUtil.clearAutoPath();
+            AutoDisplayUtil.clearAutoPath();
         } catch (Exception e) {
             Logger.reportError(e);
         }
 
         teleopLogic = Optional.of(new TeleopLogic());
-        teleopLogic.get().startTeleop();
     }
 
     @Override

@@ -48,9 +48,7 @@ public class TurretAngle {
         return Rotations.of(asMechanismRotations());
     }
 
-    // ask Marcos
     public TurretAngle wrap() {
-        // TODO: confirm that this is correct
         final double centerMechRots = TurretConstants.calibrationEndPos.asMechanismRotations();
         return fromMechanismRotations(((((asMechanismRotations() - centerMechRots) % 1) + 1) % 1) + centerMechRots);
         // Examples: 3.2 -> 0.2 -> 1.2 -> 0.2

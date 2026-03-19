@@ -4,14 +4,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 
-public class SpinUpIndexer extends Command {
+public class RunIndexer extends Command {
 
     private final IndexerSubsystem indexer;
+    private final boolean instant;
 
-    public SpinUpIndexer(IndexerSubsystem indexerSub) {
-        indexer = indexerSub; // so we can use indexer here
+    public RunIndexer(IndexerSubsystem indexerSub, boolean isInstant) {
+        indexer = indexerSub;
+        instant = isInstant;
 
-        addRequirements(indexer); // reserves the table for indexer
+        addRequirements(indexer);
     }
 
     @Override
@@ -21,10 +23,14 @@ public class SpinUpIndexer extends Command {
     }
 
     @Override
-    public void execute() {}
+    public void end(boolean interrupted) {
+        if (!instant) {
+            indexer.stopAll();
+        }
+    }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return instant;
     }
 }
