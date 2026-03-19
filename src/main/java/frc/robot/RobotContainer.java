@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -24,6 +25,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -34,7 +36,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -61,7 +62,6 @@ import frc.robot.commands.shooter.ManualShoot;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.ManualTurret;
-// import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
@@ -83,8 +83,6 @@ import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
-import limelight.networktables.LimelightSettings.ImuMode;
-
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -128,7 +126,7 @@ public class RobotContainer {
     public final BlinkLED autoLEDCommand;
     public final AimAtTarget aimAtHubCommand;
     public final AimAtTarget aimAtFZoneCommand;
-//     public final LimelightCommand limelightCommand;
+    //     public final LimelightCommand limelightCommand;
 
     private SwerveRequest.FieldCentric swerveFieldCentricDrive;
     private SwerveRequest.RobotCentric swerveRobotCentricDrive;
@@ -155,7 +153,8 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        limelightSubsystem = new LimelightSubsystem("turret", "other", LimelightConstants.turretPose, LimelightConstants.otherPose);
+        limelightSubsystem =
+                new LimelightSubsystem("turret", "other", LimelightConstants.turretPose, LimelightConstants.otherPose);
         // otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
@@ -255,8 +254,7 @@ public class RobotContainer {
                                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
-                            // limelightCommand.seedFromAbsolute(
-                            //         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180);
+                            limelightSubsystem.seedBothAbsolute(Angle.ofBaseUnits(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180, Degrees));
                         })
                         .ignoringDisable(true));
         commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));

@@ -135,7 +135,7 @@ public class LimelightSubsystem extends SubsystemBase {
         //     seed();
         // }
 
-        setRobotOrientationSwerve();
+        setRobotOrientationSwerve(); // for mode 0
         logMT2diff();
         multiple();
         // logVisionTargets(); //TODO: log vision targets after migrating to YALL
@@ -242,7 +242,7 @@ public class LimelightSubsystem extends SubsystemBase {
             } else {
                 rots = MT1side.get().pose().getRotation().getMeasure();
             }
-            seedBothInternalIMU(rots);
+            seedBothAbsolute(rots);
             isSeeded = true;
         }
     }
@@ -251,7 +251,7 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     public void seedSwerve() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
-        seedBothInternalIMU(swerve.getStateCopy().Pose.getRotation().getMeasure());
+        seedBothAbsolute(swerve.getStateCopy().Pose.getRotation().getMeasure());
         isSeeded = true;
     }
 
@@ -259,7 +259,7 @@ public class LimelightSubsystem extends SubsystemBase {
      * Seeds both parameters based on a known absolute angle, then sets the imuMode
      * @param imuMode
      */
-    public void seedBothInternalIMU(Angle yaw) {
+    public void seedBothAbsolute(Angle yaw) {
         turretLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
         sideLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
 
