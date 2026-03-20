@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Milliseconds;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.playingwithfusion.TimeOfFlight;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
@@ -11,36 +14,42 @@ import frc.robot.units.ClimberPosition;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
+import frc.robot.utils.MiscUtils;
 import frc.robot.utils.TalonFXUtils;
 import java.util.Optional;
 
 public class ClimbSubsystem extends SubsystemBase {
 
     private final TalonFX motor;
+    private final TimeOfFlight towerSensor;
 
     private Optional<ClimberPosition> motorTarget;
 
     public ClimbSubsystem() {
-        motor = new TalonFX(ClimberConstants.motorID);
+        motor = new TalonFX(ClimberConstants.ClimbMotor.motorID);
         TalonFXConfiguration motorConfig = new TalonFXConfiguration();
         TalonFXUtils.configureBasicSettings(
                 motorConfig,
-                ClimberConstants.maxCurrent,
-                ClimberConstants.neutralMode,
-                ClimberConstants.inverted,
-                ClimberConstants.maxDutyCycle,
-                ClimberConstants.maxVoltage);
+                ClimberConstants.ClimbMotor.maxCurrent,
+                ClimberConstants.ClimbMotor.neutralMode,
+                ClimberConstants.ClimbMotor.inverted,
+                ClimberConstants.ClimbMotor.maxDutyCycle,
+                ClimberConstants.ClimbMotor.maxVoltage);
         TalonFXUtils.configureClosedLoopSettings(
                 motorConfig,
-                ClimberConstants.kP,
-                ClimberConstants.kI,
-                ClimberConstants.kD,
-                ClimberConstants.kG,
-                ClimberConstants.kGType);
+                ClimberConstants.ClimbMotor.kP,
+                ClimberConstants.ClimbMotor.kI,
+                ClimberConstants.ClimbMotor.kD,
+                ClimberConstants.ClimbMotor.kG,
+                ClimberConstants.ClimbMotor.kGType);
         if (motor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
             Logger.reportError("Failed to configure climber motor");
             Alerts.climberConfigFail.set(true);
         }
+
+        towerSensor = new TimeOfFlight(ClimberConstants.TowerSensor.sensorID);
+        towerSensor.setRangingMode(
+                ClimberConstants.TowerSensor.rangingMode, ClimberConstants.TowerSensor.sampleTime.in(Milliseconds));
 
         motorTarget = Optional.empty();
     }
@@ -52,23 +61,29 @@ public class ClimbSubsystem extends SubsystemBase {
         Logger.logTalonFX(ClimberConstants.subsystemName, "motor", motor);
         Logger.logDouble(
                 ClimberConstants.subsystemName,
-                "motor/targetMotorRots",
+                "targetMotorRots",
                 motorTarget.map((val) -> val.asMotorRotations()).orElse(Double.NaN));
         Logger.logBool(
-                ClimberConstants.subsystemName,
-                "motor/isAtTarget",
-                isMotorAtTarget().orElse(true));
+                ClimberConstants.subsystemName, "isAtTarget", isMotorAtTarget().orElse(true));
+
+        Logger.logTOF(ClimberConstants.subsystemName, "towerSensor", towerSensor);
+        Logger.logBool(ClimberConstants.subsystemName, "canSeeTower", canSeeTower());
     }
 
     public void slowPeriodic() {}
 
     public void verySlowPeriodic() {
-        boolean connected = motor.isConnected();
+        boolean motorConnected = motor.isConnected();
+        boolean towerSensorConnected = towerSensor.isConnected();
 
-        CANMonitor.logCANDeviceStatus("climbMotor", ClimberConstants.motorID, connected);
-        Alerts.climberDisconnected.set(!connected);
+        CANMonitor.logCANDeviceStatus("climbMotor", ClimberConstants.ClimbMotor.motorID, motorConnected);
+        Alerts.climberDisconnected.set(!motorConnected);
         Alerts.climberOverheating.set(motor.getDeviceTemp().getValue().in(Units.Celsius) >= 80);
         Alerts.climberFaults.set(TalonFXUtils.getAllActiveFaults(motor).hasCriticalFaults());
+
+        CANMonitor.logCANDeviceStatus("towerSensor", ClimberConstants.TowerSensor.sensorID, towerSensorConnected);
+        Alerts.towerSensorDisconnected.set(!towerSensorConnected);
+        Alerts.towerSensorBadStatus.set(MiscUtils.criticalTOFState(towerSensor));
     }
 
     public void setPosition(ClimberPosition position) {
@@ -111,5 +126,10 @@ public class ClimbSubsystem extends SubsystemBase {
         double toleranceRots = ClimberConstants.targetTolerance.asMotorRotations();
 
         return Optional.of(Math.abs(targetRots - motorRots) <= toleranceRots);
+    }
+
+    public boolean canSeeTower() {
+        return towerSensor.getRange() <= ClimberConstants.towerActivationMM
+                && towerSensor.getRangeSigma() <= ClimberConstants.towerActivationStdDev;
     }
 }

@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.DeviceEnableValue;
+import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.util.StatusLogger;
 import edu.wpi.first.hal.PowerDistributionFaults;
@@ -849,6 +850,29 @@ public class Logger {
         String table = subsystem + "/" + name;
 
         logDouble(table, "position", servo.get());
+    }
+
+    public static void logTOF(String subsystem, String name, TimeOfFlight tof) {
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
+
+        if (subsystem == null) subsystem = "";
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (tof == null) {
+            reportWarning("Cannot log a null TimeOfFlight", true);
+            return;
+        }
+
+        String table = subsystem + "/" + name;
+
+        logDouble(table, "rangeMM", tof.getRange());
+        logDouble(table, "stdDevMM", tof.getRangeSigma());
+        logDouble(table, "samplePeriodMS", tof.getSampleTime());
+        logString(table, "status", tof.getStatus().toString());
+        logBool(table, "isRangeValid", tof.isRangeValid());
+        logDouble(table, "ambientLight", tof.getAmbientLightLevel());
     }
 
     public static <T extends StructSerializable, S extends Struct<T>> Optional<StructPublisher<T>> makeStructPublisher(

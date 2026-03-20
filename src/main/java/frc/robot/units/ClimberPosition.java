@@ -16,7 +16,7 @@ public class ClimberPosition {
     }
 
     public static ClimberPosition fromMechanismInches(double inches) {
-        return ClimberPosition.fromMotorRotations(inches / ClimberConstants.mechanismInchesPerMotorRotation);
+        return ClimberPosition.fromMotorRotations(inches / ClimberConstants.ClimbMotor.mechanismInchesPerMotorRotation);
     }
 
     public double asMotorRotations() {
@@ -24,7 +24,7 @@ public class ClimberPosition {
     }
 
     public double asMechanismInches() {
-        return asMotorRotations() * ClimberConstants.mechanismInchesPerMotorRotation;
+        return asMotorRotations() * ClimberConstants.ClimbMotor.mechanismInchesPerMotorRotation;
     }
 
     public ClimberPosition add(ClimberPosition b) {

@@ -39,6 +39,7 @@ public class Alerts {
 
     // climber alerts
     public static final Alert climberDisconnected, climberOverheating, climberFaults, climberConfigFail;
+    public static final Alert towerSensorDisconnected, towerSensorBadStatus;
 
     // shooter alerts
     public static final Alert shooterDisconnected,
@@ -91,10 +92,15 @@ public class Alerts {
         exchangeFaults = makeCriticalFaultsAlert("exchange motor", IndexerConstants.Exchange.motorID);
         exchangeWarnings = makeCriticalWarningsAlert("exchange motor", IndexerConstants.Exchange.motorID);
 
-        climberDisconnected = makeDisconnectAlert("climber motor", ClimberConstants.motorID);
-        climberOverheating = makeOverheatingAlert("climber motor", ClimberConstants.motorID);
-        climberFaults = makeCriticalFaultsAlert("climber motor", ClimberConstants.motorID);
-        climberConfigFail = makeConfigFailAlert("climber motor", ClimberConstants.motorID);
+        climberDisconnected = makeDisconnectAlert("climber motor", ClimberConstants.ClimbMotor.motorID);
+        climberOverheating = makeOverheatingAlert("climber motor", ClimberConstants.ClimbMotor.motorID);
+        climberFaults = makeCriticalFaultsAlert("climber motor", ClimberConstants.ClimbMotor.motorID);
+        climberConfigFail = makeConfigFailAlert("climber motor", ClimberConstants.ClimbMotor.motorID);
+
+        towerSensorDisconnected = makeDisconnectAlert("tower sensor", ClimberConstants.TowerSensor.sensorID);
+        towerSensorBadStatus = new Alert(
+                String.format("Potentially bad status on tower sensor (CAN %d)", ClimberConstants.TowerSensor.sensorID),
+                AlertType.kWarning);
 
         shooterDisconnected = makeDisconnectAlert("shooter motor", ShooterConstants.motorID);
         shooterOverheating = makeOverheatingAlert("shooter motor", ShooterConstants.motorID);
