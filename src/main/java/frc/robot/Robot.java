@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.TeleopCommand;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
 
     private Command m_autonomousCommand;
     private Optional<TeleopLogic> teleopLogic;
+    private Optional<TeleopCommand> teleopCommand;
     private Optional<Timer> autoGyroTimer;
 
     public Robot() {
@@ -52,6 +54,7 @@ public class Robot extends TimedRobot {
         });
 
         teleopLogic = Optional.empty();
+        teleopCommand = Optional.empty();
         autoGyroTimer = Optional.empty();
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
@@ -187,12 +190,16 @@ public class Robot extends TimedRobot {
         }
 
         teleopLogic = Optional.of(new TeleopLogic());
+        teleopCommand = Optional.of(new TeleopCommand());
     }
 
     @Override
     public void teleopPeriodic() {
         if (teleopLogic.isPresent()) {
             teleopLogic.get().teleopPeriodic();
+        }
+        if (teleopCommand.isPresent()) {
+            teleopCommand.get().teleopPeriodic();
         }
     }
 
@@ -201,7 +208,11 @@ public class Robot extends TimedRobot {
         if (teleopLogic.isPresent()) {
             teleopLogic.get().endTeleop();
         }
+        if (teleopCommand.isPresent()) {
+            teleopCommand.get().endTeleop();
+        }
         teleopLogic = Optional.empty();
+        teleopCommand = Optional.empty();
     }
 
     @Override
