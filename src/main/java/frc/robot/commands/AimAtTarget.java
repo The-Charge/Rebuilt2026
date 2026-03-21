@@ -91,8 +91,10 @@ public class AimAtTarget extends Command {
                         botSpeeds.vxMetersPerSecond, botSpeeds.vyMetersPerSecond)
                 .rotateBy(botRot)
                 .times(ShooterConstants.ballAirTime.in(Seconds));
+        turret.logPredictedOffset(Optional.of(drivebyBallDisplacement));
 
         target = target.minus(drivebyBallDisplacement);
+        turret.logTargetPredictedPoint(Optional.of(target));
 
         Pose2d robotPose = swerve.getState().Pose;
         Pose2d turretPose = turret.getTurretPoseOnField();
@@ -114,6 +116,8 @@ public class AimAtTarget extends Command {
     @Override
     public void end(boolean interrupted) {
         turret.logTargetPoint(Optional.empty());
+        turret.logTargetPredictedPoint(Optional.empty());
+        turret.logPredictedOffset(Optional.empty());
         Logger.logDouble(getName(), "fieldCentricDeg", Double.NaN);
         Logger.logDouble(getName(), "distToTarget", Double.NaN);
 

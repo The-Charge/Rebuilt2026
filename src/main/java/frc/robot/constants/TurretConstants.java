@@ -28,7 +28,7 @@ public class TurretConstants {
 
     public static final double kP = 0.2;
     public static final double kI = 0;
-    public static final double kD = 0;
+    public static final double kD = 0.1;
     public static final Optional<Voltage> kStaticG = Optional.empty();
     public static final Optional<Voltage> kCos = Optional.empty();
     public static final Optional<Voltage> kS = Optional.empty();
