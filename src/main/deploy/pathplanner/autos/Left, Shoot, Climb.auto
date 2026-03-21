@@ -88,9 +88,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Left Shoot to Climb"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Left Shoot to Climb"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DriveToTower"
           }
         },
         {
