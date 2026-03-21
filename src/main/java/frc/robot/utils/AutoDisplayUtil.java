@@ -62,7 +62,6 @@ public class AutoDisplayUtil {
 
     public static void clearAutoPath() {
         try {
-            Logger.println("TSNDFUNSJDKFNSJKDFNJKSNDJKFNSJKDFNJKSDNFJKNSJDFN\nNSDJKSDNF\nSDFSDF\nDFSDFDF");
             RobotContainer.getInstance().ntField.getObject("traj").setTrajectory(new Trajectory());
         } catch (Exception e) {
             Logger.reportWarning(e, true);
