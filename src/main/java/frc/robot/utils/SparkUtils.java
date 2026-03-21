@@ -86,8 +86,8 @@ public class SparkUtils {
             Optional<Voltage> kStaticG,
             Optional<Voltage> kCos,
             Optional<Voltage> kS,
-            Optional<Voltage> kV,
-            Optional<Voltage> kA,
+            Optional<Double> kV,
+            Optional<Double> kA,
             Optional<Double> iZone) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
@@ -105,10 +105,10 @@ public class SparkUtils {
             config.closedLoop.feedForward.kS(kS.get().in(Volts));
         }
         if (kV != null && kV.isPresent()) {
-            config.closedLoop.feedForward.kV(kV.get().in(Volts));
+            config.closedLoop.feedForward.kV(kV.get());
         }
         if (kA != null && kA.isPresent()) {
-            config.closedLoop.feedForward.kA(kA.get().in(Volts));
+            config.closedLoop.feedForward.kA(kA.get());
         }
         if (iZone != null && iZone.isPresent()) {
             config.closedLoop.iZone(iZone.get());

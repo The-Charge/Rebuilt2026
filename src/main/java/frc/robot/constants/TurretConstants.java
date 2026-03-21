@@ -32,8 +32,8 @@ public class TurretConstants {
     public static final Optional<Voltage> kStaticG = Optional.empty();
     public static final Optional<Voltage> kCos = Optional.empty();
     public static final Optional<Voltage> kS = Optional.empty();
-    public static final Optional<Voltage> kV = Optional.empty();
-    public static final Optional<Voltage> kA = Optional.empty();
+    public static final Optional<Double> kV = Optional.empty();
+    public static final Optional<Double> kA = Optional.empty();
     public static final Optional<Double> iZone = Optional.empty();
 
     public static final double motorRotsPerMechRots = (46.713913 - -19.690401) * 2;

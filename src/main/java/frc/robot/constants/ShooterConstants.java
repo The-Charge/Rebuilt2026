@@ -20,9 +20,9 @@ public class ShooterConstants {
     public static double kD = 4e-4;
     public static final Optional<Voltage> kStaticG = Optional.empty();
     public static final Optional<Voltage> kCos = Optional.empty();
-    public static final Optional<Voltage> kS = Optional.empty();
-    public static final Optional<Voltage> kV = Optional.empty();
-    public static final Optional<Voltage> kA = Optional.empty();
+    public static final Optional<Voltage> kS = Optional.empty(); // measured in V
+    public static final Optional<Double> kV = Optional.empty(); // meausred in V/RPM
+    public static final Optional<Double> kA = Optional.empty(); // meausred in V/RPM/S
     public static final Optional<Double> iZone = Optional.of(2000d);
 
     public static boolean inverted = false;
