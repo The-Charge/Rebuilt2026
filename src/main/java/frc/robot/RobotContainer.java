@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -80,6 +81,7 @@ import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
@@ -140,6 +142,8 @@ public class RobotContainer {
     public Command swerveFieldCentricFacingAngleDriveCommand;
     private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
 
+    public final Field2d ntField;
+
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
 
@@ -169,6 +173,9 @@ public class RobotContainer {
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
         aimAtHubCommand = AimAtTarget.atHub(turret, shooter, swerve);
         aimAtFZoneCommand = AimAtTarget.atFZone(turret, shooter, swerve);
+
+        ntField = new Field2d();
+        SmartDashboard.putData("Field", ntField); // only ever call once
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
@@ -416,25 +423,24 @@ public class RobotContainer {
     private void setupAutoDisplay() {
         // update the displayed auto path in smartdashboard when ever the selection is changed
         // display is cleared in teleopInit
-        // if (autoChooser.getSelected() != null
-        //         && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-        //     Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-        // } else {
-        //     Logger.logString("", "selectedAuto", "None");
-        // }
+        if (autoChooser.getSelected() != null
+                && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+            Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+        } else {
+            Logger.logString("", "selectedAuto", "None");
+        }
 
-        // autoChooser.onChange((selected) -> {
-        //     if (DriverStation.isTeleopEnabled()) return;
+        autoChooser.onChange((selected) -> {
+            if (autoChooser.getSelected() != null
+                    && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+                Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+            } else {
+                Logger.logString("", "selectedAuto", "None");
+            }
 
-        //     displayAuto();
-
-        //     if (autoChooser.getSelected() != null
-        //             && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-        //         Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-        //     } else {
-        //         Logger.logString("", "selectedAuto", "None");
-        //     }
-        // });
+            // if (DriverStation.isTeleopEnabled()) return;
+            displayAuto();
+        });
 
         /*
          * Robot.teleopInit clears the display
@@ -447,14 +453,10 @@ public class RobotContainer {
             Command auto = autoChooser.getSelected();
 
             if (auto == null || auto.getName().equals("InstantCommand")) {
-                // AutoDisplayUtil.clearAutoPath();
+                AutoDisplayUtil.clearAutoPath();
                 return;
             }
-
-            boolean isRed = DriverStation.getAlliance()
-                    .map((val) -> val == Alliance.Red)
-                    .orElse(false);
-            // AutoDisplayUtil.displayAutoPath(auto, isRed);
+            AutoDisplayUtil.displayAutoPath(auto);
         } catch (Exception e) {
             Logger.reportError(e);
         }

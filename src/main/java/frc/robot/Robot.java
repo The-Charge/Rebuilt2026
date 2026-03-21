@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
@@ -154,7 +155,7 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
 
-        // RobotContainer.getInstance().displayAuto();
+        RobotContainer.getInstance().displayAuto();
 
         autoGyroTimer = Optional.of(new Timer());
         autoGyroTimer.get().start();
@@ -180,7 +181,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         try {
-            // AutoDisplayUtil.clearAutoPath();
+            AutoDisplayUtil.clearAutoPath();
         } catch (Exception e) {
             Logger.reportError(e);
         }

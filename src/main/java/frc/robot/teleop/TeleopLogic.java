@@ -113,9 +113,9 @@ public class TeleopLogic {
         // fallback behavior is to be ready to shoot so that if the teleop logic bugs out, the drivers should still be
         // able to shoot
         TeleopTurretMode turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
-        if (isInFriendlyZone && isHubActive) {
+        if (isInFriendlyZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
-        } else if (isInEnemyZone || isInFriendlyZone && !isHubActive) {
+        } else if (isInEnemyZone) {
             turretMode = TeleopTurretMode.INACTIVE_TURRET;
         } else if (isInNeutralZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
@@ -190,21 +190,23 @@ public class TeleopLogic {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtHubLEDCommand, false);
 
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().aimAtHubCommand, false);
     }
 
     private void enterActiveAtFZoneMode() {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtFZoneLEDCommand, false);
 
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtFZoneCommand);
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().aimAtFZoneCommand, false);
     }
 
     private void enterInactiveMode() {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().inactiveLEDCommand, false);
 
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
+        MiscUtils.removeSubsystemDefaultCommand(RobotContainer.getInstance().turret, false);
     }
 
     private boolean isFriendlyHubActive(Alliance autoWinner, TeleopPhase phase) {

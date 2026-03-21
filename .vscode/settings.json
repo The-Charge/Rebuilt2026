@@ -61,7 +61,7 @@
   "[java]": {
     "spotlessGradle.format.enable": true,
     "spotlessGradle.diagnostics.enable": false,
-    "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
+    "editor.defaultFormatter": "redhat.java",
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.spotlessGradle": "always"

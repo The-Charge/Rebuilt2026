@@ -25,6 +25,22 @@ public class MiscUtils {
         sub.setDefaultCommand(newDefault);
     }
 
+    public static void removeSubsystemDefaultCommand(Subsystem sub, boolean force) {
+        if (sub == null) return;
+
+        Command currentDefault = sub.getDefaultCommand();
+        Command currentCommand = sub.getCurrentCommand();
+
+        sub.removeDefaultCommand();
+        if (currentCommand != null) {
+            if (force) {
+                currentCommand.cancel();
+            } else if (currentDefault != null && currentDefault.getClass().equals(currentCommand.getClass())) {
+                currentCommand.cancel();
+            }
+        }
+    }
+
     public static boolean isPDPConnected(PowerDistribution pdp) {
         if (pdp == null) return false;
         return pdp.getVoltage() != 0;

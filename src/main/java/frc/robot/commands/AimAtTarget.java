@@ -20,6 +20,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.teleop.TeleopLogic;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Logger;
 import java.util.Optional;
@@ -64,10 +65,12 @@ public class AimAtTarget extends Command {
 
     public static AimAtTarget atFZone(
             TurretSubsystem turretSub, ShooterSubsystem shooterSub, CommandSwerveDrivetrain noDepSwerveSub) {
-        return new AimAtTarget(turretSub, shooterSub, noDepSwerveSub, () -> noDepSwerveSub
-                .getState()
-                .Pose
-                .getTranslation());
+        return new AimAtTarget(
+                turretSub,
+                shooterSub,
+                noDepSwerveSub,
+                () -> TeleopLogic.getFriendlyZoneTarget(
+                        noDepSwerveSub.getState().Pose.getTranslation()));
     }
 
     @Override
