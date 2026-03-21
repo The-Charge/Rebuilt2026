@@ -38,7 +38,7 @@ public class TeleopCommand extends Command {
     private enum SwerveMode {
         BRAKE,
         ROBOTCENTRIC,
-        FEILDCENTRIC,
+        FIELDCENTRIC,
         SNAKE,
         POV,
         OTHER,
@@ -48,7 +48,7 @@ public class TeleopCommand extends Command {
     private SwerveMode lastMode;
 
     public TeleopCommand() { // this badly needs organiztion
-        mode = SwerveMode.FEILDCENTRIC;
+        mode = SwerveMode.FIELDCENTRIC;
         lastMode = SwerveMode.OTHER;
 
         speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
@@ -147,18 +147,23 @@ public class TeleopCommand extends Command {
     public void teleopPeriodic() {
         if (RobotContainer.getInstance().hidDriver1.getXButton()) {
             mode = SwerveMode.BRAKE;
-        } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= .5) {
+        } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= 0.5) {
             mode = SwerveMode.ROBOTCENTRIC;
         } else if (linearRightX.getAsDouble() != 0) {
-            mode = SwerveMode.FEILDCENTRIC;
+            mode = SwerveMode.FIELDCENTRIC;
         } else if (RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5) {
             mode = SwerveMode.SNAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getPOV() != -1) {
             mode = SwerveMode.POV;
+        } else if (mode != SwerveMode.POV) {
+            mode = SwerveMode.FIELDCENTRIC;
         }
+
         Logger.logEnum("TeleopCommand", "Swerve Mode", mode);
+
         if (!mode.equals(lastMode)) {
             lastMode = mode;
+
             switch (mode) {
                 case BRAKE:
                     RobotContainer.getInstance().swerve.applyRequest(() -> swerveBrake);
@@ -167,7 +172,7 @@ public class TeleopCommand extends Command {
                     MiscUtils.changeSubsystemDefaultCommand(
                             RobotContainer.getInstance().swerve, swerveRobotCentricDriveCommand, false);
                     break;
-                case FEILDCENTRIC:
+                case FIELDCENTRIC:
                     MiscUtils.changeSubsystemDefaultCommand(
                             RobotContainer.getInstance().swerve, swerveFieldCentricDriveCommand, false);
                     break;
