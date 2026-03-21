@@ -21,6 +21,7 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.Logger;
 import java.util.Optional;
 import limelight.Limelight;
@@ -76,17 +77,18 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     private void initLimelights(Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
-        // LimelightHelpers.setRewindEnabled(name, true); // wtf is this in YALL ??
+        LimelightHelpers.setRewindEnabled(turretLimelight.limelightName, true); // wtf is this in YALL ??
+        LimelightHelpers.setRewindEnabled(sideLimelight.limelightName, true); // wtf is this in YALL ??
         this.turretLimelight
                 .getSettings()
-                .withImuMode(LimelightSettings.ImuMode.ExternalImu)
+                .withImuMode(LimelightSettings.ImuMode.InternalImuMT1Assist) // ehhhhhh
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetTurret)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
                 .save();
         this.sideLimelight
                 .getSettings()
-                .withImuMode(LimelightSettings.ImuMode.ExternalImu)
+                .withImuMode(LimelightSettings.ImuMode.InternalImuMT1Assist)
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetSide)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
@@ -110,6 +112,10 @@ public class LimelightSubsystem extends SubsystemBase {
 
         // ****** FIX FIX FIX *******
         if (throttle && isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
+            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
             // turretLimelight.setThrottle(false);
             // sideLimelight.setThrottle(false);
             // turretLimelight.getSettings().
@@ -121,6 +127,10 @@ public class LimelightSubsystem extends SubsystemBase {
 
         // ****** FIX FIX FIX *******
         if (!throttle && isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 0);
+            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 0);
             // turretLimelight.setIMUMode(1);
             // sideLimelight.setIMUMode(1);
             // turretLimelight.setThrottle(true);
