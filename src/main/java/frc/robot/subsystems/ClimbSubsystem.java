@@ -130,6 +130,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public boolean canSeeTower() {
         return towerSensor.getRange() <= ClimberConstants.towerActivationMM
-                && towerSensor.getRangeSigma() <= ClimberConstants.towerActivationStdDev;
+                && towerSensor.getRangeSigma() <= ClimberConstants.towerActivationStdDev
+                && towerSensor.isRangeValid();
     }
 }

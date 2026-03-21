@@ -31,7 +31,7 @@ public class ClimberConstants {
     }
 
     public static class TowerSensor {
-        public static final int sensorID = 0;
+        public static final int sensorID = 32;
 
         /*
         * From the sensor documentation:
@@ -52,5 +52,5 @@ public class ClimberConstants {
     public static final double manualSpoolSpeed = 0.2;
 
     public static final double towerActivationMM = 200;
-    public static final double towerActivationStdDev = 10;
+    public static final double towerActivationStdDev = 6;
 }
