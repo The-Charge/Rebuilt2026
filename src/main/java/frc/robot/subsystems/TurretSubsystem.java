@@ -34,6 +34,8 @@ public class TurretSubsystem extends SubsystemBase {
     private final Optional<StructPublisher<Pose2d>> turretPosePublisher;
     private final Optional<StructPublisher<Pose2d>> targetTurretPosePublisher;
     private final Optional<StructPublisher<Translation2d>> targetPointPublisher;
+    private final Optional<StructPublisher<Translation2d>> targetPredictedPointPublisher;
+    private final Optional<StructPublisher<Translation2d>> predictedOffsetPublisher;
 
     public TurretSubsystem() {
         turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless);
@@ -78,6 +80,10 @@ public class TurretSubsystem extends SubsystemBase {
                 Logger.makeStructPublisher(TurretConstants.subsystemName, "targetTurretPose", Pose2d.struct);
         targetPointPublisher =
                 Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPoint", Translation2d.struct);
+        targetPredictedPointPublisher =
+                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPredictedPoint", Translation2d.struct);
+        predictedOffsetPublisher =
+                Logger.makeStructPublisher(TurretConstants.subsystemName, "predictedOffset", Translation2d.struct);
     }
 
     @Override
@@ -126,6 +132,8 @@ public class TurretSubsystem extends SubsystemBase {
 
         if (getCurrentCommand() == null) {
             logTargetPoint(Optional.empty());
+            logTargetPredictedPoint(Optional.empty());
+            logPredictedOffset(Optional.empty());
         }
     }
 
@@ -202,7 +210,17 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void logTargetPoint(Optional<Translation2d> point) {
         if (targetPointPublisher.isEmpty()) return;
-        targetPointPublisher.get().set(point == null ? null : point.orElse(new Translation2d(Double.NaN, Double.NaN)));
+        targetPointPublisher.get().set(point.orElse(new Translation2d(Double.NaN, Double.NaN)));
+    }
+
+    public void logTargetPredictedPoint(Optional<Translation2d> point) {
+        if (targetPredictedPointPublisher.isEmpty()) return;
+        targetPredictedPointPublisher.get().set(point.orElse(new Translation2d(Double.NaN, Double.NaN)));
+    }
+
+    public void logPredictedOffset(Optional<Translation2d> offset) {
+        if (predictedOffsetPublisher.isEmpty()) return;
+        predictedOffsetPublisher.get().set(offset.orElse(new Translation2d(Double.NaN, Double.NaN)));
     }
 
     public Pose2d getTurretPoseOnField() {

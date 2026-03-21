@@ -85,6 +85,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().otherLimelight.slowPeriodic();
         RobotContainer.getInstance().turretLimelight.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
+        RobotContainer.getInstance().turret.slowPeriodic();
+        RobotContainer.getInstance().shooter.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
 
@@ -99,6 +101,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().otherLimelight.verySlowPeriodic();
         RobotContainer.getInstance().turretLimelight.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
+        RobotContainer.getInstance().turret.verySlowPeriodic();
+        RobotContainer.getInstance().shooter.verySlowPeriodic();
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
