@@ -1,10 +1,12 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
@@ -33,6 +35,8 @@ public class ShooterConstants {
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
 
     public static final boolean manualShootUseSmartdashboard = true;
+    public static final Time ballAirTime =
+            Seconds.of(0.7); // This value is quite consistent across distances, and obtained from footage
 
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
