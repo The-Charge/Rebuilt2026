@@ -2,53 +2,54 @@ package frc.robot.commands.turret;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.TurretConstants;
+import frc.robot.constants.TurretConstants.Motor;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
 
-// Calibrates Turret by sending it to hard stop, pausing for a small amount of time, and setting position as zero
 public class CalibrateTurret extends Command {
 
-    private final TurretSubsystem turretSub;
+    private final TurretSubsystem turret;
     private Timer endConditionDelay;
     private Timer expirationTimer;
 
-    public CalibrateTurret(TurretSubsystem turretSubsystem) {
-        turretSub = turretSubsystem;
-        addRequirements(turretSubsystem);
+    public CalibrateTurret(TurretSubsystem turretSub) {
+        turret = turretSub;
+        addRequirements(turretSub);
     }
 
-    // Start command by starting the turret at a slow speed towards the end position
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
     @Override
     public void initialize() {
-        turretSub.dutyCycle(TurretConstants.calibrationSpeed);
+        turret.dutyCycle(Motor.calibrationSpeed);
         endConditionDelay = new Timer();
         endConditionDelay.start();
 
-        turretSub.setIsCalibrated(false);
-        turretSub.logTargetPoint(Optional.empty());
+        turret.setIsCalibrated(false);
+        turret.logTargetPoint(Optional.empty());
+        turret.logTargetPredictedPoint(Optional.empty());
+        turret.logPredictedOffset(Optional.empty());
 
         expirationTimer = new Timer();
         expirationTimer.start();
     }
 
     @Override
-    public void execute() {}
+    public void end(boolean interrupted) {
+        turret.stopTurret();
 
-    // Once timer finishes, the command ends
-    @Override
-    public boolean isFinished() {
-        return endConditionDelay.hasElapsed(TurretConstants.calibrationEndDelay) && turretSub.isAtCalibrationLimit()
-                || expirationTimer.hasElapsed(5);
+        if (!interrupted) {
+            turret.setEncoderPosition(Motor.calibrationEndPos);
+            turret.setIsCalibrated(true);
+        }
     }
 
-    // Once command ends, set as end position.
     @Override
-    public void end(boolean interrupted) {
-        turretSub.stopTurret();
-        if (!interrupted) {
-            turretSub.setEncoderPosition(TurretConstants.calibrationEndPos);
-            turretSub.setIsCalibrated(true);
-        }
+    public boolean isFinished() {
+        return endConditionDelay.hasElapsed(Motor.calibrationEndDelay) && turret.isAtCalibrationLimit()
+                || expirationTimer.hasElapsed(5);
     }
 }

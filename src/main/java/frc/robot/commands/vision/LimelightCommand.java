@@ -9,7 +9,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.constants.LimelightConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.constants.LimelightConstants.Side;
+import frc.robot.constants.LimelightConstants.Turret;
+import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 import frc.robot.utils.Logger;
@@ -22,13 +24,13 @@ public class LimelightCommand extends Command {
     private final CommandSwerveDrivetrain swerve;
     private final Supplier<Boolean> enabled;
     private boolean enabledLast;
+
+    @SuppressWarnings("unused")
     private boolean isSeeded;
 
     private final Optional<StructPublisher<Pose3d>> diffPublisher;
-    private final Optional<StructPublisher<Pose2d>> turretPub =
-            Logger.makeStructPublisher(LimelightConstants.subsystemName, "turretPose", Pose2d.struct);
-    private final Optional<StructPublisher<Pose2d>> sidePub =
-            Logger.makeStructPublisher(LimelightConstants.subsystemName, "sidePose", Pose2d.struct);
+    private final Optional<StructPublisher<Pose2d>> turretPub;
+    private final Optional<StructPublisher<Pose2d>> sidePub;
 
     public LimelightCommand(
             LimelightSubsystem turretLimelightSubsystem,
@@ -42,7 +44,16 @@ public class LimelightCommand extends Command {
         isSeeded = false;
         addRequirements(turretLimelight, sideLimelight);
 
+        turretPub = Logger.makeStructPublisher(
+                turretLimelight.getName(), String.format("%sPose", Turret.cameraName), Pose2d.struct);
+        sidePub = Logger.makeStructPublisher(
+                sideLimelight.getName(), String.format("%sPose", Side.cameraName), Pose2d.struct);
         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
@@ -106,6 +117,7 @@ public class LimelightCommand extends Command {
      * Seed from MT1; chooses best MT1 from the two cameras,
      * sets that as the seed for both cameras
      */
+    @SuppressWarnings("unused")
     private void seed() {
         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
         Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
@@ -149,6 +161,7 @@ public class LimelightCommand extends Command {
         isSeeded = true;
     }
 
+    @SuppressWarnings("unused")
     private void setRobotOrientation() {
         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve, false);
         Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
@@ -176,7 +189,7 @@ public class LimelightCommand extends Command {
                 rots = MT1side.get().pose().getRotation().getMeasure();
             }
 
-            Logger.logDouble(LimelightConstants.subsystemName, "Angle of Bot", rots.in(Degrees));
+            Logger.logDouble(getName(), "Angle of Bot", rots.in(Degrees));
             turretLimelight.setRobotOrientation(rots);
             sideLimelight.setRobotOrientation(rots);
         }
@@ -250,12 +263,9 @@ public class LimelightCommand extends Command {
             return;
         }
         Pose3d diff = new Pose3d().plus(side.get().minus(turret.get()));
-        // Logger.logPose3dAsDoubleArray(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
+        // Logger.logPose3dAsDoubleArray(getName(), "transformBetweenCameras", diff);
         diffPublisher.get().set(diff);
     }
-
-    @Override
-    public void end(boolean interrupted) {}
 
     @Override
     public boolean isFinished() {

@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.ShooterConstants.Motor;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
@@ -32,11 +34,19 @@ public class ShooterSubsystem extends SubsystemBase {
     private final SparkFlex shootMotor;
     private final SysIdRoutine sysIdRoutine;
 
+    private final Alert motorDisconnected, motorOverheating, motorFaults, motorWarnings, motorConfigFail;
+
     private Optional<AngularVelocity> targetShooterSpeed;
     private SequentialCommandGroup runSysId;
 
     public ShooterSubsystem() {
-        shootMotor = new SparkFlex(ShooterConstants.motorID, MotorType.kBrushless);
+        motorDisconnected = Alerts.makeDisconnectAlert(Motor.motorName, Motor.motorID);
+        motorOverheating = Alerts.makeOverheatingAlert(Motor.motorName, Motor.motorID);
+        motorFaults = Alerts.makeCriticalFaultsAlert(Motor.motorName, Motor.motorID);
+        motorWarnings = Alerts.makeCriticalWarningsAlert(Motor.motorName, Motor.motorID);
+        motorConfigFail = Alerts.makeConfigFailAlert(Motor.motorName, Motor.motorID);
+
+        shootMotor = new SparkFlex(Motor.motorID, MotorType.kBrushless);
         configureMotor();
 
         sysIdRoutine = new SysIdRoutine(
@@ -52,19 +62,21 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
-        Logger.logSubsystem(ShooterConstants.subsystemName, this);
+    public String getName() {
+        return ShooterConstants.subsystemName;
+    }
 
-        Logger.logSparkMotor(ShooterConstants.subsystemName, "shoot", shootMotor);
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(getName(), this);
+
+        Logger.logSparkMotor(getName(), Motor.motorName, shootMotor);
 
         Logger.logDouble(
-                ShooterConstants.subsystemName,
+                getName(),
                 "targetMotorRPM",
                 targetShooterSpeed.map((val) -> val.in(RPM)).orElse(Double.NaN));
-        Logger.logBool(
-                ShooterConstants.subsystemName,
-                "isAtTarget",
-                isShooterAtTargetSpeed().orElse(true));
+        Logger.logBool(getName(), "isAtTarget", isShooterAtTargetSpeed().orElse(true));
     }
 
     public void slowPeriodic() {}
@@ -72,11 +84,11 @@ public class ShooterSubsystem extends SubsystemBase {
     public void verySlowPeriodic() {
         boolean shootConnected = SparkUtils.isConnected(shootMotor);
 
-        CANMonitor.logCANDeviceStatus("shootMotor", ShooterConstants.motorID, shootConnected);
-        Alerts.shooterDisconnected.set(!shootConnected);
-        Alerts.shooterOverheating.set(shootMotor.getMotorTemperature() >= 80);
-        Alerts.shooterWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
-        Alerts.shooterFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
+        CANMonitor.logCANDeviceStatus(Motor.motorName, Motor.motorID, shootConnected);
+        motorDisconnected.set(!shootConnected);
+        motorOverheating.set(shootMotor.getMotorTemperature() >= 80);
+        motorWarnings.set(SparkUtils.hasCriticalWarnings(shootMotor.getWarnings()));
+        motorFaults.set(SparkUtils.hasCriticalFaults(shootMotor.getFaults()));
     }
 
     private void logSysIdMotors(SysIdRoutineLog log) {
@@ -113,27 +125,28 @@ public class ShooterSubsystem extends SubsystemBase {
 
         SparkUtils.configureBasicSettings(
                 shootConfig,
-                ShooterConstants.currentLimit,
-                ShooterConstants.idleMode,
-                ShooterConstants.inverted,
-                ShooterConstants.maxDutyCycle,
-                ShooterConstants.nominalVoltage);
+                Motor.currentLimit,
+                Motor.idleMode,
+                Motor.inverted,
+                Motor.maxDutyCycle,
+                Motor.nominalVoltage);
         SparkUtils.configureClosedLoopSettings(
                 shootConfig,
-                ShooterConstants.kP,
-                ShooterConstants.kI,
-                ShooterConstants.kD,
-                ShooterConstants.kStaticG,
-                ShooterConstants.kCos,
-                ShooterConstants.kS,
-                ShooterConstants.kV,
-                ShooterConstants.kA,
-                ShooterConstants.iZone);
+                Motor.kP,
+                Motor.kI,
+                Motor.iZone,
+                Motor.kD,
+                Motor.kStaticG,
+                Motor.kCos,
+                Motor.kS,
+                Motor.kV,
+                Motor.kA,
+                Motor.rampTime);
 
         if (shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure shooter motor");
-            Alerts.shooterConfigFail.set(true);
+            Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
+            motorConfigFail.set(true);
         }
     }
 

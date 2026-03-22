@@ -8,24 +8,26 @@ import frc.robot.subsystems.LEDSubsystem;
 
 public class IdleLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
 
-    public IdleLED(LEDSubsystem LEDSubsystem) {
-        ledSub = LEDSubsystem;
-        addRequirements(ledSub);
+    public IdleLED(LEDSubsystem ledSub) {
+        led = ledSub;
+        addRequirements(led);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
     public void initialize() {
-        ledSub.breathe(LEDConstants.chargeGold, Seconds.of(6));
+        led.breathe(LEDConstants.chargeGold, Seconds.of(6));
     }
 
     @Override
-    public void execute() {}
-
-    @Override
     public void end(boolean interrupted) {
-        // ledSub.turnOff();
+        led.off();
     }
 
     @Override

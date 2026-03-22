@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class DualBlinkLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
     private final Color color1, color2;
     private final Optional<Time> expiration;
 
@@ -18,22 +18,27 @@ public class DualBlinkLED extends Command {
     private int lastBlinkIncrement;
     private Timer endTimer;
 
-    public DualBlinkLED(LEDSubsystem LEDSubsystem, Color col1, Color col2) {
-        ledSub = LEDSubsystem;
+    public DualBlinkLED(LEDSubsystem ledSub, Color col1, Color col2) {
+        led = ledSub;
         color1 = col1;
         color2 = col2;
         expiration = Optional.empty();
 
-        addRequirements(ledSub);
+        addRequirements(led);
     }
 
-    public DualBlinkLED(LEDSubsystem ledSubsystem, Color col1, Color col2, Time duration) {
-        ledSub = ledSubsystem;
+    public DualBlinkLED(LEDSubsystem ledSub, Color col1, Color col2, Time duration) {
+        led = ledSub;
         color1 = col1;
         color2 = col2;
         expiration = Optional.of(duration);
 
-        addRequirements(ledSub);
+        addRequirements(led);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
@@ -53,9 +58,9 @@ public class DualBlinkLED extends Command {
 
         if (blinkIncrement != lastBlinkIncrement) {
             if (blinkIncrement % 2 == 0) {
-                ledSub.solidColor(color1);
+                led.solidColor(color1);
             } else {
-                ledSub.solidColor(color2);
+                led.solidColor(color2);
             }
         }
 
@@ -64,7 +69,7 @@ public class DualBlinkLED extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        ledSub.off();
+        led.off();
     }
 
     @Override

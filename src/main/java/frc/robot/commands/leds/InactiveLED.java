@@ -6,29 +6,31 @@ import frc.robot.subsystems.LEDSubsystem;
 
 public class InactiveLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
 
-    public InactiveLED(LEDSubsystem LEDSubsystem) {
-        ledSub = LEDSubsystem;
-        addRequirements(ledSub);
+    public InactiveLED(LEDSubsystem ledSub) {
+        led = ledSub;
+        addRequirements(led);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
     public void initialize() {
-        ledSub.solidColor(Color.kWhite);
+        led.solidColor(Color.kWhite);
     }
 
     @Override
-    public void execute() {}
-
-    @Override
     public void end(boolean interrupted) {
-        // ledSub.turnOff();
+        led.off();
     }
 
     @Override
     public boolean isFinished() {
-        return false; // don't end unless interrupted
+        return false;
     }
 
     @Override

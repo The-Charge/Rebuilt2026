@@ -5,11 +5,14 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -21,6 +24,7 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
+import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.LimelightHelpers.LimelightResults;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
@@ -30,23 +34,32 @@ import frc.robot.utils.Logger;
 import java.util.Optional;
 
 public class LimelightSubsystem extends SubsystemBase {
+
     private final String cameraName;
+
     private final Optional<StructArrayPublisher<Pose2d>> visionTargets;
 
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     public LimelightSubsystem(String name, Pose3d cameraOffset) {
-        this.cameraName = "limelight-" + name;
+        cameraName = "limelight-" + name;
+
         setCameraOffset(cameraOffset);
         LimelightHelpers.setRewindEnabled(name, true);
         LimelightHelpers.SetIMUMode(name, 3);
         // LimelightHelpers.SetIMUAssistAlpha(name, 0.1);
-        visionTargets = Logger.makeStructArrayPublisher("Limelight" + name, "visionTargets", Pose2d.struct);
+
+        visionTargets = Logger.makeStructArrayPublisher(getName(), "visionTargets", Pose2d.struct);
+    }
+
+    @Override
+    public String getName() {
+        return cameraName;
     }
 
     @Override
     public void periodic() {
-        Logger.logSubsystem(cameraName, this);
+        Logger.logSubsystem(getName(), this);
         // logVisionTargets(); //TODO: log vision targets after migrating to YALL
     }
 
@@ -85,12 +98,12 @@ public class LimelightSubsystem extends SubsystemBase {
         Pose2d[] targets = new Pose2d[targetFiducials.length];
         // Logger.println(Integer.toString(targetFiducials.length));
 
+        SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
+        Translation2d translation = state.Pose.getTranslation();
+        Rotation2d rotation = state.Pose.getRotation();
         for (int i = 0; i < targets.length; i++) {
-            Pose2d targetFieldSpace = targetFiducials[i]
-                    .getTargetPose_RobotSpace2D()
-                    .plus(new Transform2d(
-                            RobotContainer.getInstance().swerve.getState().Pose.getTranslation(),
-                            RobotContainer.getInstance().swerve.getState().Pose.getRotation()));
+            Pose2d targetFieldSpace =
+                    targetFiducials[i].getTargetPose_RobotSpace2D().plus(new Transform2d(translation, rotation));
             targets[i] = targetFieldSpace;
         }
 
@@ -172,7 +185,7 @@ public class LimelightSubsystem extends SubsystemBase {
         // make sure we aren't putting all our trust in vision
         translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
 
-        double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
+        double rotStdDev = LimelightConstants.kRotStdDev; // we want to get the rotation from megatag1
 
         return Optional.of(VecBuilder.fill(translationalStdDev, translationalStdDev, rotStdDev));
     }

@@ -1,7 +1,7 @@
 package frc.robot.commands.climb;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.ClimberConstants;
+import frc.robot.constants.ClimberConstants.Motor;
 import frc.robot.subsystems.ClimbSubsystem;
 
 public class ClimbDown extends Command {
@@ -17,8 +17,13 @@ public class ClimbDown extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
-        climbSubsystem.setPosition(ClimberConstants.downPosition);
+        climbSubsystem.setPosition(Motor.downPosition);
     }
 
     @Override

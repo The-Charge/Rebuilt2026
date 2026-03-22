@@ -10,8 +10,9 @@ public class LEDConstants {
     public static final String subsystemName = "LED";
 
     public static final int port = 4;
-    public static final int ledCount = 20 * 5;
+
     // Our LED strip has a density of 20 ICs per meter
+    public static final int ledCount = 20 * 5;
     public static final Distance kLedSpacing = Meters.of(1 / 20.0);
     public static final ColorOrder colorOrder = ColorOrder.kRGB;
 

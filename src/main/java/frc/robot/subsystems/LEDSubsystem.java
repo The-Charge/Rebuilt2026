@@ -11,20 +11,19 @@ import frc.robot.constants.LEDConstants;
 import frc.robot.utils.Logger;
 import java.util.Optional;
 
-// Apply pattern in periodic (each apply pattern is one frame),
-// Every time update pattern and periodic will apply
 public class LEDSubsystem extends SubsystemBase {
 
     private final AddressableLED led;
+
     private AddressableLEDBuffer buffer;
     private Optional<LEDPattern> pattern;
 
     public LEDSubsystem() {
-        led = new AddressableLED(LEDConstants.port); // port number
-        buffer = new AddressableLEDBuffer(LEDConstants.ledCount); // number of LEDs
-
+        led = new AddressableLED(LEDConstants.port);
         led.setLength(buffer.getLength());
         led.setColorOrder(LEDConstants.colorOrder);
+
+        buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
 
         led.setData(buffer);
         led.start();
@@ -33,10 +32,15 @@ public class LEDSubsystem extends SubsystemBase {
     }
 
     @Override
+    public String getName() {
+        return LEDConstants.subsystemName;
+    }
+
+    @Override
     public void periodic() {
-        Logger.logSubsystem(LEDConstants.subsystemName, this);
+        Logger.logSubsystem(getName(), this);
         Logger.logString(
-                LEDConstants.subsystemName,
+                getName(),
                 "currentPattern",
                 pattern.map((val) -> val.getClass().getTypeName()).orElse("None"));
     }
@@ -56,7 +60,7 @@ public class LEDSubsystem extends SubsystemBase {
     }
 
     public void blink(Color color, Time onTime) {
-        LEDPattern blinkingColor = LEDPattern.solid(color); // color of led
+        LEDPattern blinkingColor = LEDPattern.solid(color);
         pattern = Optional.of(blinkingColor.blink(onTime));
     }
 
@@ -64,14 +68,8 @@ public class LEDSubsystem extends SubsystemBase {
         pattern = Optional.of(LEDPattern.solid(Color.kBlack));
     }
 
-    /**
-     * LEDs bcome rainbow colored
-     */
     public void rainbow(LinearVelocity scrollSpeed) {
-        // all hues at maximum saturation and half value
         LEDPattern rainbow = LEDPattern.rainbow(255, 128);
-        // Create a new pattern that scrolls the rainbow pattern across the LED strip, moving at a
-        // speed of 1 meter per second.
         LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(scrollSpeed, LEDConstants.kLedSpacing);
 
         pattern = Optional.of(scrollingRainbow);

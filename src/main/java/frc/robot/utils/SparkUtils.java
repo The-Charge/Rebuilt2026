@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.spark.SparkBase;
@@ -8,6 +10,8 @@ import com.revrobotics.spark.SparkBase.Warnings;
 import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
@@ -34,6 +38,9 @@ public class SparkUtils {
         return warnings.escEeprom || warnings.extEeprom || warnings.other || warnings.overcurrent || warnings.sensor;
     }
 
+    /**
+     * WARNING: this is pretty slow, do not call it frequently
+     */
     public static boolean isConnected(SparkBase motor) {
         if (motor == null) {
             Logger.reportWarning("Cannot test connectivity of a null motor", true);
@@ -43,58 +50,74 @@ public class SparkUtils {
         return motor.getFirmwareVersion() != 0;
     }
 
+    /**
+     * Modify the given config to contain some basic motor settings
+     * @param config The {@code SparkBaseConfig} to modify
+     * @param maxCurrent
+     * @param idleMode
+     * @param inverted
+     * @param maxDutyCycle Maximum percent output in either direction, should be in range [0, 1]
+     * @param nominalVoltage If provided, will enable voltage compensation. See {@see <a href="https://www.chiefdelphi.com/t/behavior-of-sparkmax-voltage-compensation/459782/2">this post</a>} for a better explanation than I can give
+     */
     public static void configureBasicSettings(
             SparkBaseConfig config,
-            int maxAmps,
+            Current maxCurrent,
             IdleMode idleMode,
             boolean inverted,
             double maxDutyCycle,
-            Optional<Double> nominalVoltage) {
+            Optional<Voltage> nominalVoltage) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
-        config.smartCurrentLimit(maxAmps);
+        config.smartCurrentLimit((int) maxCurrent.in(Amps));
         config.idleMode(idleMode);
         config.inverted(inverted);
         config.closedLoop.outputRange(-maxDutyCycle, maxDutyCycle);
 
         if (nominalVoltage != null && nominalVoltage.isPresent()) {
-            config.voltageCompensation(nominalVoltage.get());
+            config.voltageCompensation(nominalVoltage.get().in(Volts));
         } else {
             config.disableVoltageCompensation();
         }
     }
 
     /**
-     * @param config
+     * Modify the given config to contain settings for closed loop control. More info: {@see <a href="https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control#feed-forward-constant-terms">how feed forwards apply</a>}, {@see <a href="https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control#feed-forward-constant-quick-reference">feed forward units</a>}
+     * @param config The {@code SparkBaseConfig} to modify
      * @param kP
      * @param kI
+     * @param iZone The range in which the Integral component will accumulate. {@see <a href="https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/math/controller/ProfiledPIDController.html#setIZone(double)">Here's a better explantion</a>}
      * @param kD
-     * @param kStaticG this parameter should be {@code Optional.empty()} if {@code kCos} is not zero
-     * @param kCos this parameter should be {@code Optional.empty()} if {@code kStaticG} is not zero
-     * @param kS
-     * @param kV
-     * @param kA
+     * @param kStaticG This parameter should be {@code Optional.empty()} if {@code kCos} is not {@code Optional.empty()}
+     * @param kCos This parameter should be {@code Optional.empty()} if {@code kStaticG} is not {@code Optional.empty()}
+     * @param kS The amount of voltage required to overcome friction (feedforward). Measured in Volts
+     * @param kV The amount of voltage applied per target velocity. Measured in Volts/RPM
+     * @param kA The amount of voltage applied per target acceleration. Measured in Volts/RPM/s
+     * @param rampTime The minimum amount of time allowed to go from neutral to 100% output *NOTE: the documenation is very questionable, this may be incorrect
      */
     public static void configureClosedLoopSettings(
             SparkBaseConfig config,
             double kP,
             double kI,
+            Optional<Double> iZone,
             double kD,
             Optional<Voltage> kStaticG,
             Optional<Voltage> kCos,
-            Optional<Voltage> kS,
+            Optional<Double> kS,
             Optional<Double> kV,
             Optional<Double> kA,
-            Optional<Double> iZone) {
+            Optional<Time> rampTime) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
         }
 
         config.closedLoop.pid(kP, kI, kD);
+        if (iZone != null && iZone.isPresent()) {
+            config.closedLoop.iZone(iZone.get());
+        }
         if (kStaticG != null && kStaticG.isPresent()) {
             config.closedLoop.feedForward.kG(kStaticG.get().in(Volts));
         }
@@ -102,7 +125,7 @@ public class SparkUtils {
             config.closedLoop.feedForward.kCos(kCos.get().in(Volts));
         }
         if (kS != null && kS.isPresent()) {
-            config.closedLoop.feedForward.kS(kS.get().in(Volts));
+            config.closedLoop.feedForward.kS(kS.get());
         }
         if (kV != null && kV.isPresent()) {
             config.closedLoop.feedForward.kV(kV.get());
@@ -110,11 +133,17 @@ public class SparkUtils {
         if (kA != null && kA.isPresent()) {
             config.closedLoop.feedForward.kA(kA.get());
         }
-        if (iZone != null && iZone.isPresent()) {
-            config.closedLoop.iZone(iZone.get());
+        if (rampTime != null && rampTime.isPresent()) {
+            config.closedLoopRampRate(rampTime.get().in(Seconds));
         }
     }
 
+    /**
+     * Modify the given config to contain soft stop settings
+     * @param config The {@code SparkBaseConfig} to modify
+     * @param forwardLimitRots
+     * @param reverseLimitRots
+     */
     public static void configureSoftStops(
             SparkBaseConfig config, Optional<Double> forwardLimitRots, Optional<Double> reverseLimitRots) {
         if (config == null) {
@@ -133,7 +162,15 @@ public class SparkUtils {
         }
     }
 
-    public static void configureHardStops(
+    /**
+     * Modify the given config to contain limit switch settings
+     * @param config The {@code SparkBaseConfig} to modify
+     * @param forwardLimitEnabled
+     * @param forwardLimitResetRots The value the encoder will be reset to when the forward limit is hit. Does nothing if the forward limit is disabled
+     * @param reverseLimitEnabled
+     * @param reverseLimitResetRots The value the encoder will be reset to when the reverse limit is hit. Does nothing if the reverse limit is disabled
+     */
+    public static void configureLimitSwitches(
             SparkBaseConfig config,
             boolean forwardLimitEnabled,
             Optional<Double> forwardLimitResetRots,

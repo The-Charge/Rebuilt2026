@@ -1,6 +1,6 @@
 package frc.robot.units;
 
-import frc.robot.constants.ClimberConstants;
+import frc.robot.constants.ClimberConstants.Motor;
 import frc.robot.utils.Logger;
 
 public class ClimberPosition {
@@ -16,7 +16,7 @@ public class ClimberPosition {
     }
 
     public static ClimberPosition fromMechanismInches(double inches) {
-        return ClimberPosition.fromMotorRotations(inches / ClimberConstants.mechanismInchesPerMotorRotation);
+        return ClimberPosition.fromMotorRotations(inches / Motor.mechanismInchesPerMotorRotation);
     }
 
     public double asMotorRotations() {
@@ -24,7 +24,7 @@ public class ClimberPosition {
     }
 
     public double asMechanismInches() {
-        return asMotorRotations() * ClimberConstants.mechanismInchesPerMotorRotation;
+        return asMotorRotations() * Motor.mechanismInchesPerMotorRotation;
     }
 
     public ClimberPosition add(ClimberPosition b) {
