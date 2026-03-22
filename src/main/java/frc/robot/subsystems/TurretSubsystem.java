@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
@@ -13,9 +15,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.constants.TurretConstants;
+import frc.robot.constants.TurretConstants.Motor;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
@@ -26,7 +30,8 @@ import java.util.Optional;
 public class TurretSubsystem extends SubsystemBase {
 
     private final SparkMax turretMotor;
-    // private final DigitalInput forwardLimit;
+
+    private final Alert motorDisconnected, motorOverheating, motorFaults, motorWarnings, motorConfigFail;
 
     private Optional<TurretAngle> targetAngle;
     private boolean isCalibrated;
@@ -38,75 +43,84 @@ public class TurretSubsystem extends SubsystemBase {
     private final Optional<StructPublisher<Translation2d>> predictedOffsetPublisher;
 
     public TurretSubsystem() {
-        turretMotor = new SparkMax(TurretConstants.motorID, MotorType.kBrushless);
+        motorDisconnected = Alerts.makeDisconnectAlert(Motor.motorName, Motor.motorID);
+        motorOverheating = Alerts.makeOverheatingAlert(Motor.motorName, Motor.motorID);
+        motorFaults = Alerts.makeCriticalFaultsAlert(Motor.motorName, Motor.motorID);
+        motorWarnings = Alerts.makeCriticalWarningsAlert(Motor.motorName, Motor.motorID);
+        motorConfigFail = Alerts.makeConfigFailAlert(Motor.motorName, Motor.motorID);
+
+        turretMotor = new SparkMax(Motor.motorID, MotorType.kBrushless);
 
         SparkMaxConfig turretConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 turretConfig,
-                TurretConstants.maxCurrent,
-                TurretConstants.idleMode,
-                TurretConstants.inverted,
-                TurretConstants.maxDutyCycle,
-                TurretConstants.nominalVoltage);
+                Motor.maxCurrent,
+                Motor.idleMode,
+                Motor.inverted,
+                Motor.maxDutyCycle,
+                Motor.nominalVoltage);
         SparkUtils.configureClosedLoopSettings(
                 turretConfig,
-                TurretConstants.kP,
-                TurretConstants.kI,
-                TurretConstants.kD,
-                TurretConstants.kStaticG,
-                TurretConstants.kCos,
-                TurretConstants.kS,
-                TurretConstants.kV,
-                TurretConstants.kA,
-                TurretConstants.iZone);
-        SparkUtils.configureHardStops(
+                Motor.kP,
+                Motor.kI,
+                Motor.iZone,
+                Motor.kD,
+                Motor.kStaticG,
+                Motor.kCos,
+                Motor.kS,
+                Motor.kV,
+                Motor.kA,
+                Motor.rampTime);
+        SparkUtils.configureLimitSwitches(
                 turretConfig,
-                TurretConstants.forwardHardLimitEnabled,
-                TurretConstants.forwardHardLimitResetRots,
-                TurretConstants.reverseHardLimitEnabled,
-                TurretConstants.reverseHardLimitResetRots);
+                Motor.forwardHardLimitEnabled,
+                Motor.forwardHardLimitResetRots,
+                Motor.reverseHardLimitEnabled,
+                Motor.reverseHardLimitResetRots);
 
         if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure turret motor");
-            Alerts.turretConfigFail.set(true);
+            Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
+            motorConfigFail.set(true);
         }
 
         targetAngle = Optional.empty();
         isCalibrated = false;
 
-        turretPosePublisher = Logger.makeStructPublisher(TurretConstants.subsystemName, "turretPose", Pose2d.struct);
-        targetTurretPosePublisher =
-                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetTurretPose", Pose2d.struct);
-        targetPointPublisher =
-                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPoint", Translation2d.struct);
+        turretPosePublisher = Logger.makeStructPublisher(getName(), "turretPose", Pose2d.struct);
+        targetTurretPosePublisher = Logger.makeStructPublisher(getName(), "targetTurretPose", Pose2d.struct);
+        targetPointPublisher = Logger.makeStructPublisher(getName(), "targetPoint", Translation2d.struct);
         targetPredictedPointPublisher =
-                Logger.makeStructPublisher(TurretConstants.subsystemName, "targetPredictedPoint", Translation2d.struct);
-        predictedOffsetPublisher =
-                Logger.makeStructPublisher(TurretConstants.subsystemName, "predictedOffset", Translation2d.struct);
+                Logger.makeStructPublisher(getName(), "targetPredictedPoint", Translation2d.struct);
+        predictedOffsetPublisher = Logger.makeStructPublisher(getName(), "predictedOffset", Translation2d.struct);
+    }
+
+    @Override
+    public String getName() {
+        return TurretConstants.subsystemName;
     }
 
     @Override
     public void periodic() {
-        Logger.logSubsystem(TurretConstants.subsystemName, this);
+        Logger.logSubsystem(getName(), this);
 
-        Logger.logSparkMotor(TurretConstants.subsystemName, "motor", turretMotor);
+        Logger.logSparkMotor(getName(), Motor.motorName, turretMotor);
 
         Logger.logDouble(
-                TurretConstants.subsystemName,
+                getName(),
                 "currentTurretDeg",
                 getCurretAngle().asMechanismAngle().in(Degrees));
 
         Logger.logDouble(
-                TurretConstants.subsystemName,
+                getName(),
                 "targetTurretDeg",
                 targetAngle.map((val) -> val.asMotorAngle().in(Degrees)).orElse(Double.NaN));
         Logger.logDouble(
-                TurretConstants.subsystemName,
+                getName(),
                 "targetMotorRots",
                 targetAngle.map((val) -> val.asMechanismRotations()).orElse(Double.NaN));
-        Logger.logBool(TurretConstants.subsystemName, "calibrationLimit", isAtCalibrationLimit());
-        Logger.logBool(TurretConstants.subsystemName, "isCalibrated", getIsCalibrated());
+        Logger.logBool(getName(), "isAtCalibrationLimit", isAtCalibrationLimit());
+        Logger.logBool(getName(), "isCalibrated", getIsCalibrated());
 
         Pose2d robotPose = RobotContainer.getInstance().swerve.getState().Pose;
         Translation2d turretCenter =
@@ -142,16 +156,16 @@ public class TurretSubsystem extends SubsystemBase {
     public void verySlowPeriodic() {
         boolean turretConnected = SparkUtils.isConnected(turretMotor);
 
-        CANMonitor.logCANDeviceStatus("turretMotor", TurretConstants.motorID, turretConnected);
-        Alerts.turretDisconnected.set(!turretConnected);
-        Alerts.turretOverheating.set(turretMotor.getMotorTemperature() >= 80);
-        Alerts.turretFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
-        Alerts.turretWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
+        CANMonitor.logCANDeviceStatus(Motor.motorName, Motor.motorID, turretConnected);
+        motorDisconnected.set(!turretConnected);
+        motorOverheating.set(turretMotor.getMotorTemperature() >= 80);
+        motorFaults.set(SparkUtils.hasCriticalFaults(turretMotor.getFaults()));
+        motorWarnings.set(SparkUtils.hasCriticalWarnings(turretMotor.getWarnings()));
     }
 
     public void setTurretAngle(TurretAngle angle) {
         if (angle == null) {
-            Logger.reportWarning("Cannot set turret angle to a null angle", true);
+            Logger.reportWarning(String.format("Cannot rotate %s to a null angle", Motor.motorName), true);
             return;
         }
 
@@ -169,8 +183,8 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean isAtCalibrationLimit() {
-        return turretMotor.getOutputCurrent() > TurretConstants.calibrationThresholdCurrent
-                || Math.abs(turretMotor.getEncoder().getVelocity()) < 1;
+        return turretMotor.getOutputCurrent() > Motor.calibrationThresholdCurrent.in(Amps)
+                || Math.abs(turretMotor.getEncoder().getVelocity()) < Motor.calibrationThresholdVel.in(RPM);
     }
 
     public TurretAngle getCurretAngle() {

@@ -28,7 +28,7 @@ public class Robot extends TimedRobot {
 
     private static Robot instance;
 
-    private Command m_autonomousCommand;
+    private Command autoCommand;
     private Optional<TeleopLogic> teleopLogic;
     private Optional<TeleopDrive> teleopDrive;
     private Optional<Timer> autoGyroTimer;
@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
         // handle disconnect of CAN devices;
-        // set Callback function to log reconnect and flash LEDs for disconnection
+        // set callback function to log reconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
                 Logger.println(String.format("Connected to CAN device %d", id));
@@ -144,6 +144,8 @@ public class Robot extends TimedRobot {
             RobotContainer.getInstance().turretLimelight.takeRewind();
             RobotContainer.getInstance().otherLimelight.takeRewind();
         }
+
+        RobotContainer.getInstance().displayAuto();
     }
 
     @Override
@@ -157,9 +159,9 @@ public class Robot extends TimedRobot {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
-        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        autoCommand = RobotContainer.getInstance().getAutonomousCommand();
+        if (autoCommand != null) {
+            CommandScheduler.getInstance().schedule(autoCommand);
         }
 
         RobotContainer.getInstance().displayAuto();
@@ -180,8 +182,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousExit() {
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
+        if (autoCommand != null) {
+            autoCommand.cancel();
         }
     }
 

@@ -19,10 +19,6 @@ public enum TeleopPhase {
     public static final Time shift4EndTime = Seconds.of(10 + 4 * 25);
     public static final Time endgameEndTime = Seconds.of(10 + 4 * 25 + 30);
 
-    /**
-     * Returns the current shift given the time since teleop has started
-     * @return
-     */
     public static TeleopPhase fromTeleopTimer(Time teleopTime) {
         if (teleopTime == null) return TRANSITION_SHIFT;
 

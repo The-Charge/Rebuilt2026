@@ -8,14 +8,14 @@ public class MiscUtils {
 
     private MiscUtils() {}
 
-    public static void changeSubsystemDefaultCommand(Subsystem sub, Command newDefault, boolean force) {
+    public static void changeSubsystemDefaultCommand(Subsystem sub, Command newDefault, boolean cancelExistingCommand) {
         if (sub == null) return;
 
         Command currentDefault = sub.getDefaultCommand();
         Command currentCommand = sub.getCurrentCommand();
 
         if (currentCommand != null) {
-            if (force) {
+            if (cancelExistingCommand) {
                 currentCommand.cancel();
             } else if (currentDefault != null && currentDefault.getClass().equals(currentCommand.getClass())) {
                 // only cancel current command if it is the previous default command
@@ -25,7 +25,7 @@ public class MiscUtils {
         sub.setDefaultCommand(newDefault);
     }
 
-    public static void removeSubsystemDefaultCommand(Subsystem sub, boolean force) {
+    public static void removeSubsystemDefaultCommand(Subsystem sub, boolean cancelExistingCommand) {
         if (sub == null) return;
 
         Command currentDefault = sub.getDefaultCommand();
@@ -33,7 +33,7 @@ public class MiscUtils {
 
         sub.removeDefaultCommand();
         if (currentCommand != null) {
-            if (force) {
+            if (cancelExistingCommand) {
                 currentCommand.cancel();
             } else if (currentDefault != null && currentDefault.getClass().equals(currentCommand.getClass())) {
                 currentCommand.cancel();

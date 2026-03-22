@@ -1,17 +1,25 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
 public class TalonFXUtils {
 
     private TalonFXUtils() {}
 
+    /**
+     * WARNINGS: this is very slow, do not call it frequently
+     */
     public static TalonFXFaults getAllActiveFaults(TalonFX motor) {
         if (motor == null) {
             Logger.reportWarning("Cannot get faults from a null TalonFX", true);
@@ -47,6 +55,9 @@ public class TalonFXUtils {
                 motor.getFault_UsingFusedCANcoderWhileUnlicensed().getValue());
     }
 
+    /**
+     * WARNING: this is very slow, do not call it frequently
+     */
     public static TalonFXFaults getAllStickyFaults(TalonFX motor) {
         if (motor == null) {
             Logger.reportWarning("Cannot get sticky faults from a null TalonFX", true);
@@ -82,19 +93,28 @@ public class TalonFXUtils {
                 motor.getStickyFault_UsingFusedCANcoderWhileUnlicensed().getValue());
     }
 
+    /**
+     * Modify the given config to contain basic motor settings
+     * @param config The {@code TalonFXConfiguration} to modify
+     * @param maxAmps
+     * @param neutralMode
+     * @param inverted
+     * @param maxDutyCycle
+     * @param maxVoltage
+     */
     public static void configureBasicSettings(
             TalonFXConfiguration config,
-            double maxAmps,
+            Current maxAmps,
             NeutralModeValue neutralMode,
             InvertedValue inverted,
             double maxDutyCycle,
-            Optional<Double> maxVoltage) {
+            Optional<Voltage> maxVoltage) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
         }
 
-        config.CurrentLimits.StatorCurrentLimit = maxAmps;
+        config.CurrentLimits.StatorCurrentLimit = maxAmps.in(Amps);
         config.CurrentLimits.StatorCurrentLimitEnable = true;
 
         config.MotorOutput.NeutralMode = neutralMode;
@@ -105,18 +125,35 @@ public class TalonFXUtils {
         config.MotorOutput.PeakReverseDutyCycle = -maxDutyCycle;
 
         if (maxVoltage != null && maxVoltage.isPresent()) {
-            config.Voltage.PeakForwardVoltage = maxVoltage.get();
-            config.Voltage.PeakReverseVoltage = -maxVoltage.get();
+            config.Voltage.PeakForwardVoltage = maxVoltage.get().in(Volts);
+            config.Voltage.PeakReverseVoltage = -maxVoltage.get().in(Volts);
         }
     }
 
+    /**
+     * Modify the given config to contain closed loop settings
+     * @param config The {@code TalonFXConfiguration} to modify
+     * @param kP
+     * @param kI
+     * @param kD
+     * @param kG Unit depends on control mode
+     * @param gravityType
+     * @param kS Measured in units of output
+     * @param kSSign
+     * @param kV Measured in units of output/s
+     * @param kA Measured in units of output/s^2
+     */
     public static void configureClosedLoopSettings(
             TalonFXConfiguration config,
             double kP,
             double kI,
             double kD,
             Optional<Double> kG,
-            Optional<GravityTypeValue> gravityType) {
+            Optional<GravityTypeValue> gravityType,
+            Optional<Double> kS,
+            Optional<StaticFeedforwardSignValue> kSSign,
+            Optional<Double> kV,
+            Optional<Double> kA) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
@@ -131,17 +168,29 @@ public class TalonFXUtils {
         if (gravityType != null && gravityType.isPresent()) {
             config.Slot0.GravityType = gravityType.get();
         }
+        if (kS != null && kS.isPresent()) {
+            config.Slot0.kS = kS.get();
+        }
+        if (kSSign != null && kSSign.isPresent()) {
+            config.Slot0.StaticFeedforwardSign = kSSign.get();
+        }
+        if (kV != null && kV.isPresent()) {
+            config.Slot0.kV = kV.get();
+        }
+        if (kA != null && kA.isPresent()) {
+            config.Slot0.kA = kA.get();
+        }
     }
 
+    /**
+     * Modify the given config to contain settings for Motion Magic
+     * @param config The {@code TalonFXConfiguration} to modify
+     * @param cruiseRPS
+     * @param accelRPS2
+     * @param jerkRPS3
+     */
     public static void configureMotionMagicSettings(
-            TalonFXConfiguration config,
-            double cruiseRPS,
-            double accelRPS2,
-            double jerkRPS3,
-            double kS,
-            Optional<StaticFeedforwardSignValue> kSSign,
-            double kV,
-            double kA) {
+            TalonFXConfiguration config, double cruiseRPS, double accelRPS2, Optional<Double> jerkRPS3) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null TalonFXConfiguration", true);
             return;
@@ -149,16 +198,15 @@ public class TalonFXUtils {
 
         config.MotionMagic.MotionMagicCruiseVelocity = cruiseRPS;
         config.MotionMagic.MotionMagicAcceleration = accelRPS2;
-        config.MotionMagic.MotionMagicJerk = jerkRPS3;
-
-        config.Slot0.kS = kS;
-        if (kSSign != null && kSSign.isPresent()) {
-            config.Slot0.StaticFeedforwardSign = kSSign.get();
-        }
-        config.Slot0.kV = kV;
-        config.Slot0.kA = kA;
+        config.MotionMagic.MotionMagicJerk = jerkRPS3.orElse(0.0d);
     }
 
+    /**
+     * Modify the given config to contain settings for soft stops
+     * @param config The {@code TalonFXConfiguration} to modify
+     * @param forwardLimitRots
+     * @param reverseLimitRots
+     */
     public static void configureSoftStops(
             TalonFXConfiguration config, Optional<Double> forwardLimitRots, Optional<Double> reverseLimitRots) {
         if (config == null) {
@@ -177,7 +225,15 @@ public class TalonFXUtils {
         }
     }
 
-    public static void configureHardStops(
+    /**
+     * Modify the given config to contain settings for limit switches
+     * @param config The {@code TalonFXConfiguration} to modify
+     * @param forwardLimitEnabled
+     * @param forwardLimitResetRots The value the encoder wil be reset to when the forward limit switch is reached. This does nothing if the forward limit is disabled
+     * @param reverseLimitEnabled
+     * @param reverseLimitResetRots The value the encoder wil be reset to when the reverse limit switch is reached. This does nothing if the reverse limit is disabled
+     */
+    public static void configureLimitSwitches(
             TalonFXConfiguration config,
             boolean forwardLimitEnabled,
             Optional<Double> forwardLimitResetRots,

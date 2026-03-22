@@ -7,31 +7,33 @@ import java.util.function.BooleanSupplier;
 
 public class ActiveAtHubLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
     private final BooleanSupplier isReady;
 
-    public ActiveAtHubLED(LEDSubsystem LEDSubsystem, BooleanSupplier isReadyToShoot) {
-        ledSub = LEDSubsystem;
+    public ActiveAtHubLED(LEDSubsystem ledSub, BooleanSupplier isReadyToShoot) {
+        led = ledSub;
         isReady = isReadyToShoot;
 
-        addRequirements(ledSub);
+        addRequirements(led);
     }
 
     @Override
-    public void initialize() {}
+    public String getName() {
+        return getClass().getTypeName();
+    }
 
     @Override
     public void execute() {
         if (isReady.getAsBoolean()) {
-            ledSub.solidColor(LEDConstants.chargeGreen);
+            led.solidColor(LEDConstants.chargeGreen);
         } else {
-            ledSub.solidColor(LEDConstants.orange);
+            led.solidColor(LEDConstants.orange);
         }
     }
 
     @Override
     public void end(boolean interrupted) {
-        // ledSub.turnOff();
+        led.off();
     }
 
     @Override

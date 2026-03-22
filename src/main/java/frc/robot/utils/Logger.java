@@ -16,6 +16,8 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
@@ -38,8 +40,8 @@ public class Logger {
         NT_ONLY(true, false),
         DISABLED(false, false);
 
-        final boolean logToFile;
         final boolean logToNT;
+        final boolean logToFile;
 
         LoggingLevel(boolean nt, boolean file) {
             logToNT = nt;
@@ -52,13 +54,19 @@ public class Logger {
     private static final boolean showJoystickDisconnectWarnings = false;
     private static final boolean ctreLoggingEnabled = false;
     private static final boolean revLoggingEnabled = false;
-    private static final LoggingLevel loggingLevel = LoggingLevel.ENABLED;
+    private static final LoggingLevel loggingLevel = LoggingLevel.NT_ONLY;
+
+    private static final Alert notLoggingToFlashdrive;
 
     private static boolean hasInited;
     private static Optional<NetworkTableInstance> ntInstance;
     private static Optional<NetworkTable> nt;
 
     static {
+        notLoggingToFlashdrive = new Alert(
+                "Logger is not logging to a flash drive. Please confirm that the flash drive is securely plugged in and was plugged in before the robot was turned on",
+                AlertType.kError);
+
         hasInited = false;
         ntInstance = Optional.empty();
         nt = Optional.empty();
@@ -105,7 +113,7 @@ public class Logger {
             boolean loggingToFlash =
                     logDir == null ? false : logDir.toLowerCase().startsWith("/u");
             logBool("Logger", "loggingToFlashdrive", loggingToFlash);
-            Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
+            notLoggingToFlashdrive.set(!loggingToFlash);
         }
 
         println("Logging started");
