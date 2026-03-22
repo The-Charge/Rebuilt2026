@@ -19,10 +19,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.teleop.TeleopLogic;
 import frc.robot.units.TurretAngle;
 import frc.robot.utils.Logger;
 import java.util.Optional;
@@ -71,12 +70,14 @@ public class AimAtTarget extends Command {
                 turretSub,
                 shooterSub,
                 noDepSwerveSub,
-                () -> TeleopLogic.getFriendlyZoneTarget(
+                () -> FieldConstants.getFriendlyZoneTarget(
                         noDepSwerveSub.getState().Pose.getTranslation()));
     }
 
     @Override
-    public void initialize() {}
+    public String getName() {
+        return getClass().getTypeName();
+    }
 
     @Override
     public void execute() {

@@ -12,6 +12,19 @@ public class SwerveConstants {
     private SwerveConstants() {}
 
     public static final String subsystemName = "Swerve";
+    public static final String flDriveName = "flDriveMotor";
+    public static final String flAzimuthName = "flAzimuthMotor";
+    public static final String frDriveName = "frDriveMotor";
+    public static final String frAzimuthName = "frAzimuthMotor";
+    public static final String blDriveName = "blDriveMotor";
+    public static final String blAzimuthName = "blAzimuthMotor";
+    public static final String brDriveName = "brDriveMotor";
+    public static final String brAzimuthName = "brAzimuthMotor";
+
+    public static final int flModuleIndex = 0;
+    public static final int frModuleIndex = 1;
+    public static final int blModuleIndex = 2;
+    public static final int brModuleIndex = 3;
 
     public static final LinearVelocity maxTranslationVel = TunerConstants.kSpeedAt12Volts;
     public static final AngularVelocity maxAngularVel = RotationsPerSecond.of(1.5);

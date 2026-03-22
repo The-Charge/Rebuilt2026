@@ -14,6 +14,11 @@ public class StopShooter extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         shoot.stopShooter();
     }

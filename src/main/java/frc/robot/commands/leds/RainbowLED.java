@@ -11,25 +11,30 @@ import java.util.Optional;
 
 public class RainbowLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
     private final Optional<Time> expiration;
 
     private Optional<Timer> timer;
 
-    public RainbowLED(LEDSubsystem LEDSubsystem) {
-        ledSub = LEDSubsystem;
+    public RainbowLED(LEDSubsystem ledSub) {
+        led = ledSub;
         expiration = Optional.empty();
         timer = Optional.empty();
 
-        addRequirements(ledSub);
+        addRequirements(led);
     }
 
-    public RainbowLED(LEDSubsystem ledSubsystem, Time duration) {
-        ledSub = ledSubsystem;
+    public RainbowLED(LEDSubsystem ledSub, Time duration) {
+        led = ledSub;
         expiration = Optional.of(duration);
         timer = Optional.empty();
 
-        addRequirements(ledSub);
+        addRequirements(led);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
@@ -39,14 +44,13 @@ public class RainbowLED extends Command {
             timer.get().start();
         }
 
-        ledSub.rainbow(MetersPerSecond.of(4));
+        led.rainbow(MetersPerSecond.of(4));
     }
 
     @Override
-    public void execute() {}
-
-    @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+        led.off();
+    }
 
     @Override
     public boolean isFinished() {
