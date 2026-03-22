@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,6 +22,7 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
+import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.Logger;
 import java.util.Optional;
@@ -37,6 +39,9 @@ import limelight.networktables.target.AprilTagFiducial;
 import limelight.results.RawFiducial;
 
 public class LimelightSubsystem extends SubsystemBase {
+
+    public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
+
     private final Limelight turretLimelight;
     private final Limelight sideLimelight;
 
@@ -51,9 +56,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
     private final Optional<StructPublisher<Pose3d>> diffPublisher;
 
-    public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
-
     private boolean isSeeded = false;
+    private boolean throttle = false;
+    private boolean isChanged = false;
 
     public LimelightSubsystem(
             String turretLimelight, String sideLimelight, Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
@@ -68,13 +73,67 @@ public class LimelightSubsystem extends SubsystemBase {
         this.turretPoseEstimatorMT1 = this.turretLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
         this.sidePoseEstimatorMT1 = this.sideLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
 
-        visionTargetsTurret =
-                Logger.makeStructArrayPublisher("Limelight" + turretLimelight, "visionTargetsTurret", Pose2d.struct);
-        visionTargetsSide =
-                Logger.makeStructArrayPublisher("Limelight" + sideLimelight, "visionTargetsSide", Pose2d.struct);
+        visionTargetsTurret = Logger.makeStructArrayPublisher(
+                getName(), "limelight-" + turretLimelight + "/visionTargetsTurret", Pose2d.struct);
+        visionTargetsSide = Logger.makeStructArrayPublisher(
+                getName(), "limelight-" + sideLimelight + "/visionTargetsSide", Pose2d.struct);
 
         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
     }
+
+    @Override
+    public String getName() {
+        return LimelightConstants.subsystemName;
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(getName(), this);
+
+        // ****** FIX FIX FIX *******
+        if (throttle && isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
+            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
+            // turretLimelight.setThrottle(false);
+            // sideLimelight.setThrottle(false);
+            // turretLimelight.getSettings().
+            // turretLimelight.setPipeline(1);
+            // sideLimelight.setPipeline(1);
+            Logger.logBool(getName(), "throttle", true);
+            isChanged = false;
+        }
+
+        // ****** FIX FIX FIX *******
+        if (!throttle && isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 0);
+            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 0);
+            // turretLimelight.setIMUMode(1);
+            // sideLimelight.setIMUMode(1);
+            // turretLimelight.setThrottle(true);
+            // sideLimelight.setThrottle(true);
+            // turretLimelight.setPipeline(0);
+            // sideLimelight.setPipeline(0);
+            Logger.logBool(getName(), "enabled", false);
+            isChanged = false;
+        }
+
+        // if (!isSeeded) {
+        //     seed();
+        // }
+
+        setRobotOrientationSwerve(); // for mode 0
+        logMT2diff();
+        multiple();
+        // logVisionTargets(); //TODO: log vision targets after migrating to YALL
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {}
 
     private void initLimelights(Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
         LimelightHelpers.setRewindEnabled(turretLimelight.limelightName, true); // wtf is this in YALL ??
@@ -95,8 +154,6 @@ public class LimelightSubsystem extends SubsystemBase {
                 .save();
     }
 
-    private boolean throttle = false;
-    private boolean isChanged = false;
     /**
      * NEED TO RUN TO BE TRUE WHEN ENABLED!!!
      * @param isEnabled
@@ -105,55 +162,6 @@ public class LimelightSubsystem extends SubsystemBase {
         throttle = isEnabled;
         isChanged = true;
     }
-
-    @Override
-    public void periodic() {
-        Logger.logSubsystem(LimelightConstants.subsystemName, this);
-
-        // ****** FIX FIX FIX *******
-        if (throttle && isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
-            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
-            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
-            // turretLimelight.setThrottle(false);
-            // sideLimelight.setThrottle(false);
-            // turretLimelight.getSettings().
-            // turretLimelight.setPipeline(1);
-            // sideLimelight.setPipeline(1);
-            Logger.logBool(LimelightConstants.subsystemName, "throttle", true);
-            isChanged = false;
-        }
-
-        // ****** FIX FIX FIX *******
-        if (!throttle && isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
-            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 0);
-            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 0);
-            // turretLimelight.setIMUMode(1);
-            // sideLimelight.setIMUMode(1);
-            // turretLimelight.setThrottle(true);
-            // sideLimelight.setThrottle(true);
-            // turretLimelight.setPipeline(0);
-            // sideLimelight.setPipeline(0);
-            Logger.logBool(LimelightConstants.subsystemName, "enabled", false);
-            isChanged = false;
-        }
-
-        // if (!isSeeded) {
-        //     seed();
-        // }
-
-        setRobotOrientationSwerve(); // for mode 0
-        logMT2diff();
-        multiple();
-        // logVisionTargets(); //TODO: log vision targets after migrating to YALL
-    }
-
-    public void slowPeriodic() {}
-
-    public void verySlowPeriodic() {}
 
     /**
      * UNUSED???? fix later ??
@@ -294,12 +302,11 @@ public class LimelightSubsystem extends SubsystemBase {
         Pose2d[] targets = new Pose2d[targetFiducials.length];
         // Logger.println(Integer.toString(targetFiducials.length));
 
+        SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
+        Transform2d transform = new Transform2d(state.Pose.getTranslation(), state.Pose.getRotation());
         for (int i = 0; i < targets.length; i++) {
-            Pose2d targetFieldSpace = targetFiducials[i]
-                    .getTargetPose_RobotSpace2D()
-                    .plus(new Transform2d(
-                            RobotContainer.getInstance().swerve.getState().Pose.getTranslation(),
-                            RobotContainer.getInstance().swerve.getState().Pose.getRotation()));
+            Pose2d targetFieldSpace =
+                    targetFiducials[i].getTargetPose_RobotSpace2D().plus(transform);
             targets[i] = targetFieldSpace;
         }
 
@@ -318,12 +325,11 @@ public class LimelightSubsystem extends SubsystemBase {
         Pose2d[] targets = new Pose2d[targetFiducials.length];
         // Logger.println(Integer.toString(targetFiducials.length));
 
+        SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
+        Transform2d transform = new Transform2d(state.Pose.getTranslation(), state.Pose.getRotation());
         for (int i = 0; i < targets.length; i++) {
-            Pose2d targetFieldSpace = targetFiducials[i]
-                    .getTargetPose_RobotSpace2D()
-                    .plus(new Transform2d(
-                            RobotContainer.getInstance().swerve.getState().Pose.getTranslation(),
-                            RobotContainer.getInstance().swerve.getState().Pose.getRotation()));
+            Pose2d targetFieldSpace =
+                    targetFiducials[i].getTargetPose_RobotSpace2D().plus(transform);
             targets[i] = targetFieldSpace;
         }
 
@@ -463,7 +469,7 @@ public class LimelightSubsystem extends SubsystemBase {
         // make sure we aren't putting all our trust in vision
         translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
 
-        double rotStdDev = LimelightConstants.krotStdDev; // we want to get the rotation from megatag1
+        double rotStdDev = LimelightConstants.kRotStdDev; // we want to get the rotation from megatag1
 
         return Optional.of(VecBuilder.fill(translationalStdDev, translationalStdDev, rotStdDev));
     }
@@ -542,7 +548,6 @@ public class LimelightSubsystem extends SubsystemBase {
         Pose3d sidePose = side.get().pose;
 
         Pose3d diff = new Pose3d().plus(sidePose.minus(turretPose));
-        Logger.logPose3dAsDoubleArray(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
         diffPublisher.get().set(diff);
     }
 

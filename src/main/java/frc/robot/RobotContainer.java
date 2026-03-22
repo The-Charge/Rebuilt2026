@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -44,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.AimAtTarget;
 import frc.robot.commands.AutoShoot;
-import frc.robot.commands.WaitForReadyToShoot;
+import frc.robot.commands.AutoWaitForReadyToShoot;
 import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
@@ -68,18 +69,20 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
+import frc.robot.generated.CommandSwerveDrivetrain;
+import frc.robot.generated.SwerveTelemetry;
 import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.AuxSwerveSubsystem;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
@@ -112,7 +115,7 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final LimelightSubsystem limelightSubsystem;
+    public final LimelightSubsystem limelights;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
@@ -139,6 +142,8 @@ public class RobotContainer {
     public Command swerveFieldCentricFacingAngleDriveCommand;
     private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
 
+    public final Field2d ntField;
+
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
 
@@ -153,9 +158,13 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        limelightSubsystem =
-                new LimelightSubsystem("turret", "other", LimelightConstants.turretPose, LimelightConstants.otherPose);
-        // otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
+        limelights = new LimelightSubsystem(
+                LimelightConstants.Turret.cameraName,
+                LimelightConstants.Side.cameraName,
+                LimelightConstants.Turret.robotRelativePose,
+                LimelightConstants.Side.robotRelativePose);
+        // otherLimelight = new LimelightSubsystem(LimelightConstants.Side.cameraName,
+        // LimelightConstants.Side.robotRelativePose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
@@ -169,6 +178,9 @@ public class RobotContainer {
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
         aimAtHubCommand = AimAtTarget.atHub(turret, shooter, swerve);
         aimAtFZoneCommand = AimAtTarget.atFZone(turret, shooter, swerve);
+
+        ntField = new Field2d();
+        SmartDashboard.putData("Field", ntField); // only ever call once
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
@@ -244,30 +256,7 @@ public class RobotContainer {
             return req;
         });
 
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
         swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
-        commandDriver1
-                .b()
-                .onTrue(new InstantCommand(() -> {
-                            swerve.resetRotation(
-                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                                            ? Rotation2d.kZero
-                                            : Rotation2d.k180deg);
-                            limelightSubsystem.seedBothAbsolute(Angle.ofBaseUnits(
-                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180,
-                                    Degrees));
-                        })
-                        .ignoringDisable(true));
-        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
-        commandDriver1
-                .leftTrigger()
-                .onTrue(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
-                        .ignoringDisable(true))
-                .onFalse(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
-                        .ignoringDisable(true));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -282,7 +271,28 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        // TODO: make swerve turn so that intake automatically faces the direction of travel while the intake is running
+        commandDriver1
+                .b()
+                .onTrue(new InstantCommand(() -> {
+                            swerve.resetRotation(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                                            ? Rotation2d.kZero
+                                            : Rotation2d.k180deg);
+                            limelights.seedBothAbsolute(Angle.ofBaseUnits(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180,
+                                    Degrees));
+                        })
+                        .ignoringDisable(true));
+        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
+        commandDriver1
+                .leftTrigger()
+                .onTrue(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
+                        .ignoringDisable(true))
+                .onFalse(new InstantCommand(() ->
+                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
+                        .ignoringDisable(true));
+
         commandDriver2
                 .leftTrigger()
                 .whileTrue(new RunRoller(intake, false))
@@ -312,14 +322,14 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox.seed().onTrue(new InstantCommand(limelightSubsystem::seedSwerve));
+        commandButtonBox.seed().onTrue(new InstantCommand(limelights::seedSwerve));
         commandButtonBox
                 .turretLeft()
-                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, TurretConstants.Motor.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .turretRight()
-                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, -TurretConstants.Motor.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
@@ -332,11 +342,11 @@ public class RobotContainer {
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolDown()
-                .whileTrue(new ManualSpool(climber, -ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, -ClimberConstants.Motor.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolUp()
-                .whileTrue(new ManualSpool(climber, ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, ClimberConstants.Motor.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
@@ -347,7 +357,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Shoot", new AutoShoot(indexer, intake));
         NamedCommands.registerCommand("CalibrateTurret", new CalibrateTurret(turret));
         NamedCommands.registerCommand(
-                "WaitForReadyToShoot", new WaitForReadyToShoot(turret, Optional.of(Seconds.of(4))));
+                "WaitForReadyToShoot", new AutoWaitForReadyToShoot(turret, Optional.of(Seconds.of(4))));
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
         NamedCommands.registerCommand("Intake", new RunRoller(intake, false));
     }
@@ -419,31 +429,30 @@ public class RobotContainer {
     }
 
     private void setupAutoDisplay() {
-        // update the displayed auto path in smartdashboard when ever the selection is changed
+        // update the displayed auto path in SmartDashboard when ever the selection is changed
         // display is cleared in teleopInit
-        // if (autoChooser.getSelected() != null
-        //         && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-        //     Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-        // } else {
-        //     Logger.logString("", "selectedAuto", "None");
-        // }
+        if (autoChooser.getSelected() != null
+                && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+            Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+        } else {
+            Logger.logString("", "selectedAuto", "None");
+        }
 
-        // autoChooser.onChange((selected) -> {
-        //     if (DriverStation.isTeleopEnabled()) return;
+        autoChooser.onChange((selected) -> {
+            if (autoChooser.getSelected() != null
+                    && !autoChooser.getSelected().getName().equals("InstantCommand")) {
+                Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
+            } else {
+                Logger.logString("", "selectedAuto", "None");
+            }
 
-        //     displayAuto();
-
-        //     if (autoChooser.getSelected() != null
-        //             && !autoChooser.getSelected().getName().equals("InstantCommand")) {
-        //         Logger.logString("", "selectedAuto", autoChooser.getSelected().getName());
-        //     } else {
-        //         Logger.logString("", "selectedAuto", "None");
-        //     }
-        // });
+            // if (DriverStation.isTeleopEnabled()) return;
+            displayAuto();
+        });
 
         /*
          * Robot.teleopInit clears the display
-         * Robot.autonomousInit redraws the display
+         * Robot.autonomousInit and Robot.disabledInit redraws the display
          */
     }
 
@@ -452,14 +461,10 @@ public class RobotContainer {
             Command auto = autoChooser.getSelected();
 
             if (auto == null || auto.getName().equals("InstantCommand")) {
-                // AutoDisplayUtil.clearAutoPath();
+                AutoDisplayUtil.clearAutoPath();
                 return;
             }
-
-            boolean isRed = DriverStation.getAlliance()
-                    .map((val) -> val == Alliance.Red)
-                    .orElse(false);
-            // AutoDisplayUtil.displayAutoPath(auto, isRed);
+            AutoDisplayUtil.displayAutoPath(auto);
         } catch (Exception e) {
             Logger.reportError(e);
         }

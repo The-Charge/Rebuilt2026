@@ -3,7 +3,6 @@ package frc.robot.teleop;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -19,7 +18,6 @@ import frc.robot.commands.intake.DeployIntake;
 import frc.robot.commands.leds.DualBlinkLED;
 import frc.robot.commands.leds.RainbowLED;
 import frc.robot.commands.turret.CalibrateTurret;
-import frc.robot.constants.FieldConstants;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
@@ -27,7 +25,7 @@ import java.util.Optional;
 
 public class TeleopLogic {
 
-    private static final String subsystemName = "Teleop";
+    private static final String tableName = TeleopLogic.class.getTypeName();
 
     private Timer teleopTimer;
     private Optional<Alliance> autoWinner;
@@ -64,7 +62,7 @@ public class TeleopLogic {
         if (autoWinner == null || autoWinner.isEmpty()) {
             // https://docs.wpilib.org/en/stable/docs/yearly-overview/2026-game-data.html
             String gameMessage = DriverStation.getGameSpecificMessage();
-            Logger.logString(subsystemName, "gameSpecificMessage", gameMessage);
+            Logger.logString(tableName, "gameSpecificMessage", gameMessage);
 
             if (gameMessage != null && !gameMessage.isEmpty()) {
                 if (gameMessage.charAt(0) == 'R') {
@@ -95,27 +93,21 @@ public class TeleopLogic {
         // check if our hub is active
         boolean isHubActive;
         if (autoWinner.isPresent()) {
-            isHubActive = isFriendlyHubActive(alliance, autoWinner.get(), phase);
+            isHubActive = isFriendlyHubActive(autoWinner.get(), phase);
         } else {
             isHubActive = true;
         }
 
-        // check if hub status has changed
-        // boolean hasHubStateChanged = lastHubActive.isEmpty() || isHubActive != lastHubActive.get();
-
-        // check if the field zone has changed
-        // boolean hasZoneChanged = lastZone.isEmpty() || lastZone.get() != zone;
-
         // check if the teleop phase has changed
         boolean hasPhaseChanged = lastPhase.isEmpty() || phase != lastPhase.get();
 
-        // determine what assist mode the robot should be in
+        // determine what turret mode the robot should be in
         // fallback behavior is to be ready to shoot so that if the teleop logic bugs out, the drivers should still be
         // able to shoot
         TeleopTurretMode turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
-        if (isInFriendlyZone && isHubActive) {
+        if (isInFriendlyZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
-        } else if (isInEnemyZone || isInFriendlyZone && !isHubActive) {
+        } else if (isInEnemyZone) {
             turretMode = TeleopTurretMode.INACTIVE_TURRET;
         } else if (isInNeutralZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
@@ -147,36 +139,44 @@ public class TeleopLogic {
                             RobotContainer.getInstance().ledSub, Color.kBlue, Color.kRed, timeLeftInPhase));
 
             final double rumbleStrength = 0.75;
+            final double pulse1Length = 0.25;
+            final double pulse2Length = 0.25;
+            final double pauseLength = 0.35;
             CommandScheduler.getInstance()
                     .schedule(new SequentialCommandGroup(
                             new InstantCommand(() -> {
-                                ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, 0.25);
-                                ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 0.25);
+                                ControllerUtil.scheduleControllerRumble(
+                                        0, rumbleStrength, rumbleStrength, pulse1Length);
+                                ControllerUtil.scheduleControllerRumble(
+                                        1, rumbleStrength, rumbleStrength, pulse1Length);
                             }),
-                            new WaitCommand(0.35),
+                            new WaitCommand(pauseLength),
                             new InstantCommand(() -> {
-                                ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, 0.25);
-                                ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 0.25);
+                                ControllerUtil.scheduleControllerRumble(
+                                        0, rumbleStrength, rumbleStrength, pulse2Length);
+                                ControllerUtil.scheduleControllerRumble(
+                                        1, rumbleStrength, rumbleStrength, pulse2Length);
                             })));
         }
         if (hasPhaseChanged && phase == TeleopPhase.ENDGAME) {
             CommandScheduler.getInstance().schedule(new RainbowLED(RobotContainer.getInstance().ledSub, Seconds.of(5)));
 
             final double rumbleStrength = 0.75;
-            ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, 1);
-            ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, 1);
+            final double rumbleLength = 1;
+            ControllerUtil.scheduleControllerRumble(0, rumbleStrength, rumbleStrength, rumbleLength);
+            ControllerUtil.scheduleControllerRumble(1, rumbleStrength, rumbleStrength, rumbleLength);
         }
 
         // log debug data
-        Logger.logString(subsystemName, "phase", phase.toString());
-        Logger.logDouble(subsystemName, "secsLeftInPhase", timeLeftInPhase.in(Seconds));
-        Logger.logBool(subsystemName, "isFriendlyHubActive", isHubActive);
-        Logger.logString(subsystemName, "assistMode", turretMode.toString());
+        Logger.logString(tableName, "phase", phase.toString());
+        Logger.logDouble(tableName, "secsLeftInPhase", timeLeftInPhase.in(Seconds));
+        Logger.logBool(tableName, "isFriendlyHubActive", isHubActive);
+        Logger.logString(tableName, "assistMode", turretMode.toString());
         Logger.logString(
-                subsystemName,
+                tableName,
                 "autoWinningAlliance",
                 autoWinner.map((val) -> val.toString()).orElse("None"));
-        Logger.logString(subsystemName, "zone", zone.toString());
+        Logger.logString(tableName, "zone", zone.toString());
 
         lastTimeLeftInPhase = Optional.of(timeLeftInPhase);
         lastPhase = Optional.of(phase);
@@ -187,32 +187,30 @@ public class TeleopLogic {
     public void endTeleop() {}
 
     private void enterActiveAtHubMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtHubLEDCommand, false);
 
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().aimAtHubCommand, false);
     }
 
     private void enterActiveAtFZoneMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().activeAtFZoneLEDCommand, false);
 
-        // prep shoot and turret to shoot at friendly zone
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtFZoneCommand);
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().aimAtFZoneCommand, false);
     }
 
     private void enterInactiveMode() {
-        // led pattern
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().inactiveLEDCommand, false);
 
-        CommandScheduler.getInstance().schedule(RobotContainer.getInstance().aimAtHubCommand);
+        MiscUtils.removeSubsystemDefaultCommand(RobotContainer.getInstance().turret, false);
     }
 
-    private boolean isFriendlyHubActive(Alliance alliance, Alliance autoWinner, TeleopPhase phase) {
-        boolean isWinningAlliance = alliance == autoWinner;
+    private boolean isFriendlyHubActive(Alliance autoWinner, TeleopPhase phase) {
+        boolean isWinningAlliance = DriverStation.getAlliance().orElse(Alliance.Blue) == autoWinner;
 
         switch (phase) {
             case TRANSITION_SHIFT:
@@ -235,25 +233,5 @@ public class TeleopLogic {
 
     public Optional<Boolean> getIsHubActive() {
         return lastIsHubActive;
-    }
-
-    public static Translation2d getFriendlyZoneTarget(Translation2d robotPose) {
-        boolean isInTopHalf = robotPose.getMeasureY().gt(FieldConstants.fieldYCenter);
-        boolean isBlue =
-                DriverStation.getAlliance().map((val) -> val == Alliance.Blue).orElse(true);
-
-        if (isBlue) {
-            if (isInTopHalf) {
-                return FieldConstants.blueZoneTopLoc;
-            } else {
-                return FieldConstants.blueZoneBottomLoc;
-            }
-        } else {
-            if (isInTopHalf) {
-                return FieldConstants.redZoneTopLoc;
-            } else {
-                return FieldConstants.redZoneBottomLoc;
-            }
-        }
     }
 }

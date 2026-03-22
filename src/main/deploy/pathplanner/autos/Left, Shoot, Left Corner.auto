@@ -69,7 +69,7 @@
                           {
                             "type": "named",
                             "data": {
-                              "name": "PrepShootAtHub"
+                              "name": "AimAtHub"
                             }
                           }
                         ]
@@ -79,12 +79,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StopShoot"
           }
         },
         {

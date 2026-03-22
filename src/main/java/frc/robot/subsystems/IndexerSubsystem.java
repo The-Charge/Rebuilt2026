@@ -6,8 +6,11 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexerConstants;
+import frc.robot.constants.IndexerConstants.Exchange;
+import frc.robot.constants.IndexerConstants.Spindexer;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
@@ -18,47 +21,69 @@ public class IndexerSubsystem extends SubsystemBase {
     private final SparkMax spindexerMotor;
     private final SparkMax exchangeMotor;
 
+    private final Alert spindexerDisconnected,
+            spindexerOverheating,
+            spindexerFaults,
+            spindexerWarnings,
+            spindexerConfigFail;
+    private final Alert exchangeConfigFail, exchangeDisconnected, exchangeOverheating, exchangeFaults, exchangeWarnings;
+
     public IndexerSubsystem() {
-        spindexerMotor = new SparkMax(IndexerConstants.Spindexer.motorID, MotorType.kBrushless);
+        spindexerDisconnected = Alerts.makeDisconnectAlert(Spindexer.motorName, Spindexer.motorID);
+        spindexerOverheating = Alerts.makeOverheatingAlert(Spindexer.motorName, Spindexer.motorID);
+        spindexerFaults = Alerts.makeCriticalFaultsAlert(Spindexer.motorName, Spindexer.motorID);
+        spindexerWarnings = Alerts.makeCriticalWarningsAlert(Spindexer.motorName, Spindexer.motorID);
+        spindexerConfigFail = Alerts.makeConfigFailAlert(Spindexer.motorName, Spindexer.motorID);
+
+        exchangeConfigFail = Alerts.makeConfigFailAlert(Exchange.motorName, Exchange.motorID);
+        exchangeDisconnected = Alerts.makeDisconnectAlert(Exchange.motorName, Exchange.motorID);
+        exchangeOverheating = Alerts.makeOverheatingAlert(Exchange.motorName, Exchange.motorID);
+        exchangeFaults = Alerts.makeCriticalFaultsAlert(Exchange.motorName, Exchange.motorID);
+        exchangeWarnings = Alerts.makeCriticalWarningsAlert(Exchange.motorName, Exchange.motorID);
+
+        spindexerMotor = new SparkMax(Spindexer.motorID, MotorType.kBrushless);
         SparkMaxConfig spindexerConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 spindexerConfig,
-                IndexerConstants.Spindexer.maxCurrent,
-                IndexerConstants.Spindexer.idleMode,
-                IndexerConstants.Spindexer.inverted,
-                IndexerConstants.Spindexer.maxDutyCycle,
-                IndexerConstants.Spindexer.nominalVoltage);
+                Spindexer.maxCurrent,
+                Spindexer.idleMode,
+                Spindexer.inverted,
+                Spindexer.maxDutyCycle,
+                Spindexer.nominalVoltage);
         if (spindexerMotor.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure spindexer motor");
-            Alerts.spindexerConfigFail.set(true);
+            Logger.reportError(String.format("Failed to configure %s", Spindexer.motorName));
+            spindexerConfigFail.set(true);
         }
 
-        exchangeMotor = new SparkMax(
-                IndexerConstants.Exchange.motorID,
-                MotorType.kBrushless); // port number in IndexerConstants; defines the motor as brushless
+        exchangeMotor = new SparkMax(Exchange.motorID, MotorType.kBrushless);
         SparkMaxConfig gateConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
                 gateConfig,
-                IndexerConstants.Exchange.maxCurrent,
-                IndexerConstants.Exchange.idleMode,
-                IndexerConstants.Exchange.inverted,
-                IndexerConstants.Exchange.maxDutyCycle,
-                IndexerConstants.Exchange.nominalVoltage);
+                Exchange.maxCurrent,
+                Exchange.idleMode,
+                Exchange.inverted,
+                Exchange.maxDutyCycle,
+                Exchange.nominalVoltage);
         if (exchangeMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
-            Logger.reportError("Failed to configure exchange motor");
-            Alerts.exchangeConfigFail.set(true);
+            Logger.reportError(String.format("Failed to configure %s", Exchange.motorName));
+            exchangeConfigFail.set(true);
         }
     }
 
     @Override
+    public String getName() {
+        return IndexerConstants.subsystemName;
+    }
+
+    @Override
     public void periodic() {
-        Logger.logSubsystem(IndexerConstants.subsystemName, this);
+        Logger.logSubsystem(getName(), this);
 
-        Logger.logSparkMotor(IndexerConstants.subsystemName, "spindexerMotor", spindexerMotor);
+        Logger.logSparkMotor(getName(), Spindexer.motorName, spindexerMotor);
 
-        Logger.logSparkMotor(IndexerConstants.subsystemName, "exchangeMotor", exchangeMotor);
+        Logger.logSparkMotor(getName(), Exchange.motorName, exchangeMotor);
     }
 
     public void slowPeriodic() {}
@@ -66,18 +91,18 @@ public class IndexerSubsystem extends SubsystemBase {
     public void verySlowPeriodic() {
         boolean spindexerConnected = SparkUtils.isConnected(spindexerMotor);
 
-        CANMonitor.logCANDeviceStatus("spindexerMotor", IndexerConstants.Spindexer.motorID, spindexerConnected);
-        Alerts.spindexerDisconnected.set(!spindexerConnected);
-        Alerts.spindexerOverheating.set(spindexerMotor.getMotorTemperature() >= 80);
-        Alerts.spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
-        Alerts.spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
+        CANMonitor.logCANDeviceStatus(Spindexer.motorName, Spindexer.motorID, spindexerConnected);
+        spindexerDisconnected.set(!spindexerConnected);
+        spindexerOverheating.set(spindexerMotor.getMotorTemperature() >= 80);
+        spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
+        spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
 
         boolean exchangeConnected = SparkUtils.isConnected(exchangeMotor);
-        CANMonitor.logCANDeviceStatus("exchangeMotor", IndexerConstants.Exchange.motorID, exchangeConnected);
-        Alerts.exchangeDisconnected.set(!exchangeConnected);
-        Alerts.exchangeOverheating.set(exchangeMotor.getMotorTemperature() >= 80);
-        Alerts.exchangeFaults.set(SparkUtils.hasCriticalFaults(exchangeMotor.getFaults()));
-        Alerts.exchangeWarnings.set(SparkUtils.hasCriticalWarnings(exchangeMotor.getWarnings()));
+        CANMonitor.logCANDeviceStatus(Exchange.motorName, Exchange.motorID, exchangeConnected);
+        exchangeDisconnected.set(!exchangeConnected);
+        exchangeOverheating.set(exchangeMotor.getMotorTemperature() >= 80);
+        exchangeFaults.set(SparkUtils.hasCriticalFaults(exchangeMotor.getFaults()));
+        exchangeWarnings.set(SparkUtils.hasCriticalWarnings(exchangeMotor.getWarnings()));
     }
 
     public double getSpindexerVoltage() {

@@ -24,6 +24,11 @@ public class ManualShoot extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         if (!SmartDashboard.containsKey(key)) {
             SmartDashboard.putNumber(key, 0);
@@ -37,11 +42,6 @@ public class ManualShoot extends Command {
         } else {
             shoot.setTargetVelocity(targetVel.get());
         }
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        // shoot.stopShoot();
     }
 
     @Override

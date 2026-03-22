@@ -11,28 +11,33 @@ import java.util.Optional;
 
 public class BlinkLED extends Command {
 
-    private final LEDSubsystem ledSub;
+    private final LEDSubsystem led;
     private final Color color;
     private final Optional<Time> expiration;
 
     private Optional<Timer> timer;
 
-    public BlinkLED(LEDSubsystem LEDSubsystem, Color col) {
-        ledSub = LEDSubsystem;
+    public BlinkLED(LEDSubsystem ledSub, Color col) {
+        led = ledSub;
         color = col;
         expiration = Optional.empty();
         timer = Optional.empty();
 
-        addRequirements(ledSub);
+        addRequirements(led);
     }
 
-    public BlinkLED(LEDSubsystem ledSubsystem, Color col, Time duration) {
-        ledSub = ledSubsystem;
+    public BlinkLED(LEDSubsystem ledSub, Color col, Time duration) {
+        led = ledSub;
         color = col;
         expiration = Optional.of(duration);
         timer = Optional.empty();
 
-        addRequirements(ledSub);
+        addRequirements(led);
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override
@@ -42,15 +47,12 @@ public class BlinkLED extends Command {
             timer.get().start();
         }
 
-        ledSub.blink(color, Seconds.of(1.0 / 3));
+        led.blink(color, Seconds.of(1.0 / 3));
     }
 
     @Override
-    public void execute() {}
-
-    @Override
     public void end(boolean interrupted) {
-        ledSub.off();
+        led.off();
     }
 
     @Override

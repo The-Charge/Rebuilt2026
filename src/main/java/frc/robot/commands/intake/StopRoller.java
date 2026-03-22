@@ -14,6 +14,11 @@ public class StopRoller extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         intake.stopRoller();
     }

@@ -7,15 +7,20 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.TurretSubsystem;
 import java.util.Optional;
 
-public class WaitForReadyToShoot extends Command {
+public class AutoWaitForReadyToShoot extends Command {
 
     private final TurretSubsystem turret;
     private final Optional<Time> expiration;
     private Optional<Timer> expirationTimer;
 
-    public WaitForReadyToShoot(TurretSubsystem noDepTurretSub, Optional<Time> expirationTime) {
+    public AutoWaitForReadyToShoot(TurretSubsystem noDepTurretSub, Optional<Time> expirationTime) {
         turret = noDepTurretSub;
         expiration = expirationTime;
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getTypeName();
     }
 
     @Override

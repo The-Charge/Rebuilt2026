@@ -8,67 +8,65 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AutoDisplayUtil {
 
     private AutoDisplayUtil() {}
 
-    public static void displayAutoPath(Command autoCommand, boolean isRedAlliance) {
-        // The name is "InstantCommand" when Command.none() is passed
-        if (autoCommand == null || autoCommand.getName().equals("InstantCommand")) {
-            Logger.reportWarning("Cannot display the path of a null/empty command, use clearAutoPath instead", true);
-            return;
-        }
-
-        List<PathPlannerPath> paths;
+    public static void displayAutoPath(Command autoCommand) {
         try {
-            paths = PathPlannerAuto.getPathGroupFromAutoFile(autoCommand.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-
-        // generate each trajectory and merge them into one
-        Trajectory mergedTraj = null;
-        for (PathPlannerPath path : paths) {
-            if (isRedAlliance) path = path.flipPath();
-
-            List<Pose2d> poses = getPosesFromPath(path);
-            Trajectory traj = generateTrajectory(poses);
-
-            if (mergedTraj == null) {
-                mergedTraj = traj;
-                continue;
+            // The name is "InstantCommand" when Command.none() is passed
+            if (autoCommand == null || autoCommand.getName().equals("InstantCommand")) {
+                clearAutoPath();
+                return;
             }
-            mergedTraj = mergedTraj.concatenate(traj);
-        }
 
-        if (mergedTraj == null) {
-            Logger.reportWarning("Auto has no paths, redirecting to clearAutoPath", false);
-            clearAutoPath();
+            List<PathPlannerPath> paths;
+            paths = PathPlannerAuto.getPathGroupFromAutoFile(autoCommand.getName());
+
+            // generate each trajectory and merge them into one
+            Optional<Trajectory> mergedTraj = Optional.empty();
+            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            for (PathPlannerPath path : paths) {
+                if (isRed) path = path.flipPath();
+
+                List<Pose2d> poses = getPosesFromPath(path);
+                Trajectory traj = generateTrajectory(poses);
+
+                if (mergedTraj.isEmpty()) {
+                    mergedTraj = Optional.of(traj);
+                    continue;
+                }
+                mergedTraj = Optional.of(mergedTraj.get().concatenate(traj));
+            }
+
+            if (mergedTraj.isEmpty()) {
+                Logger.reportWarning("Auto has no paths, redirecting to clearAutoPath", false);
+                clearAutoPath();
+                return;
+            }
+
+            RobotContainer.getInstance().ntField.getObject("traj").setTrajectory(mergedTraj.get());
+        } catch (Exception e) {
+            Logger.reportWarning(e, true);
             return;
         }
-
-        /*
-         * Push field2d
-         * For a reason that not even god knows you have to push a blank field then set the trajectory after in order for it to update
-         */
-        Field2d field = new Field2d();
-
-        SmartDashboard.putData("Field", field);
-        field.getObject("traj").setTrajectory(mergedTraj);
     }
 
     public static void clearAutoPath() {
-        Field2d field = new Field2d();
-
-        SmartDashboard.putData("Field", field);
-        field.getObject("traj").setTrajectory(new Trajectory());
+        try {
+            RobotContainer.getInstance().ntField.getObject("traj").setTrajectory(new Trajectory());
+        } catch (Exception e) {
+            Logger.reportWarning(e, true);
+            return;
+        }
     }
 
     private static Trajectory generateTrajectory(List<Pose2d> poses) {
@@ -97,7 +95,7 @@ public class AutoDisplayUtil {
                     rot = calculatePoseRotation(
                             pp, pathPoints.get(i + 1)); // For the first point, use the heading towards the second point
                 } else {
-                    rot = new Rotation2d(); // If there's only one point, use a default rotation
+                    rot = Rotation2d.kZero; // If there's only one point, use a default rotation
                 }
             } else if (i == pathPoints.size() - 1) {
                 rot = calculatePoseRotation(

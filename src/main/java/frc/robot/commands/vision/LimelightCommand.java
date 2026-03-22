@@ -9,7 +9,9 @@
 // import edu.wpi.first.wpilibj2.command.Command;
 // import frc.robot.RobotContainer;
 // import frc.robot.constants.LimelightConstants;
-// import frc.robot.subsystems.CommandSwerveDrivetrain;
+// import frc.robot.constants.LimelightConstants.Side;
+// import frc.robot.constants.LimelightConstants.Turret;
+// import frc.robot.generated.CommandSwerveDrivetrain;
 // import frc.robot.subsystems.LimelightSubsystem;
 // import frc.robot.subsystems.LimelightSubsystem.VisionMeasurement;
 // import frc.robot.utils.Logger;
@@ -22,13 +24,12 @@
 //     private final CommandSwerveDrivetrain swerve;
 //     private final Supplier<Boolean> enabled;
 //     private boolean enabledLast;
+//     @SuppressWarnings("unused")
 //     private boolean isSeeded;
 
-//     private final Optional<StructPublisher<Pose3d>> diffPublisher;
-//     private final Optional<StructPublisher<Pose2d>> turretPub =
-//             Logger.makeStructPublisher(LimelightConstants.subsystemName, "turretPose", Pose2d.struct);
-//     private final Optional<StructPublisher<Pose2d>> sidePub =
-//             Logger.makeStructPublisher(LimelightConstants.subsystemName, "sidePose", Pose2d.struct);
+    // private final Optional<StructPublisher<Pose3d>> diffPublisher;
+    // private final Optional<StructPublisher<Pose2d>> turretPub;
+    // private final Optional<StructPublisher<Pose2d>> sidePub;
 
 //     public LimelightCommand(
 //             LimelightSubsystem turretLimelightSubsystem,
@@ -42,8 +43,17 @@
 //         isSeeded = false;
 //         addRequirements(turretLimelight, sideLimelight);
 
-//         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
-//     }
+        // turretPub = Logger.makeStructPublisher(
+        //         turretLimelight.getName(), String.format("%sPose", Turret.cameraName), Pose2d.struct);
+        // sidePub = Logger.makeStructPublisher(
+        //         sideLimelight.getName(), String.format("%sPose", Side.cameraName), Pose2d.struct);
+        // diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
+    // }
+
+    // @Override
+    // public String getName() {
+    //     return getClass().getTypeName();
+    // }
 
 //     @Override
 //     public void initialize() {
@@ -103,20 +113,21 @@
 //         // }
 //     }
 
-//     /**
-//      * Seed from MT1; chooses best MT1 from the two cameras,
-//      * sets that as the seed for both cameras
-//      */
-//     private void seed() {
-//         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve,
-// false);
-//         Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
-//         if (MT1turret.isPresent() || MT1side.isPresent()) {
-//             Angle rots;
-//             if (MT1turret.isPresent() && MT1side.isPresent()) {
-//                 if (MT1turret.get().stdDevs().get(0, 0)
-//                         > MT1side.get().stdDevs().get(0, 0)) {
-//                     rots = MT1turret.get().pose().getRotation().getMeasure();
+    /**
+     * Seed from MT1; chooses best MT1 from the two cameras,
+     * sets that as the seed for both cameras
+     */
+    // @SuppressWarnings("unused")
+    // private void seed() {
+    //     Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve,
+    // false);
+    //     Optional<LimelightSubsystem.VisionMeasurement> MT1side = sideLimelight.getVisionMeasurement(swerve, false);
+    //     if (MT1turret.isPresent() || MT1side.isPresent()) {
+    //         Angle rots;
+    //         if (MT1turret.isPresent() && MT1side.isPresent()) {
+    //             if (MT1turret.get().stdDevs().get(0, 0)
+    //                     > MT1side.get().stdDevs().get(0, 0)) {
+    //                 rots = MT1turret.get().pose().getRotation().getMeasure();
 
 //                 } else {
 //                     rots = MT1side.get().pose().getRotation().getMeasure();
@@ -151,6 +162,7 @@
 //         isSeeded = true;
 //     }
 
+    // @SuppressWarnings("unused")
 //     private void setRobotOrientation() {
 //         Optional<LimelightSubsystem.VisionMeasurement> MT1turret = turretLimelight.getVisionMeasurement(swerve,
 // false);
@@ -179,7 +191,7 @@
 //                 rots = MT1side.get().pose().getRotation().getMeasure();
 //             }
 
-//             Logger.logDouble(LimelightConstants.subsystemName, "Angle of Bot", rots.in(Degrees));
+//             Logger.logDouble(getName(), "Angle of Bot", rots.in(Degrees));
 //             turretLimelight.setRobotOrientation(rots);
 //             sideLimelight.setRobotOrientation(rots);
 //         }
@@ -247,18 +259,14 @@
 //     private void calcMT1diff() {
 //         if (diffPublisher.isEmpty()) return;
 
-//         Optional<Pose3d> turret = turretLimelight.getMegaTag1();
-//         Optional<Pose3d> side = sideLimelight.getMegaTag1();
-//         if (turret.isEmpty() || side.isEmpty()) {
-//             return;
-//         }
-//         Pose3d diff = new Pose3d().plus(side.get().minus(turret.get()));
-//         // Logger.logPose3dAsDoubleArray(LimelightConstants.subsystemName, "transformBetweenCameras", diff);
-//         diffPublisher.get().set(diff);
-//     }
-
-//     @Override
-//     public void end(boolean interrupted) {}
+    //     Optional<Pose3d> turret = turretLimelight.getMegaTag1();
+    //     Optional<Pose3d> side = sideLimelight.getMegaTag1();
+    //     if (turret.isEmpty() || side.isEmpty()) {
+    //         return;
+    //     }
+    //     Pose3d diff = new Pose3d().plus(side.get().minus(turret.get()));
+    //     diffPublisher.get().set(diff);
+    // }
 
 //     @Override
 //     public boolean isFinished() {

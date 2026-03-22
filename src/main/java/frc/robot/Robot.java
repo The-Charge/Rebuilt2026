@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
+import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
@@ -26,7 +27,7 @@ public class Robot extends TimedRobot {
 
     private static Robot instance;
 
-    private Command m_autonomousCommand;
+    private Command autoCommand;
     private Optional<TeleopLogic> teleopLogic;
     private Optional<Timer> autoGyroTimer;
 
@@ -37,7 +38,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
         // handle disconnect of CAN devices;
-        // set Callback function to log reconnect and flash LEDs for disconnection
+        // set callback function to log reconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
                 Logger.println(String.format("Connected to CAN device %d", id));
@@ -78,8 +79,10 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.slowPeriodic();
         RobotContainer.getInstance().intake.slowPeriodic();
         RobotContainer.getInstance().ledSub.slowPeriodic();
-        RobotContainer.getInstance().limelightSubsystem.slowPeriodic();
+        RobotContainer.getInstance().limelights.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
+        RobotContainer.getInstance().turret.slowPeriodic();
+        RobotContainer.getInstance().shooter.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
 
@@ -91,8 +94,10 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.verySlowPeriodic();
         RobotContainer.getInstance().intake.verySlowPeriodic();
         RobotContainer.getInstance().ledSub.verySlowPeriodic();
-        RobotContainer.getInstance().limelightSubsystem.verySlowPeriodic();
+        RobotContainer.getInstance().limelights.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
+        RobotContainer.getInstance().turret.verySlowPeriodic();
+        RobotContainer.getInstance().shooter.verySlowPeriodic();
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
@@ -134,6 +139,8 @@ public class Robot extends TimedRobot {
             // RobotContainer.getInstance().turretLimelight.takeRewind();
             // RobotContainer.getInstance().otherLimelight.takeRewind();
         }
+
+        RobotContainer.getInstance().displayAuto();
     }
 
     @Override
@@ -147,12 +154,12 @@ public class Robot extends TimedRobot {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
-        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        autoCommand = RobotContainer.getInstance().getAutonomousCommand();
+        if (autoCommand != null) {
+            CommandScheduler.getInstance().schedule(autoCommand);
         }
 
-        // RobotContainer.getInstance().displayAuto();
+        RobotContainer.getInstance().displayAuto();
 
         autoGyroTimer = Optional.of(new Timer());
         autoGyroTimer.get().start();
@@ -163,22 +170,22 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
         if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
             // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
-            RobotContainer.getInstance().limelightSubsystem.seedSwerve();
+            RobotContainer.getInstance().limelights.seedSwerve();
             autoGyroTimer = Optional.empty();
         }
     }
 
     @Override
     public void autonomousExit() {
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
+        if (autoCommand != null) {
+            autoCommand.cancel();
         }
     }
 
     @Override
     public void teleopInit() {
         try {
-            // AutoDisplayUtil.clearAutoPath();
+            AutoDisplayUtil.clearAutoPath();
         } catch (Exception e) {
             Logger.reportError(e);
         }

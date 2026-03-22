@@ -1,10 +1,15 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import java.util.Optional;
 
@@ -12,28 +17,35 @@ public class ShooterConstants {
 
     public static final String subsystemName = "Shooter";
 
-    public static final int motorID = 4;
-    public static final double maxDutyCycle = 1.0;
-    public static final Optional<Double> nominalVoltage = Optional.empty();
-    public static double kP = 0.001;
-    public static double kI = 5e-7;
-    public static double kD = 4e-4;
-    public static final Optional<Voltage> kStaticG = Optional.empty();
-    public static final Optional<Voltage> kCos = Optional.empty();
-    public static final Optional<Voltage> kS = Optional.empty();
-    public static final Optional<Voltage> kV = Optional.empty();
-    public static final Optional<Voltage> kA = Optional.empty();
-    public static final Optional<Double> iZone = Optional.of(2000d);
+    public static class Motor {
+        public static final int motorID = 4;
+        public static final String motorName = "shooterMotor";
 
-    public static boolean inverted = false;
-    public static int currentLimit = 40;
-    public static IdleMode idleMode = IdleMode.kCoast;
+        public static Current currentLimit = Amps.of(40);
+        public static IdleMode idleMode = IdleMode.kCoast;
+        public static boolean inverted = false;
+        public static final double maxDutyCycle = 1.0;
+        public static final Optional<Voltage> nominalVoltage = Optional.of(Volts.of(13));
+
+        public static double kP = 0.001;
+        public static double kI = 5e-7;
+        public static final Optional<Double> iZone = Optional.of(2000d);
+        public static double kD = 4e-4;
+        public static final Optional<Voltage> kStaticG = Optional.empty();
+        public static final Optional<Voltage> kCos = Optional.empty();
+        public static final Optional<Double> kS = Optional.empty();
+        public static final Optional<Double> kV = Optional.empty();
+        public static final Optional<Double> kA = Optional.empty();
+        public static final Optional<Time> rampTime = Optional.empty();
+    }
 
     public static final AngularVelocity targetTolerance = RPM.of(100);
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
 
     public static final boolean manualShootUseSmartdashboard = true;
 
+    public static final Time ballAirTime =
+            Seconds.of(0.7); // This value is quite consistent across distances, and obtained from footage
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
     static {
