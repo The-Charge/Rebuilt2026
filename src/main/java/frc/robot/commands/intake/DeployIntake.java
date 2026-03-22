@@ -13,6 +13,11 @@ public class DeployIntake extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         intake.deploy();
     }

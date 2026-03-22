@@ -5,9 +5,12 @@ import static edu.wpi.first.units.Units.Celsius;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
+import frc.robot.constants.IntakeConstants.LeftDeployer;
+import frc.robot.constants.IntakeConstants.RightDeployer;
 import frc.robot.constants.IntakeConstants.Roller;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
@@ -18,22 +21,56 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private final TalonFX rollerMotor;
     private final Servo leftDeployer, rightDeployer;
+    private final Alert rollerConfigFail, rollerDisconnected, rollerOverheating, rollerFaults;
 
     private boolean deployed;
 
     public IntakeSubsystem() {
-        rollerMotor = new TalonFX(IntakeConstants.Roller.motorID);
-        leftDeployer = new Servo(IntakeConstants.LeftDeployer.port);
-        rightDeployer = new Servo(IntakeConstants.RightDeployer.port);
+        rollerConfigFail = Alerts.makeConfigFailAlert(Roller.motorName, Roller.motorID);
+        rollerDisconnected = Alerts.makeDisconnectAlert(Roller.motorName, Roller.motorID);
+        rollerOverheating = Alerts.makeOverheatingAlert(Roller.motorName, Roller.motorID);
+        rollerFaults = Alerts.makeCriticalFaultsAlert(Roller.motorName, Roller.motorID);
+
+        rollerMotor = new TalonFX(Roller.motorID);
+        leftDeployer = new Servo(LeftDeployer.port);
+        rightDeployer = new Servo(RightDeployer.port);
 
         deployed = false;
 
         configureRollerMotor();
     }
 
+    @Override
+    public String getName() {
+        return IntakeConstants.subsystemName;
+    }
+
+    @Override
+    public void periodic() {
+        Logger.logSubsystem(getName(), this);
+
+        Logger.logTalonFX(getName(), Roller.motorName, rollerMotor);
+
+        Logger.logServo(getName(), LeftDeployer.servoName, leftDeployer);
+        Logger.logServo(getName(), RightDeployer.servoName, rightDeployer);
+
+        Logger.logBool(getName(), "isDeployed", deployed);
+    }
+
+    public void slowPeriodic() {}
+
+    public void verySlowPeriodic() {
+        boolean rollerConnected = rollerMotor.isConnected();
+
+        CANMonitor.logCANDeviceStatus(Roller.motorName, Roller.motorID, rollerConnected);
+        rollerDisconnected.set(!rollerConnected);
+        rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().in(Celsius) >= 80);
+        rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
+    }
+
     public void deploy() {
-        leftDeployer.set(IntakeConstants.LeftDeployer.deployedPosition);
-        rightDeployer.set(IntakeConstants.RightDeployer.deployedPosition);
+        leftDeployer.set(LeftDeployer.deployedPosition);
+        rightDeployer.set(RightDeployer.deployedPosition);
         deployed = true;
     }
 
@@ -57,35 +94,12 @@ public class IntakeSubsystem extends SubsystemBase {
                 Roller.maxVoltage);
 
         if (rollerMotor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
-            Logger.reportError("Failed to configure roller motor");
-            Alerts.rollerConfigFail.set(true);
+            Logger.reportError(String.format("Failed to configure %s", Roller.motorName));
+            rollerConfigFail.set(true);
         }
     }
 
     public boolean isDeployed() {
         return deployed;
-    }
-
-    @Override
-    public void periodic() {
-        Logger.logSubsystem(IntakeConstants.name, this);
-
-        Logger.logTalonFX(IntakeConstants.name, "rollerMotor", rollerMotor);
-
-        Logger.logServo(IntakeConstants.name, "leftDeployer", leftDeployer);
-        Logger.logServo(IntakeConstants.name, "rightDeployer", rightDeployer);
-
-        Logger.logBool(IntakeConstants.name, "isDeployed", deployed);
-    }
-
-    public void slowPeriodic() {}
-
-    public void verySlowPeriodic() {
-        boolean rollerConnected = rollerMotor.isConnected();
-
-        CANMonitor.logCANDeviceStatus("rollerMotor", IntakeConstants.Roller.motorID, rollerConnected);
-        Alerts.rollerDisconnected.set(!rollerConnected);
-        Alerts.rollerOverheating.set(rollerMotor.getDeviceTemp().getValue().in(Celsius) >= Roller.overheatingTemp);
-        Alerts.rollerFaults.set(TalonFXUtils.getAllActiveFaults(rollerMotor).hasCriticalFaults());
     }
 }

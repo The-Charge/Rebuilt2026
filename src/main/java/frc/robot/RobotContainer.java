@@ -70,12 +70,13 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
+import frc.robot.generated.CommandSwerveDrivetrain;
+import frc.robot.generated.SwerveTelemetry;
 import frc.robot.generated.TunerConstants;
 import frc.robot.io.ButtonBox;
 import frc.robot.io.CommandButtonBox;
 import frc.robot.subsystems.AuxSwerveSubsystem;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
@@ -159,8 +160,10 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretLimelight = new LimelightSubsystem("turret", LimelightConstants.turretPose);
-        otherLimelight = new LimelightSubsystem("other", LimelightConstants.otherPose);
+        turretLimelight = new LimelightSubsystem(
+                LimelightConstants.Turret.cameraName, LimelightConstants.Turret.robotRelativePose);
+        otherLimelight =
+                new LimelightSubsystem(LimelightConstants.Side.cameraName, LimelightConstants.Side.robotRelativePose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
@@ -318,11 +321,11 @@ public class RobotContainer {
         commandButtonBox.seed().onTrue(new InstantCommand(limelightCommand::seedFromIMU));
         commandButtonBox
                 .turretLeft()
-                .whileTrue(new ManualTurret(turret, TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, TurretConstants.Motor.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .turretRight()
-                .whileTrue(new ManualTurret(turret, -TurretConstants.manualSpeed)
+                .whileTrue(new ManualTurret(turret, -TurretConstants.Motor.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
@@ -335,11 +338,11 @@ public class RobotContainer {
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolDown()
-                .whileTrue(new ManualSpool(climber, -ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, -ClimberConstants.Motor.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         commandButtonBox
                 .spoolUp()
-                .whileTrue(new ManualSpool(climber, ClimberConstants.manualSpoolSpeed)
+                .whileTrue(new ManualSpool(climber, ClimberConstants.Motor.manualSpoolSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
@@ -424,7 +427,7 @@ public class RobotContainer {
     }
 
     private void setupAutoDisplay() {
-        // update the displayed auto path in smartdashboard when ever the selection is changed
+        // update the displayed auto path in SmartDashboard when ever the selection is changed
         // display is cleared in teleopInit
         if (autoChooser.getSelected() != null
                 && !autoChooser.getSelected().getName().equals("InstantCommand")) {
@@ -447,7 +450,7 @@ public class RobotContainer {
 
         /*
          * Robot.teleopInit clears the display
-         * Robot.autonomousInit redraws the display
+         * Robot.autonomousInit and Robot.disabledInit redraws the display
          */
     }
 

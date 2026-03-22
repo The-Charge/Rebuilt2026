@@ -62,7 +62,6 @@ public class AutoDisplayUtil {
 
     public static void clearAutoPath() {
         try {
-            Logger.println("TSNDFUNSJDKFNSJKDFNJKSNDJKFNSJKDFNJKSDNFJKNSJDFN\nNSDJKSDNF\nSDFSDF\nDFSDFDF");
             RobotContainer.getInstance().ntField.getObject("traj").setTrajectory(new Trajectory());
         } catch (Exception e) {
             Logger.reportWarning(e, true);
@@ -96,7 +95,7 @@ public class AutoDisplayUtil {
                     rot = calculatePoseRotation(
                             pp, pathPoints.get(i + 1)); // For the first point, use the heading towards the second point
                 } else {
-                    rot = new Rotation2d(); // If there's only one point, use a default rotation
+                    rot = Rotation2d.kZero; // If there's only one point, use a default rotation
                 }
             } else if (i == pathPoints.size() - 1) {
                 rot = calculatePoseRotation(

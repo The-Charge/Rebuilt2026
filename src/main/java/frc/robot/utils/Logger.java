@@ -9,7 +9,6 @@ import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.util.StatusLogger;
 import edu.wpi.first.hal.PowerDistributionFaults;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -18,6 +17,8 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
@@ -40,8 +41,8 @@ public class Logger {
         NT_ONLY(true, false),
         DISABLED(false, false);
 
-        final boolean logToFile;
         final boolean logToNT;
+        final boolean logToFile;
 
         LoggingLevel(boolean nt, boolean file) {
             logToNT = nt;
@@ -54,13 +55,19 @@ public class Logger {
     private static final boolean showJoystickDisconnectWarnings = false;
     private static final boolean ctreLoggingEnabled = false;
     private static final boolean revLoggingEnabled = false;
-    private static final LoggingLevel loggingLevel = LoggingLevel.ENABLED;
+    private static final LoggingLevel loggingLevel = LoggingLevel.NT_ONLY;
+
+    private static final Alert notLoggingToFlashdrive;
 
     private static boolean hasInited;
     private static Optional<NetworkTableInstance> ntInstance;
     private static Optional<NetworkTable> nt;
 
     static {
+        notLoggingToFlashdrive = new Alert(
+                "Logger is not logging to a flash drive. Please confirm that the flash drive is securely plugged in and was plugged in before the robot was turned on",
+                AlertType.kError);
+
         hasInited = false;
         ntInstance = Optional.empty();
         nt = Optional.empty();
@@ -107,7 +114,7 @@ public class Logger {
             boolean loggingToFlash =
                     logDir == null ? false : logDir.toLowerCase().startsWith("/u");
             logBool("Logger", "loggingToFlashdrive", loggingToFlash);
-            Alerts.notLoggingToFlashdrive.set(!loggingToFlash);
+            notLoggingToFlashdrive.set(!loggingToFlash);
         }
 
         println("Logging started");
@@ -226,16 +233,21 @@ public class Logger {
     public static void logBool(String subsystem, String key, boolean val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setBoolean(val)) {
             reportWarning(
-                    "attempted to log boolean value to entry '" + key + "' of type "
+                    "attempted to log boolean value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -244,8 +256,7 @@ public class Logger {
     public static void logBoolArray(String subsystem, String key, boolean[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -254,10 +265,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setBooleanArray(val)) {
             reportWarning(
-                    "attempted to log boolean[] value to entry '" + key + "' of type "
+                    "attempted to log boolean[] value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -266,16 +283,21 @@ public class Logger {
     public static void logDouble(String subsystem, String key, double val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setDouble(val)) {
             reportWarning(
-                    "attempted to log double value to entry '" + key + "' of type "
+                    "attempted to log double value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -284,8 +306,7 @@ public class Logger {
     public static void logDoubleArray(String subsystem, String key, double[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -294,10 +315,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setDoubleArray(val)) {
             reportWarning(
-                    "attempted to log double[] value to entry '" + key + "' of type "
+                    "attempted to log double[] value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -306,16 +333,21 @@ public class Logger {
     public static void logFloat(String subsystem, String key, float val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setFloat(val)) {
             reportWarning(
-                    "attempted to log float value to entry '" + key + "' of type "
+                    "attempted to log float value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -324,8 +356,7 @@ public class Logger {
     public static void logFloatArray(String subsystem, String key, float[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -334,10 +365,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setFloatArray(val)) {
             reportWarning(
-                    "attempted to log float[] value to entry '" + key + "' of type "
+                    "attempted to log float[] value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -346,16 +383,21 @@ public class Logger {
     public static void logLong(String subsystem, String key, long val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setInteger(val)) {
             reportWarning(
-                    "attempted to log int value to entry '" + key + "' of type "
+                    "attempted to log int value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -364,8 +406,7 @@ public class Logger {
     public static void logLongArray(String subsystem, String key, long[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -374,10 +415,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setIntegerArray(val)) {
             reportWarning(
-                    "attempted to log int[] value to entry '" + key + "' of type "
+                    "attempted to log int[] value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -386,8 +433,7 @@ public class Logger {
     public static void logRaw(String subsystem, String key, ByteBuffer val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -396,10 +442,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setRaw(val)) {
             reportWarning(
-                    "attempted to log raw value to entry '" + key + "' of type "
+                    "attempted to log raw value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -408,8 +460,7 @@ public class Logger {
     public static void logRaw(String subsystem, String key, byte[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -418,10 +469,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setRaw(val)) {
             reportWarning(
-                    "attempted to log raw value to entry '" + key + "' of type "
+                    "attempted to log raw value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -430,17 +487,22 @@ public class Logger {
     public static void logString(String subsystem, String key, String val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
         if (val == null) val = "";
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setString(val)) {
             reportWarning(
-                    "attempted to log String value to entry '" + key + "' of type "
+                    "attempted to log String value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -449,8 +511,7 @@ public class Logger {
     public static void logStringArray(String subsystem, String key, String[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
+        if (key == null || key.isEmpty()) {
             reportWarning("Cannot log to an empty key", true);
             return;
         }
@@ -459,10 +520,16 @@ public class Logger {
             return;
         }
 
-        String normalized = subsystem + "/" + key;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = key;
+        } else {
+            normalized = subsystem + "/" + key;
+        }
+
         if (!nt.get().getEntry(normalized).setStringArray(val)) {
             reportWarning(
-                    "attempted to log String[] value to entry '" + key + "' of type "
+                    "attempted to log String[] value to entry '" + normalized + "' of type "
                             + nt.get().getEntry(normalized).getType().getValueStr(),
                     true);
         }
@@ -471,11 +538,6 @@ public class Logger {
     public static void logEnum(String subsystem, String key, Enum<?> val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
-            reportWarning("Cannot log to an empty key", true);
-            return;
-        }
         if (val == null) {
             reportWarning("Cannot log a null Enum", true);
             return;
@@ -487,11 +549,6 @@ public class Logger {
     public static void logEnumArray(String subsystem, String key, Enum<?>[] val) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
-            reportWarning("Cannot log to an empty key", true);
-            return;
-        }
         if (val == null) {
             reportWarning("Cannot log a null Enum[]", true);
             return;
@@ -501,37 +558,9 @@ public class Logger {
                 Arrays.stream(val).map((Enum<?> i) -> i == null ? "" : i.name()).toArray());
     }
 
-    public static void logPose3dAsDoubleArray(String subsystem, String key, Pose3d val) {
-        if (!loggingLevel.logToNT || nt.isEmpty()) return;
-
-        if (subsystem == null) subsystem = "";
-        if (key == null) {
-            reportWarning("Cannot log to an empty key", true);
-            return;
-        }
-
-        Double[] ret = {
-            val.getX(),
-            val.getY(),
-            val.getZ(),
-            val.getRotation().getX(),
-            val.getRotation().getY(),
-            val.getRotation().getZ()
-        };
-
-        String normalized = subsystem + "/" + key;
-        if (!nt.get().getEntry(normalized).setDoubleArray(ret)) {
-            reportWarning(
-                    "attempted to log double[] value to entry '" + key + "' of type "
-                            + nt.get().getEntry(normalized).getType().getValueStr(),
-                    true);
-        }
-    }
-
     public static void logTalonFXReduced(String subsystem, String name, TalonFX motor) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return;
@@ -541,18 +570,22 @@ public class Logger {
             return;
         }
 
-        String table = subsystem + "/" + name;
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
 
-        logDouble(table, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
-        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
-        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
-        logEnum(table, "controlMode", motor.getControlMode().getValue());
+        logDouble(normalized, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
+        logDouble(normalized, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
+        logDouble(normalized, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
+        logEnum(normalized, "controlMode", motor.getControlMode().getValue());
     }
 
     public static void logTalonFX(String subsystem, String name, TalonFX motor) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return;
@@ -562,99 +595,103 @@ public class Logger {
             return;
         }
 
-        String table = subsystem + "/" + name;
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
 
         // TalonFXFaults activeFaults = TalonFXUtils.getAllActiveFaults(motor);
         // TalonFXFaults stickyFaults = TalonFXUtils.getAllStickyFaults(motor);
 
-        logDouble(table, "positionRots", motor.getPosition().getValue().in(Units.Rotations));
-        logDouble(table, "velocityRPM", motor.getVelocity().getValue().in(Units.RPM));
-        logDouble(table, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
-        logDouble(table, "dutyCycle", motor.get());
-        logDouble(table, "voltageOut", motor.getMotorVoltage().getValue().in(Units.Volts));
-        logDouble(table, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
-        // logBool(table, "hardStopForward", activeFaults.forwardHardLimit());
-        // logBool(table, "hardStopReverse", activeFaults.reverseHardLimit());
-        // logBool(table, "softStopForward", activeFaults.forwardSoftLimit());
-        // logBool(table, "softStopReverse", activeFaults.reverseSoftLimit());
-        logBool(table, "hardStopForward", motor.getFault_ForwardHardLimit().getValue());
-        logBool(table, "hardStopReverse", motor.getFault_ReverseHardLimit().getValue());
-        logBool(table, "softStopForward", motor.getFault_ForwardSoftLimit().getValue());
-        logBool(table, "softStopReverse", motor.getFault_ReverseSoftLimit().getValue());
-        logDouble(table, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
-        // logDouble(table, "currentIn", motor.getSupplyCurrent().getValue().in(Units.Amps));
-        logEnum(table, "controlMode", motor.getControlMode().getValue());
+        logDouble(normalized, "positionRots", motor.getPosition().getValue().in(Units.Rotations));
+        logDouble(normalized, "velocityRPM", motor.getVelocity().getValue().in(Units.RPM));
+        logDouble(normalized, "tempC", motor.getDeviceTemp().getValue().in(Units.Celsius));
+        logDouble(normalized, "dutyCycle", motor.get());
+        logDouble(normalized, "voltageOut", motor.getMotorVoltage().getValue().in(Units.Volts));
+        logDouble(normalized, "voltageIn", motor.getSupplyVoltage().getValue().in(Units.Volts));
+        // logBool(normalized, "hardStopForward", activeFaults.forwardHardLimit());
+        // logBool(normalized, "hardStopReverse", activeFaults.reverseHardLimit());
+        // logBool(normalized, "softStopForward", activeFaults.forwardSoftLimit());
+        // logBool(normalized, "softStopReverse", activeFaults.reverseSoftLimit());
+        logBool(normalized, "hardStopForward", motor.getFault_ForwardHardLimit().getValue());
+        logBool(normalized, "hardStopReverse", motor.getFault_ReverseHardLimit().getValue());
+        logBool(normalized, "softStopForward", motor.getFault_ForwardSoftLimit().getValue());
+        logBool(normalized, "softStopReverse", motor.getFault_ReverseSoftLimit().getValue());
+        logDouble(normalized, "currentOut", motor.getStatorCurrent().getValue().in(Units.Amps));
+        // logDouble(normalized, "currentIn", motor.getSupplyCurrent().getValue().in(Units.Amps));
+        logEnum(normalized, "controlMode", motor.getControlMode().getValue());
         logDouble(
-                table,
+                normalized,
                 "closedLoopRef",
                 motor.getClosedLoopReference().getValue().doubleValue());
-        logBool(table, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);
-        // logBool(table, "connected", motor.isConnected());
-        // logBool(table, "alive", motor.isAlive());
+        logBool(normalized, "enabled", motor.getDeviceEnable().getValue() == DeviceEnableValue.Enabled);
+        // logBool(normalized, "connected", motor.isConnected());
+        // logBool(normalized, "alive", motor.isAlive());
 
-        // logBool(table + "/faults", "bootDuringEnable", activeFaults.bootDuringEnable());
-        // logBool(table + "/faults", "bridgeBrownout", activeFaults.bridgeBrownout());
-        // logBool(table + "/faults", "deviceTemp", activeFaults.deviceTemp());
-        // logBool(table + "/faults", "forwardHardLimit", activeFaults.forwardHardLimit());
-        // logBool(table + "/faults", "fowardSoftLimit", activeFaults.forwardSoftLimit());
-        // logBool(table + "/faults", "fusedSensorOutOfSync", activeFaults.fusedSensorOutOfSync());
-        // logBool(table + "/faults", "hardware", activeFaults.hardware());
-        // logBool(table + "/faults", "missingDifferentialFX", activeFaults.missingDifferentialFX());
-        // logBool(table + "/faults", "missingHardLimitRemote", activeFaults.missingHardLimitRemote());
-        // logBool(table + "/faults", "missingSoftLimitRemote", activeFaults.missingSoftLimitRemote());
-        // logBool(table + "/faults", "overSupplyV", activeFaults.overSupplyV());
-        // logBool(table + "/faults", "procTemp", activeFaults.procTemp());
-        // logBool(table + "/faults", "remoteSensorDataInvalid", activeFaults.remoteSensorDataInvalid());
-        // logBool(table + "/faults", "remoteSensorPosOverflow", activeFaults.remoteSensorPosOverflow());
-        // logBool(table + "/faults", "remoteSensorReset", activeFaults.remoteSensorReset());
-        // logBool(table + "/faults", "reverseHardLimit", activeFaults.reverseHardLimit());
-        // logBool(table + "/faults", "reverseSoftLimit", activeFaults.reverseSoftLimit());
-        // logBool(table + "/faults", "staticBrakeDisabled", activeFaults.staticBrakeDisabled());
-        // logBool(table + "/faults", "statorCurrLimit", activeFaults.statorCurrLimit());
-        // logBool(table + "/faults", "supplyCurrLimit", activeFaults.supplyCurrLimit());
-        // logBool(table + "/faults", "undervoltage", activeFaults.undervoltage());
-        // logBool(table + "/faults", "unlicensedFeatureInUse", activeFaults.unlicensedFeatureInUse());
-        // logBool(table + "/faults", "unstableSupplyV", activeFaults.unstableSupplyV());
+        // logBool(normalized + "/faults", "bootDuringEnable", activeFaults.bootDuringEnable());
+        // logBool(normalized + "/faults", "bridgeBrownout", activeFaults.bridgeBrownout());
+        // logBool(normalized + "/faults", "deviceTemp", activeFaults.deviceTemp());
+        // logBool(normalized + "/faults", "forwardHardLimit", activeFaults.forwardHardLimit());
+        // logBool(normalized + "/faults", "fowardSoftLimit", activeFaults.forwardSoftLimit());
+        // logBool(normalized + "/faults", "fusedSensorOutOfSync", activeFaults.fusedSensorOutOfSync());
+        // logBool(normalized + "/faults", "hardware", activeFaults.hardware());
+        // logBool(normalized + "/faults", "missingDifferentialFX", activeFaults.missingDifferentialFX());
+        // logBool(normalized + "/faults", "missingHardLimitRemote", activeFaults.missingHardLimitRemote());
+        // logBool(normalized + "/faults", "missingSoftLimitRemote", activeFaults.missingSoftLimitRemote());
+        // logBool(normalized + "/faults", "overSupplyV", activeFaults.overSupplyV());
+        // logBool(normalized + "/faults", "procTemp", activeFaults.procTemp());
+        // logBool(normalized + "/faults", "remoteSensorDataInvalid", activeFaults.remoteSensorDataInvalid());
+        // logBool(normalized + "/faults", "remoteSensorPosOverflow", activeFaults.remoteSensorPosOverflow());
+        // logBool(normalized + "/faults", "remoteSensorReset", activeFaults.remoteSensorReset());
+        // logBool(normalized + "/faults", "reverseHardLimit", activeFaults.reverseHardLimit());
+        // logBool(normalized + "/faults", "reverseSoftLimit", activeFaults.reverseSoftLimit());
+        // logBool(normalized + "/faults", "staticBrakeDisabled", activeFaults.staticBrakeDisabled());
+        // logBool(normalized + "/faults", "statorCurrLimit", activeFaults.statorCurrLimit());
+        // logBool(normalized + "/faults", "supplyCurrLimit", activeFaults.supplyCurrLimit());
+        // logBool(normalized + "/faults", "undervoltage", activeFaults.undervoltage());
+        // logBool(normalized + "/faults", "unlicensedFeatureInUse", activeFaults.unlicensedFeatureInUse());
+        // logBool(normalized + "/faults", "unstableSupplyV", activeFaults.unstableSupplyV());
         // logBool(
-        //         table + "/faults",
+        //         normalized + "/faults",
         //         "usingFusedCANCoderWhileUnlicensed",
         //         activeFaults.usingFusedCANCoderWhileUnlicensed());
-        // logBool(table, "criticalFaultsActive", activeFaults.hasCriticalFaults());
+        // logBool(normalized, "criticalFaultsActive", activeFaults.hasCriticalFaults());
 
-        // logBool(table + "/stickyFaults", "bootDuringEnable", stickyFaults.bootDuringEnable());
-        // logBool(table + "/stickyFaults", "bridgeBrownout", stickyFaults.bridgeBrownout());
-        // logBool(table + "/stickyFaults", "deviceTemp", stickyFaults.deviceTemp());
-        // logBool(table + "/stickyFaults", "forwardHardLimit", stickyFaults.forwardHardLimit());
-        // logBool(table + "/stickyFaults", "fowardSoftLimit", stickyFaults.forwardSoftLimit());
-        // logBool(table + "/stickyFaults", "fusedSensorOutOfSync", stickyFaults.fusedSensorOutOfSync());
-        // logBool(table + "/stickyFaults", "hardware", stickyFaults.hardware());
-        // logBool(table + "/stickyFaults", "missingDifferentialFX", stickyFaults.missingDifferentialFX());
-        // logBool(table + "/stickyFaults", "missingHardLimitRemote", stickyFaults.missingHardLimitRemote());
-        // logBool(table + "/stickyFaults", "missingSoftLimitRemote", stickyFaults.missingSoftLimitRemote());
-        // logBool(table + "/stickyFaults", "overSupplyV", stickyFaults.overSupplyV());
-        // logBool(table + "/stickyFaults", "procTemp", stickyFaults.procTemp());
-        // logBool(table + "/stickyFaults", "remoteSensorDataInvalid", stickyFaults.remoteSensorDataInvalid());
-        // logBool(table + "/stickyFaults", "remoteSensorPosOverflow", stickyFaults.remoteSensorPosOverflow());
-        // logBool(table + "/stickyFaults", "remoteSensorReset", stickyFaults.remoteSensorReset());
-        // logBool(table + "/stickyFaults", "reverseHardLimit", stickyFaults.reverseHardLimit());
-        // logBool(table + "/stickyFaults", "reverseSoftLimit", stickyFaults.reverseSoftLimit());
-        // logBool(table + "/stickyFaults", "staticBrakeDisabled", stickyFaults.staticBrakeDisabled());
-        // logBool(table + "/stickyFaults", "statorCurrLimit", stickyFaults.statorCurrLimit());
-        // logBool(table + "/stickyFaults", "supplyCurrLimit", stickyFaults.supplyCurrLimit());
-        // logBool(table + "/stickyFaults", "undervoltage", stickyFaults.undervoltage());
-        // logBool(table + "/stickyFaults", "unlicensedFeatureInUse", stickyFaults.unlicensedFeatureInUse());
-        // logBool(table + "/stickyFaults", "unstableSupplyV", stickyFaults.unstableSupplyV());
+        // logBool(normalized + "/stickyFaults", "bootDuringEnable", stickyFaults.bootDuringEnable());
+        // logBool(normalized + "/stickyFaults", "bridgeBrownout", stickyFaults.bridgeBrownout());
+        // logBool(normalized + "/stickyFaults", "deviceTemp", stickyFaults.deviceTemp());
+        // logBool(normalized + "/stickyFaults", "forwardHardLimit", stickyFaults.forwardHardLimit());
+        // logBool(normalized + "/stickyFaults", "fowardSoftLimit", stickyFaults.forwardSoftLimit());
+        // logBool(normalized + "/stickyFaults", "fusedSensorOutOfSync", stickyFaults.fusedSensorOutOfSync());
+        // logBool(normalized + "/stickyFaults", "hardware", stickyFaults.hardware());
+        // logBool(normalized + "/stickyFaults", "missingDifferentialFX", stickyFaults.missingDifferentialFX());
+        // logBool(normalized + "/stickyFaults", "missingHardLimitRemote", stickyFaults.missingHardLimitRemote());
+        // logBool(normalized + "/stickyFaults", "missingSoftLimitRemote", stickyFaults.missingSoftLimitRemote());
+        // logBool(normalized + "/stickyFaults", "overSupplyV", stickyFaults.overSupplyV());
+        // logBool(normalized + "/stickyFaults", "procTemp", stickyFaults.procTemp());
+        // logBool(normalized + "/stickyFaults", "remoteSensorDataInvalid", stickyFaults.remoteSensorDataInvalid());
+        // logBool(normalized + "/stickyFaults", "remoteSensorPosOverflow", stickyFaults.remoteSensorPosOverflow());
+        // logBool(normalized + "/stickyFaults", "remoteSensorReset", stickyFaults.remoteSensorReset());
+        // logBool(normalized + "/stickyFaults", "reverseHardLimit", stickyFaults.reverseHardLimit());
+        // logBool(normalized + "/stickyFaults", "reverseSoftLimit", stickyFaults.reverseSoftLimit());
+        // logBool(normalized + "/stickyFaults", "staticBrakeDisabled", stickyFaults.staticBrakeDisabled());
+        // logBool(normalized + "/stickyFaults", "statorCurrLimit", stickyFaults.statorCurrLimit());
+        // logBool(normalized + "/stickyFaults", "supplyCurrLimit", stickyFaults.supplyCurrLimit());
+        // logBool(normalized + "/stickyFaults", "undervoltage", stickyFaults.undervoltage());
+        // logBool(normalized + "/stickyFaults", "unlicensedFeatureInUse", stickyFaults.unlicensedFeatureInUse());
+        // logBool(normalized + "/stickyFaults", "unstableSupplyV", stickyFaults.unstableSupplyV());
         // logBool(
-        //         table + "/stickyFaults",
+        //         normalized + "/stickyFaults",
         //         "usingFusedCANCoderWhileUnlicensed",
         //         stickyFaults.usingFusedCANCoderWhileUnlicensed());
-        // logBool(table, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
+        // logBool(normalized, "criticalStickyFaultsActive", stickyFaults.hasCriticalFaults());
     }
 
     public static void logSparkMotor(String subsystem, String name, SparkBase motor) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return;
@@ -664,76 +701,81 @@ public class Logger {
             return;
         }
 
-        String table = subsystem + "/" + name;
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
 
         // Faults activeFaults = motor.getFaults();
         // Faults stickyFaults = motor.getStickyFaults();
         // Warnings activeWarnings = motor.getWarnings();
         // Warnings stickyWarnings = motor.getStickyWarnings();
 
-        logDouble(table, "positionRots", motor.getEncoder().getPosition());
-        logDouble(table, "velocityRPM", motor.getEncoder().getVelocity());
-        logDouble(table, "tempC", motor.getMotorTemperature());
-        logDouble(table, "dutyCycle", motor.getAppliedOutput());
-        logDouble(table, "voltageOut", motor.getAppliedOutput() * motor.getBusVoltage());
-        logDouble(table, "voltageIn", motor.getBusVoltage());
-        logBool(table, "hardStopForward", motor.getForwardLimitSwitch().isPressed());
-        logBool(table, "hardStopReverse", motor.getReverseLimitSwitch().isPressed());
-        logBool(table, "softStopForward", motor.getForwardSoftLimit().isReached());
-        logBool(table, "softStopReverse", motor.getReverseSoftLimit().isReached());
-        logDouble(table, "currentOut", motor.getOutputCurrent());
+        logDouble(normalized, "positionRots", motor.getEncoder().getPosition());
+        logDouble(normalized, "velocityRPM", motor.getEncoder().getVelocity());
+        logDouble(normalized, "tempC", motor.getMotorTemperature());
+        logDouble(normalized, "dutyCycle", motor.getAppliedOutput());
+        logDouble(normalized, "voltageOut", motor.getAppliedOutput() * motor.getBusVoltage());
+        logDouble(normalized, "voltageIn", motor.getBusVoltage());
+        logBool(normalized, "hardStopForward", motor.getForwardLimitSwitch().isPressed());
+        logBool(normalized, "hardStopReverse", motor.getReverseLimitSwitch().isPressed());
+        logBool(normalized, "softStopForward", motor.getForwardSoftLimit().isReached());
+        logBool(normalized, "softStopReverse", motor.getReverseSoftLimit().isReached());
+        logDouble(normalized, "currentOut", motor.getOutputCurrent());
         logString(
-                table,
+                normalized,
                 "closedLoopControlType",
                 motor.getClosedLoopController().getControlType().toString());
-        logDouble(table, "iAccum", motor.getClosedLoopController().getIAccum());
-        // logBool(table, "connected", SparkUtils.isConnected(motor));
+        logDouble(normalized, "iAccum", motor.getClosedLoopController().getIAccum());
+        // logBool(normalized, "connected", SparkUtils.isConnected(motor));
 
-        // logBool(table + "/faults", "can", activeFaults.can);
-        // logBool(table + "/faults", "escEeprom", activeFaults.escEeprom);
-        // logBool(table + "/faults", "firmware", activeFaults.firmware);
-        // logBool(table + "/faults", "gateDriver", activeFaults.gateDriver);
-        // logBool(table + "/faults", "motorType", activeFaults.motorType);
-        // logBool(table + "/faults", "other", activeFaults.other);
-        // logBool(table + "/faults", "sensor", activeFaults.sensor);
-        // logBool(table + "/faults", "temperature", activeFaults.temperature);
-        // logBool(table, "criticalFaultsActive", SparkUtils.hasCriticalFaults(activeFaults));
+        // logBool(normalized + "/faults", "can", activeFaults.can);
+        // logBool(normalized + "/faults", "escEeprom", activeFaults.escEeprom);
+        // logBool(normalized + "/faults", "firmware", activeFaults.firmware);
+        // logBool(normalized + "/faults", "gateDriver", activeFaults.gateDriver);
+        // logBool(normalized + "/faults", "motorType", activeFaults.motorType);
+        // logBool(normalized + "/faults", "other", activeFaults.other);
+        // logBool(normalized + "/faults", "sensor", activeFaults.sensor);
+        // logBool(normalized + "/faults", "temperature", activeFaults.temperature);
+        // logBool(normalized, "criticalFaultsActive", SparkUtils.hasCriticalFaults(activeFaults));
 
-        // logBool(table + "/stickyFaults", "can", stickyFaults.can);
-        // logBool(table + "/stickyFaults", "escEeprom", stickyFaults.escEeprom);
-        // logBool(table + "/stickyFaults", "firmware", stickyFaults.firmware);
-        // logBool(table + "/stickyFaults", "gateDriver", stickyFaults.gateDriver);
-        // logBool(table + "/stickyFaults", "motorType", stickyFaults.motorType);
-        // logBool(table + "/stickyFaults", "other", stickyFaults.other);
-        // logBool(table + "/stickyFaults", "sensor", stickyFaults.sensor);
-        // logBool(table + "/stickyFaults", "temperature", stickyFaults.temperature);
-        // logBool(table, "criticalStickyFaultsActive", SparkUtils.hasCriticalFaults(stickyFaults));
+        // logBool(normalized + "/stickyFaults", "can", stickyFaults.can);
+        // logBool(normalized + "/stickyFaults", "escEeprom", stickyFaults.escEeprom);
+        // logBool(normalized + "/stickyFaults", "firmware", stickyFaults.firmware);
+        // logBool(normalized + "/stickyFaults", "gateDriver", stickyFaults.gateDriver);
+        // logBool(normalized + "/stickyFaults", "motorType", stickyFaults.motorType);
+        // logBool(normalized + "/stickyFaults", "other", stickyFaults.other);
+        // logBool(normalized + "/stickyFaults", "sensor", stickyFaults.sensor);
+        // logBool(normalized + "/stickyFaults", "temperature", stickyFaults.temperature);
+        // logBool(normalized, "criticalStickyFaultsActive", SparkUtils.hasCriticalFaults(stickyFaults));
 
-        // logBool(table + "/warnings", "brownout", activeWarnings.brownout);
-        // logBool(table + "/warnings", "escEeprom", activeWarnings.escEeprom);
-        // logBool(table + "/warnings", "extEeprom", activeWarnings.extEeprom);
-        // logBool(table + "/warnings", "hasReset", activeWarnings.hasReset);
-        // logBool(table + "/warnings", "other", activeWarnings.other);
-        // logBool(table + "/warnings", "overcurrent", activeWarnings.overcurrent);
-        // logBool(table + "/warnings", "sensor", activeWarnings.sensor);
-        // logBool(table + "/warnings", "stall", activeWarnings.stall);
-        // logBool(table, "criticalWarningsActive", SparkUtils.hasCriticalWarnings(activeWarnings));
+        // logBool(normalized + "/warnings", "brownout", activeWarnings.brownout);
+        // logBool(normalized + "/warnings", "escEeprom", activeWarnings.escEeprom);
+        // logBool(normalized + "/warnings", "extEeprom", activeWarnings.extEeprom);
+        // logBool(normalized + "/warnings", "hasReset", activeWarnings.hasReset);
+        // logBool(normalized + "/warnings", "other", activeWarnings.other);
+        // logBool(normalized + "/warnings", "overcurrent", activeWarnings.overcurrent);
+        // logBool(normalized + "/warnings", "sensor", activeWarnings.sensor);
+        // logBool(normalized + "/warnings", "stall", activeWarnings.stall);
+        // logBool(normalized, "criticalWarningsActive", SparkUtils.hasCriticalWarnings(activeWarnings));
 
-        // logBool(table + "/stickyWarnings", "brownout", stickyWarnings.brownout);
-        // logBool(table + "/stickyWarnings", "escEeprom", stickyWarnings.escEeprom);
-        // logBool(table + "/stickyWarnings", "extEeprom", stickyWarnings.extEeprom);
-        // logBool(table + "/stickyWarnings", "hasReset", stickyWarnings.hasReset);
-        // logBool(table + "/stickyWarnings", "other", stickyWarnings.other);
-        // logBool(table + "/stickyWarnings", "overcurrent", stickyWarnings.overcurrent);
-        // logBool(table + "/stickyWarnings", "sensor", stickyWarnings.sensor);
-        // logBool(table + "/stickyWarnings", "stall", stickyWarnings.stall);
-        // logBool(table, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
+        // logBool(normalized + "/stickyWarnings", "brownout", stickyWarnings.brownout);
+        // logBool(normalized + "/stickyWarnings", "escEeprom", stickyWarnings.escEeprom);
+        // logBool(normalized + "/stickyWarnings", "extEeprom", stickyWarnings.extEeprom);
+        // logBool(normalized + "/stickyWarnings", "hasReset", stickyWarnings.hasReset);
+        // logBool(normalized + "/stickyWarnings", "other", stickyWarnings.other);
+        // logBool(normalized + "/stickyWarnings", "overcurrent", stickyWarnings.overcurrent);
+        // logBool(normalized + "/stickyWarnings", "sensor", stickyWarnings.sensor);
+        // logBool(normalized + "/stickyWarnings", "stall", stickyWarnings.stall);
+        // logBool(normalized, "criticalStickyWarningsActive", SparkUtils.hasCriticalWarnings(stickyWarnings));
     }
 
     public static <T extends Subsystem> void logSubsystem(String subsystemName, T subsystem) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystemName == null) {
+        if (subsystemName == null || subsystemName.isEmpty()) {
             reportWarning("Cannot log to an empty subsytemName", true);
             return;
         }
@@ -837,7 +879,6 @@ public class Logger {
     public static void logServo(String subsystem, String name, Servo servo) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return;
@@ -847,9 +888,14 @@ public class Logger {
             return;
         }
 
-        String table = subsystem + "/" + name;
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
 
-        logDouble(table, "position", servo.get());
+        logDouble(normalized, "position", servo.get());
     }
 
     public static void logTOF(String subsystem, String name, TimeOfFlight tof) {
@@ -879,7 +925,6 @@ public class Logger {
             String subsystem, String name, S struct) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return Optional.empty();
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return Optional.empty();
@@ -887,17 +932,21 @@ public class Logger {
 
         if (getLoggerTable().isEmpty()) return Optional.empty();
 
-        return Optional.of(getLoggerTable()
-                .get()
-                .getStructTopic(subsystem + "/" + name, struct)
-                .publish());
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
+
+        return Optional.of(
+                getLoggerTable().get().getStructTopic(normalized, struct).publish());
     }
 
     public static <T extends StructSerializable, S extends Struct<T>>
             Optional<StructArrayPublisher<T>> makeStructArrayPublisher(String subsystem, String name, S struct) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return Optional.empty();
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return Optional.empty();
@@ -905,10 +954,15 @@ public class Logger {
 
         if (getLoggerTable().isEmpty()) return Optional.empty();
 
-        return Optional.of(getLoggerTable()
-                .get()
-                .getStructArrayTopic(subsystem + "/" + name, struct)
-                .publish());
+        String normalized;
+        if (subsystem == null) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
+
+        return Optional.of(
+                getLoggerTable().get().getStructArrayTopic(normalized, struct).publish());
     }
 
     private static class StackTrace {

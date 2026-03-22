@@ -19,6 +19,11 @@ public class AutoWaitForReadyToShoot extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         if (expiration.isPresent()) {
             expirationTimer = Optional.of(new Timer());

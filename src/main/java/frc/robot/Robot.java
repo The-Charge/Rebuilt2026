@@ -27,7 +27,7 @@ public class Robot extends TimedRobot {
 
     private static Robot instance;
 
-    private Command m_autonomousCommand;
+    private Command autoCommand;
     private Optional<TeleopLogic> teleopLogic;
     private Optional<Timer> autoGyroTimer;
 
@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
 
         // handle disconnect of CAN devices;
-        // set Callback function to log reconnect and flash LEDs for disconnection
+        // set callback function to log reconnect and flash LEDs for disconnection
         CANMonitor.setConnectionChangeCallback((id, connected) -> {
             if (connected == true) {
                 Logger.println(String.format("Connected to CAN device %d", id));
@@ -82,6 +82,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().otherLimelight.slowPeriodic();
         RobotContainer.getInstance().turretLimelight.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
+        RobotContainer.getInstance().turret.slowPeriodic();
+        RobotContainer.getInstance().shooter.slowPeriodic();
 
         Logger.logPDP(RobotContainer.getInstance().pdp);
 
@@ -96,6 +98,8 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().otherLimelight.verySlowPeriodic();
         RobotContainer.getInstance().turretLimelight.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
+        RobotContainer.getInstance().turret.verySlowPeriodic();
+        RobotContainer.getInstance().shooter.verySlowPeriodic();
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
@@ -137,6 +141,8 @@ public class Robot extends TimedRobot {
             RobotContainer.getInstance().turretLimelight.takeRewind();
             RobotContainer.getInstance().otherLimelight.takeRewind();
         }
+
+        RobotContainer.getInstance().displayAuto();
     }
 
     @Override
@@ -150,9 +156,9 @@ public class Robot extends TimedRobot {
         MiscUtils.changeSubsystemDefaultCommand(
                 RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
-        m_autonomousCommand = RobotContainer.getInstance().getAutonomousCommand();
-        if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        autoCommand = RobotContainer.getInstance().getAutonomousCommand();
+        if (autoCommand != null) {
+            CommandScheduler.getInstance().schedule(autoCommand);
         }
 
         RobotContainer.getInstance().displayAuto();
@@ -173,8 +179,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousExit() {
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
+        if (autoCommand != null) {
+            autoCommand.cancel();
         }
     }
 
