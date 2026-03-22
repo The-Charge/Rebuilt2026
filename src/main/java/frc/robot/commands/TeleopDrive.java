@@ -1,15 +1,16 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.constants.SwerveConstants;
@@ -18,39 +19,38 @@ import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
-public class TeleopCommand extends Command {
+public class TeleopDrive {
+
+    private enum SwerveMode {
+        BRAKE,
+        ROBOT_CENTRIC,
+        FIELD_CENTRIC,
+        SNAKE,
+        POV
+    }
+
     private SwerveRequest.FieldCentric swerveFieldCentricDrive;
     private SwerveRequest.RobotCentric swerveRobotCentricDrive;
     private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
     private SwerveRequest.FieldCentricFacingAngle swervePOVDrive;
-    public SwerveRequest.SwerveDriveBrake swerveBrake;
+    private SwerveRequest.SwerveDriveBrake swerveBrake;
 
-    public Command swerveFieldCentricDriveCommand;
-    public Command swerveRobotCentricDriveCommand;
-    public Command swerveFieldCentricFacingAngleDriveCommand;
-    public Command swervePOVDriveCommand;
-    private Optional<Rotation2d> lastDefinedSnakeRotation = Optional.empty();
-    private Optional<Rotation2d> lastDefinedPOVRotation = Optional.empty();
+    private Command swerveFieldCentricDriveCommand;
+    private Command swerveRobotCentricDriveCommand;
+    private Command swerveFieldCentricFacingAngleDriveCommand;
+    private Command swervePOVDriveCommand;
 
-    private DoubleSupplier speedShifter, intakeMultiplier, cubicLeftY, cubicLeftX, linearRightX;
+    private final DoubleSupplier speedShifter, intakeMultiplier, cubicLeftY, cubicLeftX, linearRightX;
+    private final Supplier<LinearVelocity> commonXVel, commonYVel;
+    private final Supplier<AngularVelocity> commonOmegaVel;
 
-    private enum SwerveMode {
-        BRAKE,
-        ROBOTCENTRIC,
-        FIELDCENTRIC,
-        SNAKE,
-        POV,
-        OTHER,
-    }
+    private Optional<SwerveMode> lastMode;
+    private Optional<Rotation2d> lastDefinedSnakeRotation;
+    private Optional<Rotation2d> lastDefinedPOVRotation;
 
-    private SwerveMode mode;
-    private SwerveMode lastMode;
-
-    public TeleopCommand() { // this badly needs organiztion
-        mode = SwerveMode.FIELDCENTRIC;
-        lastMode = SwerveMode.OTHER;
-
+    public TeleopDrive() {
         speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
         intakeMultiplier = () -> RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5 ? 0.5 : 1;
 
@@ -65,6 +65,17 @@ public class TeleopCommand extends Command {
         linearRightX = () -> ControllerUtil.applyLinearDeadband(
                 RobotContainer.getInstance().hidDriver1.getRightX(), SwerveConstants.joystickDeadband);
 
+        commonXVel = () -> SwerveConstants.maxTranslationVel.times(
+                -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
+        commonYVel = () -> SwerveConstants.maxTranslationVel.times(
+                -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
+        commonOmegaVel =
+                () -> SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble());
+
+        lastMode = Optional.empty();
+        lastDefinedSnakeRotation = Optional.empty();
+        lastDefinedPOVRotation = Optional.empty();
+
         setupCommands();
 
         RobotContainer.getInstance().swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
@@ -72,72 +83,63 @@ public class TeleopCommand extends Command {
 
     private void setupCommands() {
         swerveFieldCentricDrive = new SwerveRequest.FieldCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDeadband(SwerveConstants.deadbandTranslationVel)
+                .withRotationalDeadband(SwerveConstants.deadbandAngularVel)
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
         swerveRobotCentricDrive = new SwerveRequest.RobotCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
+                .withDeadband(SwerveConstants.deadbandTranslationVel)
+                .withRotationalDeadband(SwerveConstants.deadbandAngularVel)
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
         swerveFieldCentricFacingAngleDrive = new SwerveRequest.FieldCentricFacingAngle()
-                .withHeadingPID(10, 0, 0)
+                .withHeadingPID(
+                        SwerveConstants.headingPID.kP, SwerveConstants.headingPID.kI, SwerveConstants.headingPID.kD)
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                 .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
         swervePOVDrive = new SwerveRequest.FieldCentricFacingAngle()
-                .withHeadingPID(10, 0, 0)
+                .withHeadingPID(
+                        SwerveConstants.headingPID.kP, SwerveConstants.headingPID.kI, SwerveConstants.headingPID.kD)
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                 .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
         swerveBrake = new SwerveRequest.SwerveDriveBrake();
 
         swerveFieldCentricDriveCommand = RobotContainer.getInstance().swerve.applyRequest(() -> swerveFieldCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
+                .withVelocityX(commonXVel.get())
+                .withVelocityY(commonYVel.get())
+                .withRotationalRate(commonOmegaVel.get()));
         swerveRobotCentricDriveCommand = RobotContainer.getInstance().swerve.applyRequest(() -> swerveRobotCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
+                .withVelocityX(commonXVel.get())
+                .withVelocityY(commonYVel.get())
+                .withRotationalRate(commonOmegaVel.get()));
         swervePOVDriveCommand = RobotContainer.getInstance().swerve.applyRequest(() -> {
             int pov = RobotContainer.getInstance().hidDriver1.getPOV();
             if (pov != -1) {
                 lastDefinedPOVRotation = Optional.of(new Rotation2d(Degrees.of(-pov)));
             }
-            FieldCentricFacingAngle req = swervePOVDrive
-                    .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                    .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()));
+
+            FieldCentricFacingAngle req =
+                    swervePOVDrive.withVelocityX(commonXVel.get()).withVelocityY(commonYVel.get());
             if (lastDefinedPOVRotation.isPresent()) {
-                req = req.withTargetDirection(lastDefinedPOVRotation.get());
+                req.withTargetDirection(lastDefinedPOVRotation.get());
             }
+
             return req;
         });
         swerveFieldCentricFacingAngleDriveCommand = RobotContainer.getInstance()
                 .swerve
                 .applyRequest(() -> {
+                    SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
                     ChassisSpeeds speed = ChassisSpeeds.fromRobotRelativeSpeeds(
-                            RobotContainer.getInstance().swerve.getStateCopy().Speeds,
-                            RobotContainer.getInstance().swerve.getState().RawHeading);
+                            state.Speeds, state.Pose.getRotation()); // TODO: make sure rotation works on red alliance
                     if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1) {
                         lastDefinedSnakeRotation = Optional.of(
                                 new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
                     }
 
                     FieldCentricFacingAngle req = swerveFieldCentricFacingAngleDrive
-                            .withVelocityX(SwerveConstants.maxTranslationVel.times(-cubicLeftY.getAsDouble()
-                                    * speedShifter.getAsDouble()
-                                    * intakeMultiplier.getAsDouble()))
-                            .withVelocityY(SwerveConstants.maxTranslationVel.times(-cubicLeftX.getAsDouble()
-                                    * speedShifter.getAsDouble()
-                                    * intakeMultiplier.getAsDouble()));
+                            .withVelocityX(commonXVel.get())
+                            .withVelocityY(commonYVel.get());
                     if (lastDefinedSnakeRotation.isPresent()) {
-                        req = req.withTargetDirection(lastDefinedSnakeRotation.get());
+                        req.withTargetDirection(lastDefinedSnakeRotation.get());
                     }
 
                     return req;
@@ -145,44 +147,44 @@ public class TeleopCommand extends Command {
     }
 
     public void teleopPeriodic() {
+        SwerveMode mode;
         if (RobotContainer.getInstance().hidDriver1.getXButton()) {
             mode = SwerveMode.BRAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= 0.5) {
-            mode = SwerveMode.ROBOTCENTRIC;
-        } else if (linearRightX.getAsDouble() != 0) {
-            mode = SwerveMode.FIELDCENTRIC;
+            mode = SwerveMode.ROBOT_CENTRIC;
         } else if (RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5) {
             mode = SwerveMode.SNAKE;
-        } else if (RobotContainer.getInstance().hidDriver1.getPOV() != -1) {
+        } else if (RobotContainer.getInstance().hidDriver1.getPOV() != -1
+                || (lastMode.isPresent() && lastMode.get().equals(SwerveMode.POV) && linearRightX.getAsDouble() == 0)) {
             mode = SwerveMode.POV;
-        } else if (mode != SwerveMode.POV) {
-            mode = SwerveMode.FIELDCENTRIC;
+        } else {
+            mode = SwerveMode.FIELD_CENTRIC;
         }
 
-        Logger.logEnum("TeleopCommand", "Swerve Mode", mode);
+        Logger.logEnum("TeleopDrive", "mode", mode);
 
-        if (!mode.equals(lastMode)) {
-            lastMode = mode;
+        if (lastMode.isEmpty() || !mode.equals(lastMode.get())) {
+            lastMode = Optional.of(mode);
 
             switch (mode) {
                 case BRAKE:
                     RobotContainer.getInstance().swerve.applyRequest(() -> swerveBrake);
                     break;
-                case ROBOTCENTRIC:
+                case ROBOT_CENTRIC:
                     MiscUtils.changeSubsystemDefaultCommand(
-                            RobotContainer.getInstance().swerve, swerveRobotCentricDriveCommand, false);
+                            RobotContainer.getInstance().swerve, swerveRobotCentricDriveCommand, true);
                     break;
-                case FIELDCENTRIC:
+                case FIELD_CENTRIC:
                     MiscUtils.changeSubsystemDefaultCommand(
-                            RobotContainer.getInstance().swerve, swerveFieldCentricDriveCommand, false);
+                            RobotContainer.getInstance().swerve, swerveFieldCentricDriveCommand, true);
                     break;
                 case SNAKE:
                     MiscUtils.changeSubsystemDefaultCommand(
-                            RobotContainer.getInstance().swerve, swerveFieldCentricFacingAngleDriveCommand, false);
+                            RobotContainer.getInstance().swerve, swerveFieldCentricFacingAngleDriveCommand, true);
                     break;
                 case POV:
                     MiscUtils.changeSubsystemDefaultCommand(
-                            RobotContainer.getInstance().swerve, swervePOVDriveCommand, false);
+                            RobotContainer.getInstance().swerve, swervePOVDriveCommand, true);
                     break;
                 default:
                     break;
@@ -190,5 +192,7 @@ public class TeleopCommand extends Command {
         }
     }
 
-    public void endTeleop() {}
+    public void endTeleop() {
+        MiscUtils.removeSubsystemDefaultCommand(RobotContainer.getInstance().swerve, true);
+    }
 }
