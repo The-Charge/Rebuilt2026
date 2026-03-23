@@ -77,6 +77,7 @@ public class TurretSubsystem extends SubsystemBase {
                 Motor.forwardHardLimitResetRots,
                 Motor.reverseHardLimitEnabled,
                 Motor.reverseHardLimitResetRots);
+        SparkUtils.configureMAXMotion(turretConfig, Motor.maxAccel, Motor.cruiseVel, Motor.allowedError);
 
         if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
@@ -174,7 +175,9 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        turretMotor.getClosedLoopController().setSetpoint(angle.asMotorRotations(), ControlType.kPosition);
+        turretMotor
+                .getClosedLoopController()
+                .setSetpoint(angle.asMotorRotations(), ControlType.kMAXMotionPositionControl);
     }
 
     public void stopTurret() {

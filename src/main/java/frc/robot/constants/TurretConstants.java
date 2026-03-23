@@ -4,10 +4,13 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
@@ -29,20 +32,25 @@ public class TurretConstants {
         public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
         public static final boolean forwardHardLimitEnabled = false;
-        public static final Optional<Double> forwardHardLimitResetRots = Optional.empty();
+        public static final Optional<Angle> forwardHardLimitResetRots = Optional.empty();
         public static final boolean reverseHardLimitEnabled = false;
-        public static final Optional<Double> reverseHardLimitResetRots = Optional.empty();
+        public static final Optional<Angle> reverseHardLimitResetRots = Optional.empty();
 
         public static final double kP = 0.2;
         public static final double kI = 0;
         public static final Optional<Double> iZone = Optional.empty();
-        public static final double kD = 0.1;
+        public static final double kD = 0;
         public static final Optional<Voltage> kStaticG = Optional.empty();
         public static final Optional<Voltage> kCos = Optional.empty();
         public static final Optional<Double> kS = Optional.empty();
         public static final Optional<Double> kV = Optional.empty();
         public static final Optional<Double> kA = Optional.empty();
         public static final Optional<Time> rampTime = Optional.empty();
+
+        public static final AngularAcceleration maxAccel = RotationsPerSecondPerSecond.of(
+                2000 / 60 / 0.5); // I want to get to 2000 rpm (2000 / 60 rps) in 0.5 seconds
+        public static final Optional<AngularVelocity> cruiseVel = Optional.of(RPM.of(2000));
+        public static final Optional<Angle> allowedError = Optional.empty();
 
         public static final double motorRotsPerMechRots = (46.713913 - -19.690401) * 2;
 
