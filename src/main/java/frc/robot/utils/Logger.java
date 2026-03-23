@@ -54,7 +54,7 @@ public class Logger {
     private static final boolean showJoystickDisconnectWarnings = false;
     private static final boolean ctreLoggingEnabled = false;
     private static final boolean revLoggingEnabled = false;
-    private static final LoggingLevel loggingLevel = LoggingLevel.NT_ONLY;
+    private static final LoggingLevel loggingLevel = LoggingLevel.ENABLED;
 
     private static final Alert notLoggingToFlashdrive;
 
