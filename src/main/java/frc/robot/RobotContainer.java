@@ -5,14 +5,13 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -24,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -63,7 +62,6 @@ import frc.robot.commands.shooter.ManualShoot;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.ManualTurret;
-import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
@@ -84,21 +82,23 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
-import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class RobotContainer {
     // singleton instance
+    private static boolean hasIntialized = false;
     private static RobotContainer instance = null;
 
     public static synchronized RobotContainer getInstance() {
-        if (instance == null) instance = new RobotContainer();
+        if (!hasIntialized) {
+            hasIntialized = true;
+            instance = new RobotContainer();
+        }
 
         return instance;
     }
@@ -116,8 +116,7 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final LimelightSubsystem turretLimelight;
-    public final LimelightSubsystem otherLimelight;
+    public final LimelightSubsystem limelights;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
@@ -131,18 +130,10 @@ public class RobotContainer {
     public final BlinkLED autoLEDCommand;
     public final AimAtTarget aimAtHubCommand;
     public final AimAtTarget aimAtFZoneCommand;
-    public final LimelightCommand limelightCommand;
+    //     public final LimelightCommand limelightCommand;
 
-    private SwerveRequest.FieldCentric swerveFieldCentricDrive;
-    private SwerveRequest.RobotCentric swerveRobotCentricDrive;
-    private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
-    private SwerveRequest.SwerveDriveBrake swerveBrake;
     private SwerveRequest.Idle swerveIdle;
     private SwerveRequest.ApplyRobotSpeeds swerveApplyRobotSpeeds;
-    public Command swerveFieldCentricDriveCommand;
-    public Command swerveRobotCentricDriveCommand;
-    public Command swerveFieldCentricFacingAngleDriveCommand;
-    private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
 
     public final Field2d ntField;
 
@@ -160,10 +151,13 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretLimelight = new LimelightSubsystem(
-                LimelightConstants.Turret.cameraName, LimelightConstants.Turret.robotRelativePose);
-        otherLimelight =
-                new LimelightSubsystem(LimelightConstants.Side.cameraName, LimelightConstants.Side.robotRelativePose);
+        limelights = new LimelightSubsystem(
+                LimelightConstants.Turret.cameraName,
+                LimelightConstants.Side.cameraName,
+                LimelightConstants.Turret.robotRelativePose,
+                LimelightConstants.Side.robotRelativePose);
+        // otherLimelight = new LimelightSubsystem(LimelightConstants.Side.cameraName,
+        // LimelightConstants.Side.robotRelativePose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
@@ -183,9 +177,9 @@ public class RobotContainer {
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
-        limelightCommand =
-                new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
-        CommandScheduler.getInstance().schedule(limelightCommand);
+        // limelightCommand =
+        //         new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
+        // CommandScheduler.getInstance().schedule(limelightCommand);
 
         addNamedCommands();
         setupSwerve();
@@ -194,78 +188,14 @@ public class RobotContainer {
     }
 
     private void setupSwerve() {
-        swerveFieldCentricDrive = new SwerveRequest.FieldCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-        swerveRobotCentricDrive = new SwerveRequest.RobotCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-        swerveFieldCentricFacingAngleDrive = new SwerveRequest.FieldCentricFacingAngle()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-        swerveBrake = new SwerveRequest.SwerveDriveBrake();
         swerveIdle = new SwerveRequest.Idle();
+
         swerveApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
-
-        DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
-        DoubleSupplier intakeMultiplier = () -> hidDriver2.getLeftTriggerAxis() >= 0.5 ? 0.5 : 1;
-
-        DoubleSupplier cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
-                hidDriver1.getLeftY(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent);
-        DoubleSupplier cubicLeftX = () -> ControllerUtil.applyExponentialDeadband(
-                hidDriver1.getLeftX(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent);
-        DoubleSupplier linearRightX =
-                () -> ControllerUtil.applyLinearDeadband(hidDriver1.getRightX(), SwerveConstants.joystickDeadband);
-
-        swerveFieldCentricDriveCommand = swerve.applyRequest(() -> swerveFieldCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
-
-        swerveRobotCentricDriveCommand = swerve.applyRequest(() -> swerveRobotCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
-
-        swerveFieldCentricFacingAngleDriveCommand = swerve.applyRequest(() -> {
-            ChassisSpeeds speed = swerve.getStateCopy().Speeds;
-            if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.01) {
-                lastDefinedRotation =
-                        Optional.of(new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
-            }
-
-            var req = swerveFieldCentricFacingAngleDrive
-                    .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                    .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()));
-            if (lastDefinedRotation.isPresent()) {
-                req = req.withTargetDirection(lastDefinedRotation.get());
-            }
-
-            return req;
-        });
-
-        swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         RobotModeTriggers.disabled()
-                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true))
-                .onTrue(new InstantCommand(() -> {
-                            lastDefinedRotation = Optional.empty();
-                        })
-                        .ignoringDisable(true)); // reset snake mode
-
+                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true));
         swerve.registerTelemetry(swerveTelem::telemeterize);
     }
 
@@ -277,16 +207,10 @@ public class RobotContainer {
                                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
+                            limelights.seedBothAbsolute(Angle.ofBaseUnits(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180,
+                                    Degrees));
                         })
-                        .ignoringDisable(true));
-        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
-        commandDriver1
-                .leftTrigger()
-                .onTrue(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
-                        .ignoringDisable(true))
-                .onFalse(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
                         .ignoringDisable(true));
 
         commandDriver2
@@ -318,7 +242,7 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox.seed().onTrue(new InstantCommand(limelightCommand::seedFromIMU));
+        commandButtonBox.seed().onTrue(new InstantCommand(limelights::seedSwerve));
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, TurretConstants.Motor.manualSpeed)
