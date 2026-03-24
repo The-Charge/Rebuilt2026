@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -33,7 +35,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -60,7 +61,6 @@ import frc.robot.commands.shooter.ManualShoot;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.ManualTurret;
-import frc.robot.commands.vision.LimelightCommand;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
@@ -115,8 +115,7 @@ public class RobotContainer {
     public final IndexerSubsystem indexer;
     public final ClimbSubsystem climber;
     public final LEDSubsystem ledSub;
-    public final LimelightSubsystem turretLimelight;
-    public final LimelightSubsystem otherLimelight;
+    public final LimelightSubsystem limelights;
     public final TurretSubsystem turret;
     public final ShooterSubsystem shooter;
     public final CommandSwerveDrivetrain swerve;
@@ -130,7 +129,7 @@ public class RobotContainer {
     public final BlinkLED autoLEDCommand;
     public final AimAtTarget aimAtHubCommand;
     public final AimAtTarget aimAtFZoneCommand;
-    public final LimelightCommand limelightCommand;
+    //     public final LimelightCommand limelightCommand;
 
     private SwerveRequest.Idle swerveIdle;
     private SwerveRequest.ApplyRobotSpeeds swerveApplyRobotSpeeds;
@@ -151,10 +150,13 @@ public class RobotContainer {
         indexer = new IndexerSubsystem();
         climber = new ClimbSubsystem();
         ledSub = new LEDSubsystem();
-        turretLimelight = new LimelightSubsystem(
-                LimelightConstants.Turret.cameraName, LimelightConstants.Turret.robotRelativePose);
-        otherLimelight =
-                new LimelightSubsystem(LimelightConstants.Side.cameraName, LimelightConstants.Side.robotRelativePose);
+        limelights = new LimelightSubsystem(
+                LimelightConstants.Turret.cameraName,
+                LimelightConstants.Side.cameraName,
+                LimelightConstants.Turret.robotRelativePose,
+                LimelightConstants.Side.robotRelativePose);
+        // otherLimelight = new LimelightSubsystem(LimelightConstants.Side.cameraName,
+        // LimelightConstants.Side.robotRelativePose);
         turret = new TurretSubsystem();
         shooter = new ShooterSubsystem();
         swerve = TunerConstants.createDrivetrain();
@@ -174,9 +176,9 @@ public class RobotContainer {
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
 
-        limelightCommand =
-                new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
-        CommandScheduler.getInstance().schedule(limelightCommand);
+        // limelightCommand =
+        //         new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
+        // CommandScheduler.getInstance().schedule(limelightCommand);
 
         addNamedCommands();
         setupSwerve();
@@ -204,6 +206,9 @@ public class RobotContainer {
                                     DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
+                            limelights.seedBothAbsolute(Angle.ofBaseUnits(
+                                    DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 0 : 180,
+                                    Degrees));
                         })
                         .ignoringDisable(true));
 
@@ -236,7 +241,7 @@ public class RobotContainer {
         commandButtonBox
                 .deployIntake()
                 .onTrue(new DeployIntake(intake).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-        commandButtonBox.seed().onTrue(new InstantCommand(limelightCommand::seedFromIMU));
+        commandButtonBox.seed().onTrue(new InstantCommand(limelights::seedSwerve));
         commandButtonBox
                 .turretLeft()
                 .whileTrue(new ManualTurret(turret, TurretConstants.Motor.manualSpeed)

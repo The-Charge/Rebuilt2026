@@ -1,6 +1,9 @@
 package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -10,6 +13,9 @@ import com.revrobotics.spark.SparkBase.Warnings;
 import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
@@ -173,9 +179,9 @@ public class SparkUtils {
     public static void configureLimitSwitches(
             SparkBaseConfig config,
             boolean forwardLimitEnabled,
-            Optional<Double> forwardLimitResetRots,
+            Optional<Angle> forwardLimitResetRots,
             boolean reverseLimitEnabled,
-            Optional<Double> reverseLimitResetRots) {
+            Optional<Angle> reverseLimitResetRots) {
         if (config == null) {
             Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
             return;
@@ -184,7 +190,8 @@ public class SparkUtils {
         if (forwardLimitEnabled) {
             if (forwardLimitResetRots != null && forwardLimitResetRots.isPresent()) {
                 config.limitSwitch.forwardLimitSwitchTriggerBehavior(Behavior.kStopMovingMotorAndSetPosition);
-                config.limitSwitch.forwardLimitSwitchPosition(forwardLimitResetRots.get());
+                config.limitSwitch.forwardLimitSwitchPosition(
+                        forwardLimitResetRots.get().in(Rotations));
             } else {
                 config.limitSwitch.forwardLimitSwitchTriggerBehavior(Behavior.kStopMovingMotor);
             }
@@ -195,12 +202,40 @@ public class SparkUtils {
         if (reverseLimitEnabled) {
             if (reverseLimitResetRots != null && reverseLimitResetRots.isPresent()) {
                 config.limitSwitch.reverseLimitSwitchTriggerBehavior(Behavior.kStopMovingMotorAndSetPosition);
-                config.limitSwitch.reverseLimitSwitchPosition(reverseLimitResetRots.get());
+                config.limitSwitch.reverseLimitSwitchPosition(
+                        reverseLimitResetRots.get().in(Rotations));
             } else {
                 config.limitSwitch.reverseLimitSwitchTriggerBehavior(Behavior.kStopMovingMotor);
             }
         } else {
             config.limitSwitch.reverseLimitSwitchTriggerBehavior(Behavior.kKeepMovingMotor);
+        }
+    }
+
+    /**
+     * Modify the given config to contain settings for MAXMotion control
+     * @param config The {@code SparkBaseConfig} to modify
+     * @param maxAccel Maximum acceleration and deceleration rate of the motor
+     * @param cruiseVel Maximum velocity. This is not necessary if you are only going to be using MAXMotion velocity control
+     * @param allowedError Maximum allowed error before profile regenerates itself. This is only used for MAXMotion position control
+     */
+    public static void configureMAXMotion(
+            SparkBaseConfig config,
+            AngularAcceleration maxAccel,
+            Optional<AngularVelocity> cruiseVel,
+            Optional<Angle> allowedError) {
+        if (config == null) {
+            Logger.reportWarning("Cannot modify a null SparkBaseConfig", true);
+            return;
+        }
+
+        config.closedLoop.maxMotion.maxAcceleration(maxAccel.in(RotationsPerSecondPerSecond)
+                * 60); // wants r/(ms), but units class only has r/s^2, so just multiply by 60 to get r/(ms)
+        if (cruiseVel != null && cruiseVel.isPresent()) {
+            config.closedLoop.maxMotion.cruiseVelocity(cruiseVel.get().in(RPM));
+        }
+        if (allowedError != null && allowedError.isPresent()) {
+            config.closedLoop.maxMotion.allowedProfileError(allowedError.get().in(Rotations));
         }
     }
 }

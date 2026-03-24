@@ -49,6 +49,7 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
     static {
+        // https://docs.google.com/spreadsheets/d/1gD5zpmwW_OerKw1IJ8A7G90_bQRWeTSE9Q0T1-Z4_QU/edit?usp=sharing
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();
 
         distanceToRPMPlot.put(1.9505, 2500.0d);
