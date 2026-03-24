@@ -89,15 +89,21 @@ public class LimelightSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(getName(), this);
-        Logger.logBool(getSubsystem(),"isChanged", isChanged);
-        Logger.logBool(getSubsystem(),"throttle", throttle);
+        Logger.logBool(getSubsystem(), "isChanged", isChanged);
+        Logger.logBool(getSubsystem(), "throttle", throttle);
 
         // ****** FIX FIX FIX *******
         if (throttle && !isChanged) {
             LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
             LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
-            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
-            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
+            this.turretLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
+                    .save();
+            this.sideLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
+                    .save();
             // LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
             // LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
             // turretLimelight.setThrottle(false);
@@ -113,9 +119,15 @@ public class LimelightSubsystem extends SubsystemBase {
         if (!throttle && !isChanged) {
             LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
             LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
-            
-            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
-            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
+
+            this.turretLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
+                    .save();
+            this.sideLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
+                    .save();
 
             // turretLimelight.setIMUMode(1);
             // sideLimelight.setIMUMode(1);

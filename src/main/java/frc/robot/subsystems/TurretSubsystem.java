@@ -115,11 +115,11 @@ public class TurretSubsystem extends SubsystemBase {
         Logger.logDouble(
                 getName(),
                 "targetTurretDeg",
-                targetAngle.map((val) -> val.asMotorAngle().in(Degrees)).orElse(Double.NaN));
+                targetAngle.map((val) -> val.asMechanismAngle().in(Degrees)).orElse(Double.NaN));
         Logger.logDouble(
                 getName(),
                 "targetMotorRots",
-                targetAngle.map((val) -> val.asMechanismRotations()).orElse(Double.NaN));
+                targetAngle.map((val) -> val.asMotorRotations()).orElse(Double.NaN));
         Logger.logBool(getName(), "isAtCalibrationLimit", isAtCalibrationLimit());
         Logger.logBool(getName(), "isCalibrated", getIsCalibrated());
 
@@ -175,9 +175,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         targetAngle = Optional.of(angle);
 
-        turretMotor
-                .getClosedLoopController()
-                .setSetpoint(angle.asMotorRotations(), ControlType.kMAXMotionPositionControl);
+        turretMotor.getClosedLoopController().setSetpoint(angle.asMotorRotations(), ControlType.kPosition);
     }
 
     public void stopTurret() {
