@@ -9,10 +9,8 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -83,21 +81,23 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
-import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class RobotContainer {
     // singleton instance
+    private static boolean hasIntialized = false;
     private static RobotContainer instance = null;
 
     public static synchronized RobotContainer getInstance() {
-        if (instance == null) instance = new RobotContainer();
+        if (!hasIntialized) {
+            hasIntialized = true;
+            instance = new RobotContainer();
+        }
 
         return instance;
     }
@@ -132,16 +132,8 @@ public class RobotContainer {
     public final AimAtTarget aimAtFZoneCommand;
     public final LimelightCommand limelightCommand;
 
-    private SwerveRequest.FieldCentric swerveFieldCentricDrive;
-    private SwerveRequest.RobotCentric swerveRobotCentricDrive;
-    private SwerveRequest.FieldCentricFacingAngle swerveFieldCentricFacingAngleDrive;
-    private SwerveRequest.SwerveDriveBrake swerveBrake;
     private SwerveRequest.Idle swerveIdle;
     private SwerveRequest.ApplyRobotSpeeds swerveApplyRobotSpeeds;
-    public Command swerveFieldCentricDriveCommand;
-    public Command swerveRobotCentricDriveCommand;
-    public Command swerveFieldCentricFacingAngleDriveCommand;
-    private Optional<Rotation2d> lastDefinedRotation = Optional.empty();
 
     public final Field2d ntField;
 
@@ -193,78 +185,14 @@ public class RobotContainer {
     }
 
     private void setupSwerve() {
-        swerveFieldCentricDrive = new SwerveRequest.FieldCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-        swerveRobotCentricDrive = new SwerveRequest.RobotCentric()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-        swerveFieldCentricFacingAngleDrive = new SwerveRequest.FieldCentricFacingAngle()
-                .withDeadband(MetersPerSecond.of(0.01))
-                .withRotationalDeadband(RotationsPerSecond.of(0.01))
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-        swerveBrake = new SwerveRequest.SwerveDriveBrake();
         swerveIdle = new SwerveRequest.Idle();
+
         swerveApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
-
-        DoubleSupplier speedShifter = () -> hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
-        DoubleSupplier intakeMultiplier = () -> hidDriver2.getLeftTriggerAxis() >= 0.5 ? 0.5 : 1;
-
-        DoubleSupplier cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
-                hidDriver1.getLeftY(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent);
-        DoubleSupplier cubicLeftX = () -> ControllerUtil.applyExponentialDeadband(
-                hidDriver1.getLeftX(), SwerveConstants.joystickDeadband, SwerveConstants.joystickExponent);
-        DoubleSupplier linearRightX =
-                () -> ControllerUtil.applyLinearDeadband(hidDriver1.getRightX(), SwerveConstants.joystickDeadband);
-
-        swerveFieldCentricDriveCommand = swerve.applyRequest(() -> swerveFieldCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
-
-        swerveRobotCentricDriveCommand = swerve.applyRequest(() -> swerveRobotCentricDrive
-                .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                        -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                .withRotationalRate(
-                        SwerveConstants.maxAngularVel.times(-linearRightX.getAsDouble() * speedShifter.getAsDouble())));
-
-        swerveFieldCentricFacingAngleDriveCommand = swerve.applyRequest(() -> {
-            ChassisSpeeds speed = swerve.getStateCopy().Speeds;
-            if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.01) {
-                lastDefinedRotation =
-                        Optional.of(new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
-            }
-
-            var req = swerveFieldCentricFacingAngleDrive
-                    .withVelocityX(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()))
-                    .withVelocityY(SwerveConstants.maxTranslationVel.times(
-                            -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble()));
-            if (lastDefinedRotation.isPresent()) {
-                req = req.withTargetDirection(lastDefinedRotation.get());
-            }
-
-            return req;
-        });
-
-        swerve.setDefaultCommand(swerveFieldCentricDriveCommand);
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         RobotModeTriggers.disabled()
-                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true))
-                .onTrue(new InstantCommand(() -> {
-                            lastDefinedRotation = Optional.empty();
-                        })
-                        .ignoringDisable(true)); // reset snake mode
-
+                .whileTrue(swerve.applyRequest(() -> swerveIdle).ignoringDisable(true));
         swerve.registerTelemetry(swerveTelem::telemeterize);
     }
 
@@ -277,15 +205,6 @@ public class RobotContainer {
                                             ? Rotation2d.kZero
                                             : Rotation2d.k180deg);
                         })
-                        .ignoringDisable(true));
-        commandDriver1.x().whileTrue(swerve.applyRequest(() -> swerveBrake));
-        commandDriver1
-                .leftTrigger()
-                .onTrue(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveRobotCentricDriveCommand, false))
-                        .ignoringDisable(true))
-                .onFalse(new InstantCommand(() ->
-                                MiscUtils.changeSubsystemDefaultCommand(swerve, swerveFieldCentricDriveCommand, false))
                         .ignoringDisable(true));
 
         commandDriver2

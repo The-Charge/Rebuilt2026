@@ -15,7 +15,7 @@ public class IntakeConstants {
         public static final int motorID = 14;
         public static final String motorName = "rollerMotor";
 
-        public static final Current currentLimit = Amps.of(20);
+        public static final Current currentLimit = Amps.of(40);
         public static final NeutralModeValue neutralMode = NeutralModeValue.Coast;
         public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
         public static final double maxDutyCycle = 1.00;

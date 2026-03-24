@@ -19,11 +19,14 @@ public class LEDSubsystem extends SubsystemBase {
     private Optional<LEDPattern> pattern;
 
     public LEDSubsystem() {
-        led = new AddressableLED(LEDConstants.port);
-        led.setLength(buffer.getLength());
-        led.setColorOrder(LEDConstants.colorOrder);
 
         buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
+
+        led = new AddressableLED(LEDConstants.port);
+        buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
+
+        led.setLength(buffer.getLength());
+        led.setColorOrder(LEDConstants.colorOrder);
 
         led.setData(buffer);
         led.start();
