@@ -19,6 +19,9 @@ public class LEDSubsystem extends SubsystemBase {
     private Optional<LEDPattern> pattern;
 
     public LEDSubsystem() {
+
+        buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
+
         led = new AddressableLED(LEDConstants.port);
         buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
 
