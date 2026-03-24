@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.constants.SwerveConstants;
+import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
@@ -60,7 +61,8 @@ public class AuxSwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.logSubsystem(getName(), RobotContainer.getInstance().swerve);
+        CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
+        Logger.logSubsystem(getName(), swerve);
 
         Logger.logTalonFXReduced(getName(), SwerveConstants.flDriveName, flDrive());
         Logger.logTalonFXReduced(getName(), SwerveConstants.flAzimuthName, flAzimuth());
@@ -70,6 +72,8 @@ public class AuxSwerveSubsystem extends SubsystemBase {
         Logger.logTalonFXReduced(getName(), SwerveConstants.blAzimuthName, blAzimuth());
         Logger.logTalonFXReduced(getName(), SwerveConstants.brDriveName, brDrive());
         Logger.logTalonFXReduced(getName(), SwerveConstants.brAzimuthName, brAzimuth());
+        var state = swerve.getState().Speeds;
+        Logger.logDouble(getName(), "spedometer", Math.hypot(state.vxMetersPerSecond, state.vyMetersPerSecond));
     }
 
     @Override

@@ -7,12 +7,15 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import limelight.networktables.LimelightSettings.ImuMode;
 
 public class LimelightConstants {
     public static final String subsystemName = "Limelight";
@@ -65,5 +68,19 @@ public class LimelightConstants {
         }
     }
 
+    public enum PoseEstimationMethod {
+        MEGATAG_1,
+        MEGATAG_2
+    }
+
+    public static final AprilTagFieldLayout tagLayout =
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+    public static final int aprilTagPipelineIndex = 1;
+        public static final int throttlePipelineIndex = 0;
+
     public static double kRotStdDev = 0.3;
+
+    public static double imuAssistAlpha = 0.1;
+
+    public static ImuMode imuMode = ImuMode.InternalImuMT1Assist;
 }

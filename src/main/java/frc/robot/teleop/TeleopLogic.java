@@ -171,7 +171,7 @@ public class TeleopLogic {
         Logger.logString(tableName, "phase", phase.toString());
         Logger.logDouble(tableName, "secsLeftInPhase", timeLeftInPhase.in(Seconds));
         Logger.logBool(tableName, "isFriendlyHubActive", isHubActive);
-        Logger.logString(tableName, "assistMode", turretMode.toString());
+        Logger.logString(tableName, "turretMode", turretMode.toString());
         Logger.logString(
                 tableName,
                 "autoWinningAlliance",
