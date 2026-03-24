@@ -58,7 +58,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     private boolean isSeeded = false;
     private boolean throttle = false;
-    private boolean isChanged = false;
+    // private boolean isChanged = false;
 
     public LimelightSubsystem(
             String turretLimelight, String sideLimelight, Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
@@ -89,48 +89,12 @@ public class LimelightSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(getName(), this);
-        Logger.logBool(getSubsystem(),"isChanged", isChanged);
+        // Logger.logBool(getSubsystem(),"isChanged", isChanged);
         Logger.logBool(getSubsystem(),"throttle", throttle);
-
-        // ****** FIX FIX FIX *******
-        if (throttle && !isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
-            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
-            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
-            // LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
-            // LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
-            // turretLimelight.setThrottle(false);
-            // sideLimelight.setThrottle(false);
-            // turretLimelight.getSettings().
-            // turretLimelight.setPipeline(1);
-            // sideLimelight.setPipeline(1);
-            // Logger.logBool(getName(), "throttle", throttle);
-            isChanged = true;
-        }
-
-        // ****** FIX FIX FIX *******
-        if (!throttle && !isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
-            
-            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
-            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
-
-            // turretLimelight.setIMUMode(1);
-            // sideLimelight.setIMUMode(1);
-            // turretLimelight.setThrottle(true);
-            // sideLimelight.setThrottle(true);
-            // turretLimelight.setPipeline(0);
-            // sideLimelight.setPipeline(0);
-            // Logger.logBool(getName(), "throttle", throttle);
-            isChanged = true;
-        }
 
         // if (!isSeeded) {
         //     seed();
         // }
-
         setRobotOrientationSwerve(); // for mode 0
         logMT2diff();
         multiple();
@@ -163,12 +127,26 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     /**
-     * NEED TO RUN TO BE TRUE WHEN ENABLED!!!
+     * 
+     * When throttled, throttle & use viewfinder pipeline,
+     * Unthrtottled, no throttle & use Apriltag pipeline
      * @param isEnabled
      */
     public void setThrottle(boolean throttle) {
-        this.throttle = throttle;
-        isChanged = false;
+        if (throttle) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
+            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
+            this.throttle = true;
+        } else {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+            
+            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
+            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
+            this.throttle = false;
+        }
     }
 
     /**
