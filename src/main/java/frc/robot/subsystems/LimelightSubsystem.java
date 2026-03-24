@@ -89,36 +89,42 @@ public class LimelightSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(getName(), this);
+        Logger.logBool(getSubsystem(),"isChanged", isChanged);
+        Logger.logBool(getSubsystem(),"throttle", throttle);
 
         // ****** FIX FIX FIX *******
-        if (throttle && isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
-            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
-            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
+        if (throttle && !isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
+            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.throttlePipelineIndex).save();
+            // LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
+            // LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
             // turretLimelight.setThrottle(false);
             // sideLimelight.setThrottle(false);
             // turretLimelight.getSettings().
             // turretLimelight.setPipeline(1);
             // sideLimelight.setPipeline(1);
-            Logger.logBool(getName(), "throttle", true);
-            isChanged = false;
+            // Logger.logBool(getName(), "throttle", throttle);
+            isChanged = true;
         }
 
         // ****** FIX FIX FIX *******
-        if (!throttle && isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
-            LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 0);
-            LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 0);
+        if (!throttle && !isChanged) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+            
+            this.turretLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
+            this.sideLimelight.getSettings().withPipelineIndex(LimelightConstants.aprilTagPipelineIndex).save();
+
             // turretLimelight.setIMUMode(1);
             // sideLimelight.setIMUMode(1);
             // turretLimelight.setThrottle(true);
             // sideLimelight.setThrottle(true);
             // turretLimelight.setPipeline(0);
             // sideLimelight.setPipeline(0);
-            Logger.logBool(getName(), "enabled", false);
-            isChanged = false;
+            // Logger.logBool(getName(), "throttle", throttle);
+            isChanged = true;
         }
 
         // if (!isSeeded) {
@@ -144,6 +150,7 @@ public class LimelightSubsystem extends SubsystemBase {
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetTurret)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
+                .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
                 .save();
         this.sideLimelight
                 .getSettings()
@@ -151,6 +158,7 @@ public class LimelightSubsystem extends SubsystemBase {
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetSide)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
+                .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
                 .save();
     }
 
@@ -158,9 +166,9 @@ public class LimelightSubsystem extends SubsystemBase {
      * NEED TO RUN TO BE TRUE WHEN ENABLED!!!
      * @param isEnabled
      */
-    public void setThrottle(boolean isEnabled) {
-        throttle = isEnabled;
-        isChanged = true;
+    public void setThrottle(boolean throttle) {
+        this.throttle = throttle;
+        isChanged = false;
     }
 
     /**
@@ -428,7 +436,7 @@ public class LimelightSubsystem extends SubsystemBase {
             swerve.addVisionMeasurement(vmt.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
         }
         if (!vms.isEmpty()) {
-            swerve.addVisionMeasurement(vms.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
+            swerve.addVisionMeasurement(vms.get().pose, vms.get().timestamp, vms.get().stdDevs);
         }
     }
 
