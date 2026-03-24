@@ -25,7 +25,7 @@ import java.util.Optional;
 
 public class TeleopLogic {
 
-    private static final String tableName = TeleopLogic.class.getTypeName();
+    private static final String tableName = "TeleopLogic";
 
     private Timer teleopTimer;
     private Optional<Alliance> autoWinner;

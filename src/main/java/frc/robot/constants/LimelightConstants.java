@@ -76,7 +76,7 @@ public class LimelightConstants {
     public static final AprilTagFieldLayout tagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     public static final int aprilTagPipelineIndex = 1;
-        public static final int throttlePipelineIndex = 0;
+    public static final int throttlePipelineIndex = 0;
 
     public static double kRotStdDev = 0.3;
 
