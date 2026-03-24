@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.teleop.TeleopLogic;
 import frc.robot.utils.Alerts;
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
 
     private Command autoCommand;
     private Optional<TeleopLogic> teleopLogic;
+    private Optional<TeleopDrive> teleopDrive;
     private Optional<Timer> autoGyroTimer;
 
     public Robot() {
@@ -36,6 +38,7 @@ public class Robot extends TimedRobot {
 
         Logger.init(this); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
+        Alerts.setupDeferredInitializations();
 
         // handle disconnect of CAN devices;
         // set callback function to log reconnect and flash LEDs for disconnection
@@ -52,6 +55,7 @@ public class Robot extends TimedRobot {
         });
 
         teleopLogic = Optional.empty();
+        teleopDrive = Optional.empty();
         autoGyroTimer = Optional.empty();
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
@@ -101,7 +105,9 @@ public class Robot extends TimedRobot {
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
-        Alerts.pdpDisconnected.set(!pdpConnected);
+        if (Alerts.pdpDisconnected.isPresent()) {
+            Alerts.pdpDisconnected.get().set(!pdpConnected);
+        }
 
         double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
         if (batteryVoltage <= 11) {
@@ -191,12 +197,16 @@ public class Robot extends TimedRobot {
         }
 
         teleopLogic = Optional.of(new TeleopLogic());
+        teleopDrive = Optional.of(new TeleopDrive());
     }
 
     @Override
     public void teleopPeriodic() {
         if (teleopLogic.isPresent()) {
             teleopLogic.get().teleopPeriodic();
+        }
+        if (teleopDrive.isPresent()) {
+            teleopDrive.get().teleopPeriodic();
         }
     }
 
@@ -205,7 +215,11 @@ public class Robot extends TimedRobot {
         if (teleopLogic.isPresent()) {
             teleopLogic.get().endTeleop();
         }
+        if (teleopDrive.isPresent()) {
+            teleopDrive.get().endTeleop();
+        }
         teleopLogic = Optional.empty();
+        teleopDrive = Optional.empty();
     }
 
     @Override
@@ -215,8 +229,22 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().intake.removeDefaultCommand();
         RobotContainer.getInstance().indexer.removeDefaultCommand();
         RobotContainer.getInstance().climber.removeDefaultCommand();
+
+        teleopDrive = Optional.of(new TeleopDrive());
     }
 
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+        if (teleopDrive.isPresent()) {
+            teleopDrive.get().teleopPeriodic();
+        }
+    }
+
+    @Override
+    public void testExit() {
+        if (teleopDrive.isPresent()) {
+            teleopDrive.get().endTeleop();
+        }
+        teleopDrive = Optional.empty();
+    }
 }
