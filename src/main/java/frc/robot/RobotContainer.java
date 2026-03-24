@@ -90,10 +90,14 @@ import java.util.function.Supplier;
 
 public class RobotContainer {
     // singleton instance
+    private static boolean hasIntialized = false;
     private static RobotContainer instance = null;
 
     public static synchronized RobotContainer getInstance() {
-        if (instance == null) instance = new RobotContainer();
+        if (!hasIntialized) {
+            hasIntialized = true;
+            instance = new RobotContainer();
+        }
 
         return instance;
     }

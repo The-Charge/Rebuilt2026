@@ -20,10 +20,10 @@ public class LEDSubsystem extends SubsystemBase {
 
     public LEDSubsystem() {
         led = new AddressableLED(LEDConstants.port);
+        buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
+
         led.setLength(buffer.getLength());
         led.setColorOrder(LEDConstants.colorOrder);
-
-        buffer = new AddressableLEDBuffer(LEDConstants.ledCount);
 
         led.setData(buffer);
         led.start();

@@ -8,7 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -128,11 +127,12 @@ public class TeleopDrive {
                 .swerve
                 .applyRequest(() -> {
                     SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-                    ChassisSpeeds speed = ChassisSpeeds.fromRobotRelativeSpeeds(
-                            state.Speeds, state.Pose.getRotation()); // TODO: make sure rotation works on red alliance
-                    if (Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1) {
+                    // ChassisSpeeds speed = ChassisSpeeds.fromRobotRelativeSpeeds(
+                    //         state.Speeds, state.Pose.getRotation()); // TODO: make sure rotation works on red
+                    // alliance
+                    if (Math.hypot(cubicLeftX.getAsDouble(), cubicLeftY.getAsDouble()) > 0.1) {
                         lastDefinedSnakeRotation = Optional.of(
-                                new Rotation2d(Math.atan2(speed.vyMetersPerSecond, speed.vxMetersPerSecond)));
+                                new Rotation2d(Math.atan2(-cubicLeftX.getAsDouble(), -cubicLeftY.getAsDouble())));
                     }
 
                     FieldCentricFacingAngle req = swerveFieldCentricFacingAngleDrive
@@ -152,7 +152,8 @@ public class TeleopDrive {
             mode = SwerveMode.BRAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= 0.5) {
             mode = SwerveMode.ROBOT_CENTRIC;
-        } else if (RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5) {
+        } else if (RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5
+                && linearRightX.getAsDouble() == 0) {
             mode = SwerveMode.SNAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getPOV() != -1
                 || (lastMode.isPresent() && lastMode.get().equals(SwerveMode.POV) && linearRightX.getAsDouble() == 0)) {

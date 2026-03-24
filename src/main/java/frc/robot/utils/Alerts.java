@@ -3,6 +3,7 @@ package frc.robot.utils;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
+import java.util.Optional;
 
 public class Alerts {
 
@@ -11,8 +12,8 @@ public class Alerts {
             buttonBoxConnected,
             fmsConnected,
             lowBattery,
-            criticalBattery,
-            pdpDisconnected;
+            criticalBattery;
+    public static Optional<Alert> pdpDisconnected;
 
     static {
         driver1Missing = new Alert("Driver 1 controller is not plugged in to port 0", AlertType.kWarning);
@@ -24,8 +25,12 @@ public class Alerts {
         lowBattery = new Alert("Low battery", AlertType.kWarning);
         criticalBattery = new Alert("Very low battery", AlertType.kError);
 
-        pdpDisconnected =
-                makeDisconnectAlert("PDP", RobotContainer.getInstance().pdp.getModule() + 1);
+        pdpDisconnected = Optional.empty();
+    }
+
+    public static void setupDeferredInitializations() {
+        pdpDisconnected = Optional.of(
+                makeDisconnectAlert("PDP", RobotContainer.getInstance().pdp.getModule() + 1));
     }
 
     private Alerts() {}

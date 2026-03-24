@@ -38,6 +38,7 @@ public class Robot extends TimedRobot {
 
         Logger.init(this); // DO NOT DELETE ; start logger
         RobotContainer.getInstance(); // DO NOT DELETE ; create singleton instance
+        Alerts.setupDeferredInitializations();
 
         // handle disconnect of CAN devices;
         // set callback function to log reconnect and flash LEDs for disconnection
@@ -106,7 +107,9 @@ public class Robot extends TimedRobot {
 
         boolean pdpConnected = MiscUtils.isPDPConnected(RobotContainer.getInstance().pdp);
         CANMonitor.logCANDeviceStatus("PDP", RobotContainer.getInstance().pdp.getModule() + 1, pdpConnected);
-        Alerts.pdpDisconnected.set(!pdpConnected);
+        if (Alerts.pdpDisconnected.isPresent()) {
+            Alerts.pdpDisconnected.get().set(!pdpConnected);
+        }
 
         double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
         if (batteryVoltage <= 11) {
