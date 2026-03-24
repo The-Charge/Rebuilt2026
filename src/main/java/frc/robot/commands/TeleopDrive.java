@@ -152,8 +152,7 @@ public class TeleopDrive {
             mode = SwerveMode.BRAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= 0.5) {
             mode = SwerveMode.ROBOT_CENTRIC;
-        } else if (RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5
-                && linearRightX.getAsDouble() == 0) {
+        } else if (RobotContainer.getInstance().hidDriver1.getLeftBumperButton()) {
             mode = SwerveMode.SNAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getPOV() != -1
                 || (lastMode.isPresent() && lastMode.get().equals(SwerveMode.POV) && linearRightX.getAsDouble() == 0)) {
