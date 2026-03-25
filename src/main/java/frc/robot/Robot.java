@@ -172,8 +172,7 @@ public class Robot extends TimedRobot {
         autoGyroTimer = Optional.of(new Timer());
         autoGyroTimer.get().start();
         // RobotContainer.getInstance().limelightCommand.cancel();
-
-        RobotContainer.getInstance().limelights.setThrottle(false);
+        onEnabled();
     }
 
     @Override
@@ -203,7 +202,7 @@ public class Robot extends TimedRobot {
         teleopLogic = Optional.of(new TeleopLogic());
         teleopDrive = Optional.of(new TeleopDrive());
 
-        RobotContainer.getInstance().limelights.setThrottle(false);
+        onEnabled();
     }
 
     @Override
@@ -237,7 +236,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().climber.removeDefaultCommand();
 
         teleopDrive = Optional.of(new TeleopDrive());
-        RobotContainer.getInstance().limelights.setThrottle(false);
+        onEnabled();
     }
 
     @Override
@@ -253,5 +252,9 @@ public class Robot extends TimedRobot {
             teleopDrive.get().endTeleop();
         }
         teleopDrive = Optional.empty();
+    }
+
+    private void onEnabled() {
+        RobotContainer.getInstance().limelights.setThrottle(false);
     }
 }
