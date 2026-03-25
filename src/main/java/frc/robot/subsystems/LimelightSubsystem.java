@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -80,9 +79,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
         // Logging for visiontargets
         visionTargetsTurret = Logger.makeStructArrayPublisher(
-                getName(), "limelight-" + turretLimelight + "/visionTargetsTurret", Pose2d.struct);
+                getName(), "limelight-" + turretLimelight + "/targetPoses", Pose2d.struct);
         visionTargetsSide = Logger.makeStructArrayPublisher(
-                getName(), "limelight-" + sideLimelight + "/visionTargetsSide", Pose2d.struct);
+                getName(), "limelight-" + sideLimelight + "/targetPoses", Pose2d.struct);
 
         // Logging for diff
         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
@@ -111,9 +110,8 @@ public class LimelightSubsystem extends SubsystemBase {
         // Now update swerve with two vision measurements
         multiple();
 
-        // Log the apriltags we see currently
-        logVisionTargetsTurret(); // need to test
-        logVisionTargetsSide(); // need to test
+        logVisionTargets(turretLimelight, visionTargetsTurret);
+        logVisionTargets(sideLimelight, visionTargetsSide);
     }
 
     public void slowPeriodic() {}
@@ -301,75 +299,33 @@ public class LimelightSubsystem extends SubsystemBase {
     public boolean getIsSeeded() {
         return isSeeded;
     }
-    /**
-     * Field relative pose logged
-     *
-     * maybe optimize this code by combining the log loops for logging turret and side??? LATER!!
-     */
-    public void logVisionTargetsTurret() {
+
+    public void logVisionTargets(Limelight limelight, Optional<StructArrayPublisher<Pose2d>> targetPublisher) {
         Optional<limelight.networktables.LimelightResults> results = turretLimelight.getLatestResults();
+
+        double[] targetIDs;
+        Pose2d[] targetPoses;
         if (results.isEmpty()) {
-            if (visionTargetsTurret.isPresent()) {
-                visionTargetsTurret.get().set(new Pose2d[] {});
+            targetIDs = new double[] {};
+            targetPoses = new Pose2d[] {};
+        } else {
+            AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
+
+            targetIDs = new double[targetFiducials.length];
+            targetPoses = new Pose2d[targetFiducials.length];
+
+            for (int i = 0; i < targetFiducials.length; i++) {
+                targetIDs[i] = targetFiducials[i].fiducialID;
+                targetPoses[i] = LimelightConstants.tagLayout
+                        .getTagPose((int) targetFiducials[i].fiducialID)
+                        .map((val) -> val.toPose2d())
+                        .orElse(new Pose2d(Double.NaN, Double.NaN, Rotation2d.kZero));
             }
-
-            return;
         }
 
-        AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
-        Pose2d[] targets = new Pose2d[targetFiducials.length];
-        // Logger.println(Integer.toString(targetFiducials.length));
-
-        SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-        for (int i = 0; i < targets.length; i++) {
-            Pose2d targetFieldSpace =
-                    targetFiducials[i].getTargetPose_RobotSpace2D().rotateBy(state.Pose.getRotation());
-
-            // targets[i] = state.Pose.plus(
-            //         new Transform2d(targetFieldSpace.getX(), targetFieldSpace.getY(), Rotation2d.kZero));
-            targets[i] = new Pose2d(
-                    state.Pose.getX() + targetFieldSpace.getX(),
-                    state.Pose.getY() + targetFieldSpace.getY(),
-                    Rotation2d.kZero);
-        }
-
-        if (visionTargetsTurret.isPresent()) {
-            visionTargetsTurret.get().set(targets);
-        }
-    }
-
-    /**
-     * Field relative pose logged
-     */
-    public void logVisionTargetsSide() {
-        Optional<limelight.networktables.LimelightResults> results = sideLimelight.getLatestResults();
-        if (results.isEmpty()) {
-            if (visionTargetsSide.isPresent()) {
-                visionTargetsSide.get().set(new Pose2d[] {});
-            }
-
-            return;
-        }
-
-        AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
-        Pose2d[] targets = new Pose2d[targetFiducials.length];
-        // Logger.println(Integer.toString(targetFiducials.length));
-
-        SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-        for (int i = 0; i < targets.length; i++) {
-            Pose2d targetFieldSpace =
-                    targetFiducials[i].getTargetPose_RobotSpace2D().rotateBy(state.Pose.getRotation());
-
-            // targets[i] = state.Pose.plus(
-            //         new Transform2d(targetFieldSpace.getX(), targetFieldSpace.getY(), Rotation2d.kZero));
-            targets[i] = new Pose2d(
-                    state.Pose.getX() + targetFieldSpace.getX(),
-                    state.Pose.getY() + targetFieldSpace.getY(),
-                    Rotation2d.kZero);
-        }
-
-        if (visionTargetsSide.isPresent()) {
-            visionTargetsSide.get().set(targets);
+        Logger.logDoubleArray(getName(), limelight.limelightName + "/targetIDs", targetIDs);
+        if (targetPublisher.isPresent()) {
+            targetPublisher.get().set(targetPoses);
         }
     }
 

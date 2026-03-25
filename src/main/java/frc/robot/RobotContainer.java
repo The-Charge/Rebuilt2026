@@ -281,7 +281,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
         NamedCommands.registerCommand("Intake", new RunRoller(intake, false));
         NamedCommands.registerCommand(
-                "DriveToTower", new AutoDriveToTower(swerve, climber, Optional.of(Seconds.of(3))));
+                "DriveToTower", new AutoDriveToTower(swerve, climber, Optional.of(Seconds.of(5))));
     }
 
     public Command getAutonomousCommand() {
