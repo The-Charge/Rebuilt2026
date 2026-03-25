@@ -58,26 +58,33 @@ public class LimelightSubsystem extends SubsystemBase {
 
     private boolean isSeeded = false;
     private boolean throttle = false;
-    private boolean isChanged = false;
+    // private boolean isChanged = false;
 
     public LimelightSubsystem(
             String turretLimelight, String sideLimelight, Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
+
+        // Make limelights
         this.turretLimelight = new Limelight("limelight-" + turretLimelight);
         this.sideLimelight = new Limelight("limelight-" + sideLimelight);
 
+        // Configure limelights
         initLimelights(cameraOffsetTurret, cameraOffsetSide);
 
+        // MT2 Pose Estimators
         this.turretPoseEstimatorMT2 = this.turretLimelight.createPoseEstimator(EstimationMode.MEGATAG2);
         this.sidePoseEstimatorMT2 = this.sideLimelight.createPoseEstimator(EstimationMode.MEGATAG2);
 
+        // MT1 Pose Estimators
         this.turretPoseEstimatorMT1 = this.turretLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
         this.sidePoseEstimatorMT1 = this.sideLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
 
+        // Logging for visiontargets
         visionTargetsTurret = Logger.makeStructArrayPublisher(
                 getName(), "limelight-" + turretLimelight + "/visionTargetsTurret", Pose2d.struct);
         visionTargetsSide = Logger.makeStructArrayPublisher(
                 getName(), "limelight-" + sideLimelight + "/visionTargetsSide", Pose2d.struct);
 
+        // Logging for diff
         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
     }
 
@@ -89,66 +96,24 @@ public class LimelightSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.logSubsystem(getName(), this);
-        Logger.logBool(getSubsystem(), "isChanged", isChanged);
-        Logger.logBool(getSubsystem(), "throttle", throttle);
+        Logger.logBool(getName(), "throttle", throttle);
 
-        // ****** FIX FIX FIX *******
-        if (throttle && !isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
-            this.turretLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
-                    .save();
-            this.sideLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
-                    .save();
-            // LimelightHelpers.setPipelineIndex(turretLimelight.limelightName, 1);
-            // LimelightHelpers.setPipelineIndex(sideLimelight.limelightName, 1);
-            // turretLimelight.setThrottle(false);
-            // sideLimelight.setThrottle(false);
-            // turretLimelight.getSettings().
-            // turretLimelight.setPipeline(1);
-            // sideLimelight.setPipeline(1);
-            // Logger.logBool(getName(), "throttle", throttle);
-            isChanged = true;
-        }
+        // Seeding is run in Robot.java in autonomousInit(),
+        // In RobotContainer: Also run in m_hid on buttonbox, and b on controller (seedFromAbsolute 0 or 180 on
+        // blue/red)
 
-        // ****** FIX FIX FIX *******
-        if (!throttle && !isChanged) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
-
-            this.turretLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                    .save();
-            this.sideLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                    .save();
-
-            // turretLimelight.setIMUMode(1);
-            // sideLimelight.setIMUMode(1);
-            // turretLimelight.setThrottle(true);
-            // sideLimelight.setThrottle(true);
-            // turretLimelight.setPipeline(0);
-            // sideLimelight.setPipeline(0);
-            // Logger.logBool(getName(), "throttle", throttle);
-            isChanged = true;
-        }
-
-        // if (!isSeeded) {
-        //     seed();
-        // }
-
+        // Update vision with robot rotation information (mode 0)
         setRobotOrientationSwerve(); // for mode 0
+
+        // Log difference in MT2 measurements between both camaras
         logMT2diff();
+
+        // Now update swerve with two vision measurements
         multiple();
-        // logVisionTargets(); //TODO: log vision targets after migrating to YALL
-        logVisionTargetsTurret();
-        logVisionTargetsSide();
+
+        // Log the apriltags we see currently
+        logVisionTargetsTurret(); // need to test
+        logVisionTargetsSide(); // need to test
     }
 
     public void slowPeriodic() {}
@@ -156,8 +121,8 @@ public class LimelightSubsystem extends SubsystemBase {
     public void verySlowPeriodic() {}
 
     private void initLimelights(Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
-        LimelightHelpers.setRewindEnabled(turretLimelight.limelightName, true); // wtf is this in YALL ??
-        LimelightHelpers.setRewindEnabled(sideLimelight.limelightName, true); // wtf is this in YALL ??
+        LimelightHelpers.setRewindEnabled(turretLimelight.limelightName, true);
+        LimelightHelpers.setRewindEnabled(sideLimelight.limelightName, true);
         this.turretLimelight
                 .getSettings()
                 .withImuMode(LimelightSettings.ImuMode.InternalImuMT1Assist) // ehhhhhh
@@ -177,16 +142,43 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     /**
-     * NEED TO RUN TO BE TRUE WHEN ENABLED!!!
+     *
+     * When throttled, throttle & use viewfinder pipeline,
+     * Unthrtottled, no throttle & use Apriltag pipeline
      * @param isEnabled
      */
     public void setThrottle(boolean throttle) {
-        this.throttle = throttle;
-        isChanged = false;
+        if (throttle) {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+
+            this.turretLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
+                    .save();
+            this.sideLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
+                    .save();
+            this.throttle = true;
+        } else {
+            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+
+            this.turretLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
+                    .save();
+            this.sideLimelight
+                    .getSettings()
+                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
+                    .save();
+            this.throttle = false;
+        }
     }
 
     /**
-     * UNUSED???? fix later ??
+     * UNUSED???? fix later ?? (low priority)
      */
     // public Optional<Pose3d> getTransformToTag(int id) {
     //     LimelightTarget_Fiducial[] targetFiducials = results.targets_Fiducials;
@@ -197,12 +189,10 @@ public class LimelightSubsystem extends SubsystemBase {
     //             return Optional.of(pose);
     //         }
     //     }
-
     //     return Optional.empty();
     // }
 
     private void setRobotOrientationSwerve() {
-
         AngularVelocity3d angularVelocity = new AngularVelocity3d(
                 RobotContainer.getInstance()
                         .swerve
@@ -232,7 +222,6 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     private void setRobotOrientationAbsolute(Angle yaw) {
-
         AngularVelocity3d angularVelocity = new AngularVelocity3d(
                 RobotContainer.getInstance()
                         .swerve
@@ -287,7 +276,7 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
     /**
-     * Seeds from MT1, then sets mode to imuMode set in Constants
+     * Seeds from swerve, then sets mode to imuMode set in Constants
      */
     public void seedSwerve() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
