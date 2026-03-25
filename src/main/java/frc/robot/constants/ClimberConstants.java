@@ -61,7 +61,7 @@ public class ClimberConstants {
         public static final RangingMode rangingMode = RangingMode.Short;
         public static final Time sampleTime = Milliseconds.of(24); // valid range of 24 - 1000 ms
 
-        public static final double activationMM = 200;
-        public static final double activationStdDev = 6;
+        public static final double activationMM = 25;
+        public static final double activationStdDev = 4;
     }
 }

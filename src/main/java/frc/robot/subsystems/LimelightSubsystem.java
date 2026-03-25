@@ -8,8 +8,8 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -147,6 +147,8 @@ public class LimelightSubsystem extends SubsystemBase {
         logMT2diff();
         multiple();
         // logVisionTargets(); //TODO: log vision targets after migrating to YALL
+        logVisionTargetsTurret();
+        logVisionTargetsSide();
     }
 
     public void slowPeriodic() {}
@@ -316,18 +318,30 @@ public class LimelightSubsystem extends SubsystemBase {
      * maybe optimize this code by combining the log loops for logging turret and side??? LATER!!
      */
     public void logVisionTargetsTurret() {
-        limelight.networktables.LimelightResults results =
-                turretLimelight.getLatestResults().get();
-        AprilTagFiducial[] targetFiducials = results.targets_Fiducials;
+        Optional<limelight.networktables.LimelightResults> results = turretLimelight.getLatestResults();
+        if (results.isEmpty()) {
+            if (visionTargetsTurret.isPresent()) {
+                visionTargetsTurret.get().set(new Pose2d[] {});
+            }
+
+            return;
+        }
+
+        AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
         Pose2d[] targets = new Pose2d[targetFiducials.length];
         // Logger.println(Integer.toString(targetFiducials.length));
 
         SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-        Transform2d transform = new Transform2d(state.Pose.getTranslation(), state.Pose.getRotation());
         for (int i = 0; i < targets.length; i++) {
             Pose2d targetFieldSpace =
-                    targetFiducials[i].getTargetPose_RobotSpace2D().plus(transform);
-            targets[i] = targetFieldSpace;
+                    targetFiducials[i].getTargetPose_RobotSpace2D().rotateBy(state.Pose.getRotation());
+
+            // targets[i] = state.Pose.plus(
+            //         new Transform2d(targetFieldSpace.getX(), targetFieldSpace.getY(), Rotation2d.kZero));
+            targets[i] = new Pose2d(
+                    state.Pose.getX() + targetFieldSpace.getX(),
+                    state.Pose.getY() + targetFieldSpace.getY(),
+                    Rotation2d.kZero);
         }
 
         if (visionTargetsTurret.isPresent()) {
@@ -339,18 +353,30 @@ public class LimelightSubsystem extends SubsystemBase {
      * Field relative pose logged
      */
     public void logVisionTargetsSide() {
-        limelight.networktables.LimelightResults results =
-                sideLimelight.getLatestResults().get();
-        AprilTagFiducial[] targetFiducials = results.targets_Fiducials;
+        Optional<limelight.networktables.LimelightResults> results = sideLimelight.getLatestResults();
+        if (results.isEmpty()) {
+            if (visionTargetsSide.isPresent()) {
+                visionTargetsSide.get().set(new Pose2d[] {});
+            }
+
+            return;
+        }
+
+        AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
         Pose2d[] targets = new Pose2d[targetFiducials.length];
         // Logger.println(Integer.toString(targetFiducials.length));
 
         SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-        Transform2d transform = new Transform2d(state.Pose.getTranslation(), state.Pose.getRotation());
         for (int i = 0; i < targets.length; i++) {
             Pose2d targetFieldSpace =
-                    targetFiducials[i].getTargetPose_RobotSpace2D().plus(transform);
-            targets[i] = targetFieldSpace;
+                    targetFiducials[i].getTargetPose_RobotSpace2D().rotateBy(state.Pose.getRotation());
+
+            // targets[i] = state.Pose.plus(
+            //         new Transform2d(targetFieldSpace.getX(), targetFieldSpace.getY(), Rotation2d.kZero));
+            targets[i] = new Pose2d(
+                    state.Pose.getX() + targetFieldSpace.getX(),
+                    state.Pose.getY() + targetFieldSpace.getY(),
+                    Rotation2d.kZero);
         }
 
         if (visionTargetsSide.isPresent()) {
@@ -520,9 +546,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
         transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
 
-        // double rotStdDev = LimelightConstants.krotStdDev / 4; // never trust rotation under any circumstances, but
+        double rotStdDev = LimelightConstants.kRotStdDev / 4; // never trust rotation under any circumstances, but
         // maybe do
-        double rotStdDev = Double.MAX_VALUE;
+        // double rotStdDev = Double.MAX_VALUE;
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }

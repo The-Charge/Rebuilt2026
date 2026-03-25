@@ -64,6 +64,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
         towerSensor = new TimeOfFlight(TowerSensor.sensorID);
         towerSensor.setRangingMode(TowerSensor.rangingMode, TowerSensor.sampleTime.in(Milliseconds));
+        // towerSensor.setRangeOfInterest(8, 8, 12, 12);
 
         motorTarget = Optional.empty();
     }
