@@ -78,10 +78,10 @@ public class LimelightConstants {
     public static final int aprilTagPipelineIndex = 1;
     public static final int throttlePipelineIndex = 0;
 
-    public static double kRotStdDev = 0.3;
+    public static double kRotStdDev = Double.MAX_VALUE;
 
     public static double imuAssistAlpha = 0.1;
 
     // imuMode of steady state
-    public static ImuMode imuMode = ImuMode.InternalImuMT1Assist;
+    public static ImuMode imuMode = ImuMode.ExternalImu;
 }

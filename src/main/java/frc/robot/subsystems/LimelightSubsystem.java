@@ -29,7 +29,6 @@ import limelight.Limelight;
 import limelight.networktables.AngularVelocity3d;
 import limelight.networktables.LimelightPoseEstimator;
 import limelight.networktables.LimelightPoseEstimator.EstimationMode;
-import limelight.networktables.LimelightSettings;
 import limelight.networktables.LimelightSettings.ImuMode;
 import limelight.networktables.LimelightSettings.StreamMode;
 import limelight.networktables.Orientation3d;
@@ -123,7 +122,7 @@ public class LimelightSubsystem extends SubsystemBase {
         LimelightHelpers.setRewindEnabled(sideLimelight.limelightName, true);
         this.turretLimelight
                 .getSettings()
-                .withImuMode(LimelightSettings.ImuMode.InternalImuMT1Assist) // ehhhhhh
+                .withImuMode(LimelightConstants.imuMode) // ehhhhhh
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetTurret)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
@@ -131,7 +130,7 @@ public class LimelightSubsystem extends SubsystemBase {
                 .save();
         this.sideLimelight
                 .getSettings()
-                .withImuMode(LimelightSettings.ImuMode.InternalImuMT1Assist)
+                .withImuMode(LimelightConstants.imuMode)
                 .withStreamMode(StreamMode.Standard)
                 .withCameraOffset(cameraOffsetSide)
                 .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
@@ -301,7 +300,7 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public void logVisionTargets(Limelight limelight, Optional<StructArrayPublisher<Pose2d>> targetPublisher) {
-        Optional<limelight.networktables.LimelightResults> results = turretLimelight.getLatestResults();
+        Optional<limelight.networktables.LimelightResults> results = limelight.getLatestResults();
 
         double[] targetIDs;
         Pose2d[] targetPoses;
