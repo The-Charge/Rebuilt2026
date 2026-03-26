@@ -140,7 +140,7 @@
       "IsEncoderInverted": false,
       "IsSteerInverted": true,
       "SelectedEncoderType": "CANcoder",
-      "EncoderOffset": 0.072998046875,
+      "EncoderOffset": 0.069824,
       "DriveMotorSelectionState": 1,
       "SteerMotorSelectionState": 1,
       "SteerEncoderSelectionState": 1,
