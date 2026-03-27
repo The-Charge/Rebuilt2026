@@ -39,25 +39,9 @@
         "x": 4.901539124069287,
         "y": 0.8160220883372122
       },
-      "nextControl": {
-        "x": 2.3501969759011603,
-        "y": 0.06255197590451217
-      },
-      "isLocked": true,
-      "linkedName": "StartRight"
-    },
-    {
-      "anchor": {
-        "x": 1.4511084337300304,
-        "y": 3.7180963855439657
-      },
-      "prevControl": {
-        "x": 1.1357129457794506,
-        "y": 2.218155506025444
-      },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "ClimbCenter"
+      "linkedName": "StartRight"
     }
   ],
   "rotationTargets": [],
@@ -74,7 +58,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

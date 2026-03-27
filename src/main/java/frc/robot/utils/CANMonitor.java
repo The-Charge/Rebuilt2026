@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-// Log every CAN event
 public class CANMonitor {
 
     private static Map<Integer, Boolean> statuses;

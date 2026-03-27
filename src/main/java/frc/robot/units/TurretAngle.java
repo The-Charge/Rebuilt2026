@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Rotations;
 
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.TurretConstants;
+import frc.robot.constants.TurretConstants.Motor;
 import frc.robot.utils.Logger;
 
 // Converts between angle of Motor and angle of turret Mechanism; using constant TurretConstants.motorRotsPerMechRots
@@ -25,7 +26,7 @@ public class TurretAngle {
     }
 
     public static TurretAngle fromMechanismRotations(double mechRotations) {
-        return TurretAngle.fromMotorRotations(mechRotations * TurretConstants.motorRotsPerMechRots);
+        return TurretAngle.fromMotorRotations(mechRotations * Motor.motorRotsPerMechRots);
     }
 
     public static TurretAngle fromMechanismAngle(Angle mechAngle) {
@@ -41,17 +42,17 @@ public class TurretAngle {
     }
 
     public double asMechanismRotations() {
-        return asMotorRotations() * TurretConstants.mechRotsPerMotorRot;
+        return asMotorRotations() / Motor.motorRotsPerMechRots;
     }
 
     public Angle asMechanismAngle() {
         return Rotations.of(asMechanismRotations());
     }
 
-    // ask Marcos
     public TurretAngle wrap() {
-        // TODO: confirm that this is correct
-        final double centerMechRots = TurretConstants.calibrationEndPos.asMechanismRotations();
+        // offset by centerMechRots in order to wrap from from -180 to 180 instead of 0 to 360
+        // kinda jank but it works
+        final double centerMechRots = Motor.calibrationEndPos.asMechanismRotations();
         return fromMechanismRotations(((((asMechanismRotations() - centerMechRots) % 1) + 1) % 1) + centerMechRots);
         // Examples: 3.2 -> 0.2 -> 1.2 -> 0.2
         //          -3.2 -> -0.2 -> 0.8 -> 0.8

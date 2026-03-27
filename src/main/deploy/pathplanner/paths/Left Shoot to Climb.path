@@ -3,45 +3,48 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.614795180722891,
-        "y": 7.63021686746988
+        "x": 2.325325301204819,
+        "y": 6.144048192771083
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.42831271919127,
-        "y": 7.136678674278763
+        "x": 2.325325301204819,
+        "y": 5.444048192771083
       },
-      "isLocked": true,
-      "linkedName": "StartLeft"
+      "isLocked": false,
+      "linkedName": "LeftShoot"
     },
     {
       "anchor": {
-        "x": 2.434602409638554,
-        "y": 4.056855421686747
+        "x": 1.014,
+        "y": 4.8
       },
       "prevControl": {
-        "x": 2.293102518701441,
-        "y": 3.774964457086894
+        "x": 1.014,
+        "y": 5.903698795180722
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftClimb"
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
-  "pointTowardsZones": [
+  "constraintZones": [
     {
-      "fieldPosition": {
-        "x": 4.626,
-        "y": 4.035
-      },
-      "rotationOffset": 0.0,
-      "minWaypointRelativePos": 0.25,
-      "maxWaypointRelativePos": 0.75,
-      "name": "Point Towards Zone"
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.8,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 0.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
     }
   ],
+  "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
@@ -56,7 +59,7 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Test Auto 1",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

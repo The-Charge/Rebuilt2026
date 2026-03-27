@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "DeployIntake"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -12,12 +18,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "Left to Shoot"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "DeployIntake"
                 }
               },
               {
@@ -69,13 +69,38 @@
                           {
                             "type": "named",
                             "data": {
-                              "name": "PrepShootAtHub"
+                              "name": "AimAtHub"
                             }
                           }
                         ]
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Left Shoot to Climb"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
                 }
               }
             ]
@@ -84,13 +109,13 @@
         {
           "type": "named",
           "data": {
-            "name": "StopShoot"
+            "name": "DriveToTower"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Left Shoot to Corner"
+            "name": "ClimbClimb"
           }
         }
       ]

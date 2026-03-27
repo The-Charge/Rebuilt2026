@@ -2,9 +2,7 @@
   "robotWidth": 0.78105,
   "robotLength": 0.78105,
   "holonomicMode": true,
-  "pathFolders": [
-    "Test Auto 1"
-  ],
+  "pathFolders": [],
   "autoFolders": [],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
@@ -30,5 +28,10 @@
   "brModuleY": -0.276225,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": []
+  "robotFeatures": [
+    "{\"name\":\"Robot Frame\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.0,\"y\":0.0},\"size\":{\"width\":0.6858,\"length\":0.6858},\"borderRadius\":0.0,\"strokeWidth\":0.005,\"filled\":false}}",
+    "{\"name\":\"Turret\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":-0.1524,\"y\":-0.1524},\"radius\":0.1651,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Intake\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.4699,\"y\":0.0},\"size\":{\"width\":0.5588,\"length\":0.254},\"borderRadius\":0.0,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Climber\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.0508,\"y\":-0.23495},\"size\":{\"width\":0.1143,\"length\":0.1016},\"borderRadius\":0.0,\"strokeWidth\":0.02,\"filled\":false}}"
+  ]
 }

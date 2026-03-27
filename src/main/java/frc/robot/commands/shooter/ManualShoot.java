@@ -14,6 +14,8 @@ public class ManualShoot extends Command {
     private final ShooterSubsystem shoot;
     private final Supplier<AngularVelocity> targetVel;
 
+    private final String key = String.format("%s/speed", getName());
+
     public ManualShoot(ShooterSubsystem shootSub, Supplier<AngularVelocity> vel) {
         shoot = shootSub;
         targetVel = vel;
@@ -22,22 +24,24 @@ public class ManualShoot extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
-        SmartDashboard.putNumber("speed", 0);
+        if (!SmartDashboard.containsKey(key)) {
+            SmartDashboard.putNumber(key, 0);
+        }
     }
 
     @Override
     public void execute() {
         if (ShooterConstants.manualShootUseSmartdashboard) {
-            shoot.shoot(RPM.of(SmartDashboard.getNumber("speed", 0)));
+            shoot.setTargetVelocity(RPM.of(SmartDashboard.getNumber(key, 0)));
         } else {
-            shoot.shoot(targetVel.get());
+            shoot.setTargetVelocity(targetVel.get());
         }
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        // shoot.stopShoot();
     }
 
     @Override

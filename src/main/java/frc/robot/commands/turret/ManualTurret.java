@@ -17,14 +17,21 @@ public class ManualTurret extends Command {
     }
 
     @Override
+    public String getName() {
+        return getClass().getTypeName();
+    }
+
+    @Override
     public void initialize() {
         turret.dutyCycle(duty);
         turret.logTargetPoint(Optional.empty());
+        turret.logTargetPredictedPoint(Optional.empty());
+        turret.logPredictedOffset(Optional.empty());
     }
 
     @Override
     public void end(boolean interrupted) {
-        turret.stop();
+        turret.stopTurret();
     }
 
     @Override
