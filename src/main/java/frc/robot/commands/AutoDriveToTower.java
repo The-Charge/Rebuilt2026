@@ -69,8 +69,6 @@ public class AutoDriveToTower extends Command {
 
     @Override
     public void execute() {
-        Logger.println("tsesfsdfsfsefsefsefsefsef");
-
         Logger.logBool(getName(), "hasSeenTower", hasSeenTower);
 
         if (!hasSeenTower) {
