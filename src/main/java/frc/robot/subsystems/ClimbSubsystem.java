@@ -1,26 +1,34 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Milliseconds;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.playingwithfusion.TimeOfFlight;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.ClimberConstants.Motor;
+import frc.robot.constants.ClimberConstants.TowerSensor;
 import frc.robot.units.ClimberPosition;
 import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
+import frc.robot.utils.MiscUtils;
 import frc.robot.utils.TalonFXUtils;
 import java.util.Optional;
 
 public class ClimbSubsystem extends SubsystemBase {
 
     private final TalonFX motor;
+    private final TimeOfFlight towerSensor;
 
     private final Alert motorDisconnected, motorOverheating, motorFaults, motorConfigFail;
+    private final Alert towerSensorDisconnected, towerSensorBadStatus;
 
     private Optional<ClimberPosition> motorTarget;
 
@@ -29,6 +37,10 @@ public class ClimbSubsystem extends SubsystemBase {
         motorOverheating = Alerts.makeOverheatingAlert(Motor.motorName, Motor.motorID);
         motorFaults = Alerts.makeCriticalFaultsAlert(Motor.motorName, Motor.motorID);
         motorConfigFail = Alerts.makeConfigFailAlert(Motor.motorName, Motor.motorID);
+        towerSensorDisconnected = Alerts.makeDisconnectAlert("tower sensor", ClimberConstants.TowerSensor.sensorID);
+        towerSensorBadStatus = new Alert(
+                String.format("Potentially bad status on tower sensor (CAN %d)", ClimberConstants.TowerSensor.sensorID),
+                AlertType.kWarning);
 
         motor = new TalonFX(Motor.motorID);
         TalonFXConfiguration motorConfig = new TalonFXConfiguration();
@@ -50,6 +62,10 @@ public class ClimbSubsystem extends SubsystemBase {
             motorConfigFail.set(true);
         }
 
+        towerSensor = new TimeOfFlight(TowerSensor.sensorID);
+        towerSensor.setRangingMode(TowerSensor.rangingMode, TowerSensor.sampleTime.in(Milliseconds));
+        // towerSensor.setRangeOfInterest(8, 8, 12, 12);
+
         motorTarget = Optional.empty();
     }
 
@@ -68,17 +84,25 @@ public class ClimbSubsystem extends SubsystemBase {
                 "targetMotorRots",
                 motorTarget.map((val) -> val.asMotorRotations()).orElse(Double.NaN));
         Logger.logBool(getName(), "isAtTarget", isMotorAtTarget().orElse(true));
+
+        Logger.logTOF(getName(), TowerSensor.sensorName, towerSensor);
+        Logger.logBool(getName(), "canSeeTower", canSeeTower());
     }
 
     public void slowPeriodic() {}
 
     public void verySlowPeriodic() {
-        boolean connected = motor.isConnected();
+        boolean motorConnected = motor.isConnected();
+        boolean towerSensorConnected = towerSensor.isConnected();
 
-        CANMonitor.logCANDeviceStatus(Motor.motorName, Motor.motorID, connected);
-        motorDisconnected.set(!connected);
+        CANMonitor.logCANDeviceStatus(Motor.motorName, Motor.motorID, motorConnected);
+        motorDisconnected.set(!motorConnected);
         motorOverheating.set(motor.getDeviceTemp().getValue().in(Units.Celsius) >= 80);
         motorFaults.set(TalonFXUtils.getAllActiveFaults(motor).hasCriticalFaults());
+
+        CANMonitor.logCANDeviceStatus(TowerSensor.sensorName, TowerSensor.sensorID, towerSensorConnected);
+        towerSensorDisconnected.set(!towerSensorConnected);
+        towerSensorBadStatus.set(MiscUtils.criticalTOFState(towerSensor));
     }
 
     public void setPosition(ClimberPosition position) {
@@ -121,5 +145,11 @@ public class ClimbSubsystem extends SubsystemBase {
         double toleranceRots = Motor.targetTolerance.asMotorRotations();
 
         return Optional.of(Math.abs(targetRots - motorRots) <= toleranceRots);
+    }
+
+    public boolean canSeeTower() {
+        return towerSensor.getRange() <= TowerSensor.activationMM
+                && towerSensor.getRangeSigma() <= TowerSensor.activationStdDev
+                && towerSensor.isRangeValid();
     }
 }

@@ -77,6 +77,12 @@
                     }
                   ]
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
+                }
               }
             ]
           }
@@ -84,7 +90,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Shoot to Corner"
+            "pathName": "Left Shoot to Climb"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DriveToTower"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ClimbClimb"
           }
         }
       ]

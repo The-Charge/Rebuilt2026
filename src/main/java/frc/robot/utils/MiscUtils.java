@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.Status;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -44,5 +46,12 @@ public class MiscUtils {
     public static boolean isPDPConnected(PowerDistribution pdp) {
         if (pdp == null) return false;
         return pdp.getVoltage() != 0;
+    }
+
+    public static boolean criticalTOFState(TimeOfFlight tof) {
+        if (tof == null) return false;
+
+        Status status = tof.getStatus();
+        return status == Status.HardwareFailure || status == Status.InternalError;
     }
 }

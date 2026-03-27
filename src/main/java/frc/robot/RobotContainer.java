@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.commands.AimAtTarget;
+import frc.robot.commands.AutoDriveToTower;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.AutoWaitForReadyToShoot;
 import frc.robot.commands.climb.ClimbClimb;
@@ -279,6 +280,8 @@ public class RobotContainer {
                 "WaitForReadyToShoot", new AutoWaitForReadyToShoot(turret, Optional.of(Seconds.of(4))));
         NamedCommands.registerCommand("DeployIntake", new DeployIntake(intake));
         NamedCommands.registerCommand("Intake", new RunRoller(intake, false));
+        NamedCommands.registerCommand(
+                "DriveToTower", new AutoDriveToTower(swerve, climber, Optional.of(Seconds.of(5))));
     }
 
     public Command getAutonomousCommand() {

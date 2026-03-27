@@ -35,22 +35,9 @@
                             }
                           },
                           {
-                            "type": "deadline",
+                            "type": "named",
                             "data": {
-                              "commands": [
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 5.0
-                                  }
-                                },
-                                {
-                                  "type": "named",
-                                  "data": {
-                                    "name": "Shoot"
-                                  }
-                                }
-                              ]
+                              "name": "Shoot"
                             }
                           }
                         ]
@@ -79,12 +66,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right Shoot to Corner"
           }
         }
       ]

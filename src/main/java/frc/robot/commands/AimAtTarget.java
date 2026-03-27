@@ -76,7 +76,7 @@ public class AimAtTarget extends Command {
 
     @Override
     public String getName() {
-        return getClass().getTypeName();
+        return "AimAtTarget";
     }
 
     @Override

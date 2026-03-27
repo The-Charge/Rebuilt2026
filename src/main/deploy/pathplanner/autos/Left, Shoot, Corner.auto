@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Center Start to Shoot"
+                  "pathName": "Left to Shoot"
                 }
               },
               {
@@ -66,6 +66,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Shoot to Corner"
           }
         }
       ]
