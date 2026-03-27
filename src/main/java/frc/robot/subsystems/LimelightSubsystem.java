@@ -380,6 +380,10 @@ public class LimelightSubsystem extends SubsystemBase {
         } else {
             // MT1 Code
             poseEstimate = turretPoseEstimatorMT1.getPoseEstimate();
+            if (poseEstimate.isEmpty()) {
+                return Optional.empty();
+            }
+
             stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
 
             if (stdDevs.isEmpty()) return Optional.empty();
@@ -408,6 +412,10 @@ public class LimelightSubsystem extends SubsystemBase {
         } else {
             // MT1 Code
             poseEstimate = sidePoseEstimatorMT1.getPoseEstimate();
+            if (poseEstimate.isEmpty()) {
+                return Optional.empty();
+            }
+
             stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
 
             if (stdDevs.isEmpty()) return Optional.empty();
