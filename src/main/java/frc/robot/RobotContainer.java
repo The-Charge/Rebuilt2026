@@ -58,12 +58,14 @@ import frc.robot.commands.leds.ActiveAtHubLED;
 import frc.robot.commands.leds.BlinkLED;
 import frc.robot.commands.leds.IdleLED;
 import frc.robot.commands.leds.InactiveLED;
+import frc.robot.commands.shooter.ManualShoot;
 import frc.robot.commands.shooter.StopShooter;
 import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.commands.turret.ManualTurret;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
@@ -249,7 +251,12 @@ public class RobotContainer {
                 .turretRight()
                 .whileTrue(new ManualTurret(turret, -TurretConstants.Motor.manualSpeed)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-        commandButtonBox.testShoot().onTrue(shooter.runSysId);
+        commandButtonBox
+                .testShoot()
+                .onTrue(new ManualShoot(
+                                shooter,
+                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0))
+                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));

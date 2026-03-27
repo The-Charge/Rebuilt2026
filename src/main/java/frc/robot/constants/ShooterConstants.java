@@ -27,15 +27,15 @@ public class ShooterConstants {
         public static final double maxDutyCycle = 1.0;
         public static final Optional<Voltage> nominalVoltage = Optional.of(Volts.of(13));
 
-        public static double kP = 9.9644E-05;
-        public static double kI = 0;
-        public static final Optional<Double> iZone = Optional.empty();
-        public static double kD = 0;
+        public static double kP = 0.001;
+        public static double kI = 5e-7;
+        public static final Optional<Double> iZone = Optional.of(2000d);
+        public static double kD = 4e-4;
         public static final Optional<Voltage> kStaticG = Optional.empty();
         public static final Optional<Voltage> kCos = Optional.empty();
-        public static final Optional<Double> kS = Optional.of(0.11245);
-        public static final Optional<Double> kV = Optional.of(0.10595);
-        public static final Optional<Double> kA = Optional.of(0.038945);
+        public static final Optional<Double> kS = Optional.empty();
+        public static final Optional<Double> kV = Optional.empty();
+        public static final Optional<Double> kA = Optional.empty();
         public static final Optional<Time> rampTime = Optional.empty();
     }
 

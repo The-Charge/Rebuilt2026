@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
@@ -38,7 +37,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final Alert motorDisconnected, motorOverheating, motorFaults, motorWarnings, motorConfigFail;
 
     private Optional<AngularVelocity> targetShooterSpeed;
-    public final SequentialCommandGroup runSysId;
+    private SequentialCommandGroup runSysId;
 
     public ShooterSubsystem() {
         motorDisconnected = Alerts.makeDisconnectAlert(Motor.motorName, Motor.motorID);
@@ -51,8 +50,7 @@ public class ShooterSubsystem extends SubsystemBase {
         configureMotor();
 
         sysIdRoutine = new SysIdRoutine(
-                new SysIdRoutine.Config(null, null, Seconds.of(10)),
-                new SysIdRoutine.Mechanism(this::setVoltage, this::logSysIdMotors, this));
+                new SysIdRoutine.Config(), new SysIdRoutine.Mechanism(this::setVoltage, this::logSysIdMotors, this));
         runSysId = new SequentialCommandGroup(
                 sysIdQuasistatic(SysIdRoutine.Direction.kForward),
                 sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
@@ -97,7 +95,6 @@ public class ShooterSubsystem extends SubsystemBase {
         MotorLog motorLog = log.motor("shooter");
         motorLog.angularPosition(Rotations.of(shootMotor.getEncoder().getPosition()));
         motorLog.angularVelocity(RPM.of(shootMotor.getEncoder().getVelocity()));
-        motorLog.voltage(Volts.of(shootMotor.getAppliedOutput() * shootMotor.getBusVoltage()));
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
