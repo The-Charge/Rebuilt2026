@@ -35,9 +35,22 @@
                             }
                           },
                           {
-                            "type": "named",
+                            "type": "deadline",
                             "data": {
-                              "name": "Shoot"
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 5.0
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "Shoot"
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
@@ -64,8 +77,32 @@
                     }
                   ]
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
+                }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Shoot To Right Climb"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DriveToTower"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ClimbClimb"
           }
         }
       ]
