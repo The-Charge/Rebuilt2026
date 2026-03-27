@@ -1,18 +1,16 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,71 +21,31 @@ import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
 import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.LimelightHelpers.PoseEstimate;
 import frc.robot.utils.Logger;
 import java.util.Optional;
-import limelight.Limelight;
-import limelight.networktables.AngularVelocity3d;
-import limelight.networktables.LimelightPoseEstimator;
-import limelight.networktables.LimelightPoseEstimator.EstimationMode;
-import limelight.networktables.LimelightSettings.ImuMode;
-import limelight.networktables.LimelightSettings.StreamMode;
-import limelight.networktables.Orientation3d;
-import limelight.networktables.PoseEstimate;
-import limelight.networktables.target.AprilTagFiducial;
-import limelight.results.RawFiducial;
 
 public class LimelightSubsystem extends SubsystemBase {
-
     public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
-    private final Limelight turretLimelight;
-    private final Limelight sideLimelight;
-
-    private final LimelightPoseEstimator turretPoseEstimatorMT2;
-    private final LimelightPoseEstimator sidePoseEstimatorMT2;
-
-    private final LimelightPoseEstimator turretPoseEstimatorMT1;
-    private final LimelightPoseEstimator sidePoseEstimatorMT1;
-
-    private final Optional<StructArrayPublisher<Pose2d>> visionTargetsTurret;
-    private final Optional<StructArrayPublisher<Pose2d>> visionTargetsSide;
-
-    private final Optional<StructPublisher<Pose3d>> diffPublisher;
-    private final Optional<StructPublisher<Pose3d>> MT1TurretPublisher;
-    private final Optional<StructPublisher<Pose3d>> MT1SidePublisher;
-
-    private boolean isSeeded = false;
-    private boolean throttle = false;
-    // private boolean isChanged = false;
+    private final Optional<StructPublisher<Pose2d>> MT2TurretPublisher, MT2SidePublisher;
+    private String turret, side;
+    private boolean throttle;
 
     public LimelightSubsystem(
             String turretLimelight, String sideLimelight, Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
-
-        // Make limelights
-        this.turretLimelight = new Limelight("limelight-" + turretLimelight);
-        this.sideLimelight = new Limelight("limelight-" + sideLimelight);
+        turret = "limelight-" + turretLimelight;
+        side = "limelight-" + sideLimelight;
 
         // Configure limelights
-        initLimelights(cameraOffsetTurret, cameraOffsetSide);
+        initLimelight(turret, cameraOffsetTurret);
+        initLimelight(side, cameraOffsetSide);
 
-        // MT2 Pose Estimators
-        this.turretPoseEstimatorMT2 = this.turretLimelight.createPoseEstimator(EstimationMode.MEGATAG2);
-        this.sidePoseEstimatorMT2 = this.sideLimelight.createPoseEstimator(EstimationMode.MEGATAG2);
+        throttle = false;
 
-        // MT1 Pose Estimators
-        this.turretPoseEstimatorMT1 = this.turretLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
-        this.sidePoseEstimatorMT1 = this.sideLimelight.createPoseEstimator(EstimationMode.MEGATAG1);
-
-        // Logging for visiontargets
-        visionTargetsTurret = Logger.makeStructArrayPublisher(
-                getName(), "limelight-" + turretLimelight + "/targetPoses", Pose2d.struct);
-        visionTargetsSide = Logger.makeStructArrayPublisher(
-                getName(), "limelight-" + sideLimelight + "/targetPoses", Pose2d.struct);
-
-        // Logging for diff
-        diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
-        MT1TurretPublisher = Logger.makeStructPublisher(getName(), "MT1" + turretLimelight + "Pose", Pose3d.struct);
-        MT1SidePublisher = Logger.makeStructPublisher(getName(), "MT1" + sideLimelight + "Pose", Pose3d.struct);
+        // Logging for MT2
+        MT2TurretPublisher = Logger.makeStructPublisher(getName(), "MT2" + turretLimelight + "Pose", Pose2d.struct);
+        MT2SidePublisher = Logger.makeStructPublisher(getName(), "MT2" + sideLimelight + "Pose", Pose2d.struct);
     }
 
     @Override
@@ -105,17 +63,17 @@ public class LimelightSubsystem extends SubsystemBase {
         // blue/red)
 
         // Update vision with robot rotation information (mode 0)
-        // setRobotOrientationSwerve(); // for external imu modes
+        setRobotOrientationSwerve(); // for external imu modes
 
         // Log difference in MT2 measurements between both camaras
         // logMT2diff(); // not using MT2
 
-        // log the individual poses of MT1
-        logMT1Turret();
-        logMT1Side();
+        // log the individual poses of MT2
+        logMT2Turret();
+        logMT2Side();
 
         // Now update swerve with two vision measurements
-        multipleMT1();
+        multiple();
 
         // logVisionTargets(turretLimelight, visionTargetsTurret);
         // logVisionTargets(sideLimelight, visionTargetsSide);
@@ -125,25 +83,31 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public void verySlowPeriodic() {}
 
-    private void initLimelights(Pose3d cameraOffsetTurret, Pose3d cameraOffsetSide) {
-        LimelightHelpers.setRewindEnabled(turretLimelight.limelightName, true);
-        LimelightHelpers.setRewindEnabled(sideLimelight.limelightName, true);
-        this.turretLimelight
-                .getSettings()
-                .withImuMode(LimelightConstants.imuMode) // ehhhhhh
-                .withStreamMode(StreamMode.Standard)
-                .withCameraOffset(cameraOffsetTurret)
-                .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
-                .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                .save();
-        this.sideLimelight
-                .getSettings()
-                .withImuMode(LimelightConstants.imuMode)
-                .withStreamMode(StreamMode.Standard)
-                .withCameraOffset(cameraOffsetSide)
-                .withImuAssistAlpha(LimelightConstants.imuAssistAlpha)
-                .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                .save();
+    private void initLimelight(String name, Pose3d offset) {
+        LimelightHelpers.setRewindEnabled(name, true);
+
+        LimelightHelpers.SetIMUMode(name, LimelightConstants.imuMode);
+        LimelightHelpers.setStreamMode_Standard(name);
+
+        setLimelightOffset(name, offset);
+
+        LimelightHelpers.SetIMUAssistAlpha(name, LimelightConstants.imuAssistAlpha);
+        LimelightHelpers.setPipelineIndex(name, 1); // idk about this
+
+        LimelightHelpers.Flush();
+    }
+
+    private void setLimelightOffset(String name, Pose3d offset) {
+        double[] offsetArray = new double[6];
+        offsetArray[0] = offset.getTranslation().getX();
+        offsetArray[1] = offset.getTranslation().getY();
+        offsetArray[2] = offset.getTranslation().getZ();
+        offsetArray[3] = Units.radiansToDegrees(offset.getRotation().getX());
+        offsetArray[4] = Units.radiansToDegrees(offset.getRotation().getY());
+        offsetArray[5] = Units.radiansToDegrees(offset.getRotation().getZ());
+
+        LimelightHelpers.setCameraPose_RobotSpace(
+                name, offsetArray[0], offsetArray[1], offsetArray[2], offsetArray[3], offsetArray[4], offsetArray[5]);
     }
 
     /**
@@ -154,30 +118,20 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     public void setThrottle(boolean throttle) {
         if (throttle) {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
+            LimelightHelpers.SetThrottle(turret, 200);
+            LimelightHelpers.SetThrottle(side, 200);
 
-            this.turretLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
-                    .save();
-            this.sideLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.throttlePipelineIndex)
-                    .save();
+            LimelightHelpers.setPipelineIndex(turret, LimelightConstants.throttlePipelineIndex);
+            LimelightHelpers.setPipelineIndex(side, LimelightConstants.throttlePipelineIndex);
+
             this.throttle = true;
         } else {
-            LimelightHelpers.SetThrottle(turretLimelight.limelightName, 0);
-            LimelightHelpers.SetThrottle(sideLimelight.limelightName, 0);
+            LimelightHelpers.SetThrottle(turret, 0);
+            LimelightHelpers.SetThrottle(side, 0);
 
-            this.turretLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                    .save();
-            this.sideLimelight
-                    .getSettings()
-                    .withPipelineIndex(LimelightConstants.aprilTagPipelineIndex)
-                    .save();
+            LimelightHelpers.setPipelineIndex(turret, LimelightConstants.aprilTagPipelineIndex);
+            LimelightHelpers.setPipelineIndex(side, LimelightConstants.aprilTagPipelineIndex);
+
             this.throttle = false;
         }
     }
@@ -198,59 +152,15 @@ public class LimelightSubsystem extends SubsystemBase {
     // }
 
     private void setRobotOrientationSwerve() {
-        AngularVelocity3d angularVelocity = new AngularVelocity3d(
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityXWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityYWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityZWorld()
-                        .getValue());
-        turretLimelight
-                .getSettings()
-                .withRobotOrientation(
-                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
-                .save();
-        sideLimelight
-                .getSettings()
-                .withRobotOrientation(
-                        new Orientation3d(RobotContainer.getInstance().swerve.getRotation3d(), angularVelocity))
-                .save();
+        setRobotOrientationAbsolute(
+                RobotContainer.getInstance().swerve.getRotation3d().getMeasureZ());
+        // LimelightHelpers.SetRobotOrientation(
+        //         turret, RobotContainer.getInstance().swerve.getRotation3d().getZ(), 0, 0, 0, 0, 0);
     }
 
     private void setRobotOrientationAbsolute(Angle yaw) {
-        AngularVelocity3d angularVelocity = new AngularVelocity3d(
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityXWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityYWorld()
-                        .getValue(),
-                RobotContainer.getInstance()
-                        .swerve
-                        .getPigeon2()
-                        .getAngularVelocityZWorld()
-                        .getValue());
-        turretLimelight
-                .getSettings()
-                .withRobotOrientation(new Orientation3d(new Rotation3d(0, 0, yaw.in(Radians)), angularVelocity))
-                .save();
-        sideLimelight
-                .getSettings()
-                .withRobotOrientation(new Orientation3d(new Rotation3d(0, 0, yaw.in(Radians)), angularVelocity))
-                .save();
+        LimelightHelpers.SetRobotOrientation(turret, yaw.in(Degree), 0, 0, 0, 0, 0);
+        LimelightHelpers.Flush();
     }
 
     /**
@@ -277,7 +187,6 @@ public class LimelightSubsystem extends SubsystemBase {
                 rots = MT1side.get().pose().getRotation().getMeasure();
             }
             seedBothAbsolute(rots);
-            isSeeded = true;
         }
     }
     /**
@@ -286,7 +195,6 @@ public class LimelightSubsystem extends SubsystemBase {
     public void seedSwerve() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
         seedBothAbsolute(swerve.getStateCopy().Pose.getRotation().getMeasure());
-        isSeeded = true;
     }
 
     /**
@@ -294,70 +202,15 @@ public class LimelightSubsystem extends SubsystemBase {
      * @param imuMode
      */
     public void seedBothAbsolute(Angle yaw) {
-        turretLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
-        sideLimelight.getSettings().withImuMode(ImuMode.SyncInternalImu).save();
+        LimelightHelpers.SetIMUMode(turret, 1);
+        LimelightHelpers.SetIMUMode(side, 1);
+        LimelightHelpers.Flush();
 
         setRobotOrientationAbsolute(yaw);
 
-        sideLimelight.getSettings().withImuMode(LimelightConstants.imuMode).save();
-        turretLimelight.getSettings().withImuMode(LimelightConstants.imuMode).save();
-    }
-
-    public boolean getIsSeeded() {
-        return isSeeded;
-    }
-
-    private void logVisionTargets(Limelight limelight, Optional<StructArrayPublisher<Pose2d>> targetPublisher) {
-        Optional<limelight.networktables.LimelightResults> results = limelight.getLatestResults();
-
-        double[] targetIDs;
-        Pose2d[] targetPoses;
-        if (results.isEmpty()) {
-            targetIDs = new double[] {};
-            targetPoses = new Pose2d[] {};
-        } else {
-            AprilTagFiducial[] targetFiducials = results.get().targets_Fiducials;
-
-            targetIDs = new double[targetFiducials.length];
-            targetPoses = new Pose2d[targetFiducials.length];
-
-            for (int i = 0; i < targetFiducials.length; i++) {
-                targetIDs[i] = targetFiducials[i].fiducialID;
-                targetPoses[i] = LimelightConstants.tagLayout
-                        .getTagPose((int) targetFiducials[i].fiducialID)
-                        .map((val) -> val.toPose2d())
-                        .orElse(new Pose2d(Double.NaN, Double.NaN, Rotation2d.kZero));
-            }
-        }
-
-        Logger.logDoubleArray(getName(), limelight.limelightName + "/targetIDs", targetIDs);
-        if (targetPublisher.isPresent()) {
-            targetPublisher.get().set(targetPoses);
-        }
-    }
-
-    private Optional<PoseEstimate> getMegaTag1Turret() {
-        Optional<PoseEstimate> poseEstimate = turretPoseEstimatorMT1.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-        return poseEstimate;
-    }
-
-    private Optional<PoseEstimate> getMegTag1Side() {
-        Optional<PoseEstimate> poseEstimate = sidePoseEstimatorMT1.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-        return poseEstimate;
-    }
-
-    private Optional<PoseEstimate> getMegaTag2Turret() {
-        Optional<PoseEstimate> poseEstimate = turretPoseEstimatorMT2.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-        return poseEstimate;
-    }
-
-    private Optional<PoseEstimate> getMegaTag2Side() {
-        Optional<PoseEstimate> poseEstimate = sidePoseEstimatorMT2.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-        return poseEstimate;
+        LimelightHelpers.SetIMUMode(turret, LimelightConstants.imuMode);
+        LimelightHelpers.SetIMUMode(side, LimelightConstants.imuMode);
+        LimelightHelpers.Flush();
     }
 
     /**
@@ -370,26 +223,26 @@ public class LimelightSubsystem extends SubsystemBase {
     private Optional<VisionMeasurement> getVisionMeasurementTurret(
             CommandSwerveDrivetrain swerve, boolean useMegaTag2) {
         Optional<Matrix<N3, N1>> stdDevs;
-        Optional<PoseEstimate> poseEstimate;
+        PoseEstimate poseEstimate;
         if (useMegaTag2) {
             // MT2 Code
-            poseEstimate = turretPoseEstimatorMT2.getPoseEstimate();
-            if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-            stdDevs = calculateStdDevsMegaTag2(poseEstimate.get(), swerve);
-            if (stdDevs.isEmpty()) return Optional.empty();
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(turret);
+
+            if (poseEstimate.tagCount == 0) return Optional.empty();
+            if (poseEstimate.pose.equals(new Pose2d())) return Optional.empty(); // I don't like this
+
+            stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         } else {
             // MT1 Code
-            poseEstimate = turretPoseEstimatorMT1.getPoseEstimate();
-            if (poseEstimate.isEmpty()) {
-                return Optional.empty();
-            }
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(turret);
 
-            stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
+            if (poseEstimate.tagCount == 0) return Optional.empty();
+            if (poseEstimate.pose.equals(new Pose2d())) return Optional.empty(); // I don't like this
 
-            if (stdDevs.isEmpty()) return Optional.empty();
+            stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         }
-        return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+        if (stdDevs.isEmpty()) return Optional.empty();
+        return Optional.of(new VisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -402,26 +255,26 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     private Optional<VisionMeasurement> getVisionMeasurementSide(CommandSwerveDrivetrain swerve, boolean useMegaTag2) {
         Optional<Matrix<N3, N1>> stdDevs;
-        Optional<PoseEstimate> poseEstimate;
+        PoseEstimate poseEstimate;
         if (useMegaTag2) {
             // MT2 Code
-            poseEstimate = sidePoseEstimatorMT2.getPoseEstimate();
-            if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-            stdDevs = calculateStdDevsMegaTag2(poseEstimate.get(), swerve);
-            if (stdDevs.isEmpty()) return Optional.empty();
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(side);
+
+            if (poseEstimate.tagCount == 0) return Optional.empty();
+            if (poseEstimate.pose.equals(new Pose2d())) return Optional.empty(); // I don't like this
+
+            stdDevs = calculateStdDevsMegaTag2(poseEstimate, swerve);
         } else {
             // MT1 Code
-            poseEstimate = sidePoseEstimatorMT1.getPoseEstimate();
-            if (poseEstimate.isEmpty()) {
-                return Optional.empty();
-            }
+            poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(side);
 
-            stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
+            if (poseEstimate.tagCount == 0) return Optional.empty();
+            if (poseEstimate.pose.equals(new Pose2d())) return Optional.empty(); // I don't like this
 
-            if (stdDevs.isEmpty()) return Optional.empty();
+            stdDevs = calculateStdDevsMegaTag1(poseEstimate, swerve);
         }
-        return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+        if (stdDevs.isEmpty()) return Optional.empty();
+        return Optional.of(new VisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -455,6 +308,7 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     /**
+     * Check if pose estimate works first
      * YALL MT1 std
      * @param poseEstimate
      * @param swerve
@@ -462,8 +316,6 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
             PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
-        if (!validPoseEstimate(poseEstimate)) return Optional.empty();
-
         // Optional<PoseEstimate> opt = turretPoseEstimator.getPoseEstimate();
         // PoseEstimate poseEstimate = opt.get();
         // if (opt.isEmpty()) return Optional.empty();
@@ -471,7 +323,7 @@ public class LimelightSubsystem extends SubsystemBase {
         double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
 
         if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) { // single tag
-            RawFiducial singleTag = poseEstimate.rawFiducials[0];
+            var singleTag = poseEstimate.rawFiducials[0];
 
             if (singleTag.ambiguity > 0.7 || singleTag.distToCamera > 5) {
                 return Optional.empty(); // don't trust if too ambiguous or too far
@@ -498,13 +350,13 @@ public class LimelightSubsystem extends SubsystemBase {
 
     /**
      * YALL std mt2
+     * Check if poseEstimate is valid first
      * @param poseEstimate
      * @param swerve
      * @return
      */
     private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
             PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
-        if (!validPoseEstimate(poseEstimate)) return Optional.empty();
         boolean isGoingTooFast = Math.abs(swerve.getStateCopy().Speeds.omegaRadiansPerSecond)
                 > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
         if (isGoingTooFast) return Optional.empty();
@@ -533,17 +385,20 @@ public class LimelightSubsystem extends SubsystemBase {
      * Sets ImuMode of both limelights
      * @param imuMode
      */
-    public void setIMUModeBoth(ImuMode imuMode) {
-        turretLimelight.getSettings().withImuMode(imuMode).save();
-        sideLimelight.getSettings().withImuMode(imuMode).save();
+    public void setIMUModeBoth(int imuMode) {
+        LimelightHelpers.SetIMUMode(turret, imuMode);
+        LimelightHelpers.SetIMUMode(side, imuMode);
+        LimelightHelpers.Flush();
     }
 
     public void setPipelineTurret(short pipe) {
-        turretLimelight.getSettings().withPipelineIndex(pipe).save();
+        LimelightHelpers.setPipelineIndex(turret, pipe);
+        LimelightHelpers.Flush();
     }
 
     public void setPipelineSide(short pipe) {
-        sideLimelight.getSettings().withPipelineIndex(pipe).save();
+        LimelightHelpers.setPipelineIndex(side, pipe);
+        LimelightHelpers.Flush();
     }
 
     /**
@@ -557,53 +412,28 @@ public class LimelightSubsystem extends SubsystemBase {
     // }
 
     /**
-     * Logs difference between MT2 measurements between camaras.
+     * Log the pose we got from MT2 on the turret
      */
-    private void logMT2diff() {
-        if (diffPublisher.isEmpty()) return;
+    private void logMT2Turret() {
+        if (MT2TurretPublisher.isEmpty()) return;
 
-        Optional<PoseEstimate> turret = turretPoseEstimatorMT2.getPoseEstimate();
-        Optional<PoseEstimate> side = sidePoseEstimatorMT2.getPoseEstimate();
-        if (turret.isEmpty() || side.isEmpty() || !validPoseEstimate(turret.get()) || !validPoseEstimate(side.get()))
-            return;
-        Pose3d turretPose = turret.get().pose;
-        Pose3d sidePose = side.get().pose;
+        var estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(turret);
+        if (estimate.tagCount == 0) return;
+        if (estimate.pose.equals(new Pose2d())) return;
 
-        Pose3d diff = new Pose3d().plus(sidePose.minus(turretPose));
-        diffPublisher.get().set(diff);
+        MT2TurretPublisher.get().set(estimate.pose);
     }
 
     /**
-     * Log the pose we got from MT1 on the turret
+     * Log the pose we got from MT2 on the side
      */
-    private void logMT1Turret() {
-        if (MT1TurretPublisher.isEmpty()) return;
+    private void logMT2Side() {
+        if (MT2SidePublisher.isEmpty()) return;
 
-        var pose = turretPoseEstimatorMT1.getPoseEstimate();
-        if (pose.isEmpty()) return;
+        var estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(side);
+        if (estimate.tagCount == 0) return;
+        if (estimate.pose.equals(new Pose2d())) return;
 
-        MT1TurretPublisher.get().set(pose.get().pose);
-    }
-
-    /**
-     * Log the pose we got from MT1 on the side
-     */
-    private void logMT1Side() {
-        if (MT1SidePublisher.isEmpty()) return;
-
-        var pose = sidePoseEstimatorMT1.getPoseEstimate();
-        if (pose.isEmpty()) return;
-
-        MT1SidePublisher.get().set(pose.get().pose);
-    }
-
-    /**
-     * Returns whether given pose estimate is valid. First check if optional is empty!
-     * @param pe
-     * @return
-     */
-    private boolean validPoseEstimate(PoseEstimate pe) {
-        if (pe == null || !pe.hasData || pe.rawFiducials == null || pe.rawFiducials.length == 0) return false;
-        return true;
+        MT2SidePublisher.get().set(estimate.pose);
     }
 }
