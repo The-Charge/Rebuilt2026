@@ -83,7 +83,6 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.slowPeriodic();
         RobotContainer.getInstance().intake.slowPeriodic();
         RobotContainer.getInstance().ledSub.slowPeriodic();
-        RobotContainer.getInstance().limelights.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
         RobotContainer.getInstance().turret.slowPeriodic();
         RobotContainer.getInstance().shooter.slowPeriodic();
@@ -98,7 +97,6 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().indexer.verySlowPeriodic();
         RobotContainer.getInstance().intake.verySlowPeriodic();
         RobotContainer.getInstance().ledSub.verySlowPeriodic();
-        RobotContainer.getInstance().limelights.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
         RobotContainer.getInstance().turret.verySlowPeriodic();
         RobotContainer.getInstance().shooter.verySlowPeriodic();
@@ -148,7 +146,7 @@ public class Robot extends TimedRobot {
 
         RobotContainer.getInstance().displayAuto();
 
-        RobotContainer.getInstance().limelights.setThrottle(true);
+        // RobotContainer.getInstance().limelightCommand.setThrottle(true);
     }
 
     @Override
@@ -179,7 +177,7 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
         if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
             // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
-            RobotContainer.getInstance().limelights.seedSwerve();
+            RobotContainer.getInstance().limelightCommand.seedFromIMU();
             autoGyroTimer = Optional.empty();
         }
     }
@@ -255,6 +253,6 @@ public class Robot extends TimedRobot {
     }
 
     private void onEnabled() {
-        RobotContainer.getInstance().limelights.setThrottle(false);
+        // RobotContainer.getInstance().limelights.setThrottle(false);
     }
 }
