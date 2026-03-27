@@ -8,9 +8,9 @@
         "layouts": [
           {
             "title": "CAN",
-            "x": 1344.0,
+            "x": 1280.0,
             "y": 0.0,
-            "width": 192.0,
+            "width": 256.0,
             "height": 704.0,
             "type": "List Layout",
             "properties": {
@@ -18,14 +18,14 @@
             },
             "children": [
               {
-                "title": "10_flDrive",
+                "title": "10_flDriveMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/10_flDrive",
+                  "topic": "/Logger/CAN/10_flDriveMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -35,14 +35,14 @@
                 }
               },
               {
-                "title": "11_flAzimuth",
+                "title": "11_flAzimuthMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/11_flAzimuth",
+                  "topic": "/Logger/CAN/11_flAzimuthMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -60,6 +60,23 @@
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/Logger/CAN/14_rollerMotor",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "15_turretMotor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/15_turretMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -103,14 +120,14 @@
                 }
               },
               {
-                "title": "18_frAzimuth",
+                "title": "18_frAzimuthMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/18_frAzimuth",
+                  "topic": "/Logger/CAN/18_frAzimuthMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -120,14 +137,14 @@
                 }
               },
               {
-                "title": "19_frDrive",
+                "title": "19_frDriveMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/19_frDrive",
+                  "topic": "/Logger/CAN/19_frDriveMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -137,14 +154,14 @@
                 }
               },
               {
-                "title": "1_blAzimuth",
+                "title": "1_blAzimuthMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/1_blAzimuth",
+                  "topic": "/Logger/CAN/1_blAzimuthMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -154,14 +171,14 @@
                 }
               },
               {
-                "title": "2_blDrive",
+                "title": "2_blDriveMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/2_blDrive",
+                  "topic": "/Logger/CAN/2_blDriveMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -188,6 +205,23 @@
                 }
               },
               {
+                "title": "32_towerSensor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/32_towerSensor",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
                 "title": "3_climbMotor",
                 "x": 0.0,
                 "y": 0.0,
@@ -205,14 +239,14 @@
                 }
               },
               {
-                "title": "8_brAzimuth",
+                "title": "4_shooterMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/8_brAzimuth",
+                  "topic": "/Logger/CAN/4_shooterMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -222,14 +256,31 @@
                 }
               },
               {
-                "title": "9_brDrive",
+                "title": "8_brAzimuthMotor",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Boolean Box",
                 "properties": {
-                  "topic": "/Logger/CAN/9_brDrive",
+                  "topic": "/Logger/CAN/8_brAzimuthMotor",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "9_brDriveMotor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/Logger/CAN/9_brDriveMotor",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -244,10 +295,10 @@
         "containers": [
           {
             "title": "batteryVoltage",
-            "x": 1216.0,
-            "y": 0.0,
+            "x": 1152.0,
+            "y": 384.0,
             "width": 128.0,
-            "height": 704.0,
+            "height": 320.0,
             "type": "Voltage View",
             "properties": {
               "topic": "/Logger/PDP/batteryVoltage",
@@ -264,7 +315,7 @@
             "title": "FMSInfo",
             "x": 832.0,
             "y": 0.0,
-            "width": 384.0,
+            "width": 448.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
@@ -306,7 +357,7 @@
             "title": "loggingDirectory",
             "x": 1024.0,
             "y": 256.0,
-            "width": 192.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
@@ -320,7 +371,7 @@
             "title": "selectedAuto",
             "x": 1024.0,
             "y": 128.0,
-            "width": 192.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {

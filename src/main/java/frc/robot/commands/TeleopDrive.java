@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
@@ -126,10 +125,6 @@ public class TeleopDrive {
         swerveFieldCentricFacingAngleDriveCommand = RobotContainer.getInstance()
                 .swerve
                 .applyRequest(() -> {
-                    SwerveDriveState state = RobotContainer.getInstance().swerve.getState();
-                    // ChassisSpeeds speed = ChassisSpeeds.fromRobotRelativeSpeeds(
-                    //         state.Speeds, state.Pose.getRotation()); // TODO: make sure rotation works on red
-                    // alliance
                     if (Math.hypot(cubicLeftX.getAsDouble(), cubicLeftY.getAsDouble()) > 0.1) {
                         lastDefinedSnakeRotation = Optional.of(
                                 new Rotation2d(Math.atan2(-cubicLeftX.getAsDouble(), -cubicLeftY.getAsDouble())));
