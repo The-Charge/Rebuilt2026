@@ -51,6 +51,14 @@ public class CommandButtonBox extends CommandGenericHID {
         return new Trigger(m_hid.seed(loop));
     }
 
+    public Trigger alt() {
+        return alt(CommandScheduler.getInstance().getDefaultButtonLoop());
+    }
+
+    public Trigger alt(EventLoop loop) {
+        return new Trigger(m_hid.alt(loop));
+    }
+
     public Trigger turretLeft() {
         return turretLeft(CommandScheduler.getInstance().getDefaultButtonLoop());
     }

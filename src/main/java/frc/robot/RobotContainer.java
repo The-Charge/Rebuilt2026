@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -259,8 +260,10 @@ public class RobotContainer {
                 .testShoot()
                 .onTrue(new ManualShoot(
                                 shooter,
-                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0))
+                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
+                                true)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+        commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(500), false));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));

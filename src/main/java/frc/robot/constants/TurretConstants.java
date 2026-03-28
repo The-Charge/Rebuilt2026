@@ -57,7 +57,7 @@ public class TurretConstants {
         public static final double manualSpeed = 0.1;
 
         public static final double calibrationSpeed = -0.2;
-        public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-39.094849);
+        public static final TurretAngle calibrationEndPos = TurretAngle.fromMotorRotations(-39.475796);
         public static final Time calibrationEndDelay = Seconds.of(0.2);
         public static final Current calibrationThresholdCurrent = Amps.of(20);
         public static final AngularVelocity calibrationThresholdVel = RPM.of(1);
