@@ -263,7 +263,7 @@ public class RobotContainer {
                                 () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
                                 true)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-        commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(500), false));
+        commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(750), false));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
