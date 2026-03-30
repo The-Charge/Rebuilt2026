@@ -52,6 +52,6 @@ public class MiscUtils {
         if (tof == null) return false;
 
         Status status = tof.getStatus();
-        return status == Status.HardwareFailure || status == Status.InternalError || status == Status.WrappedTarget;
+        return status == Status.HardwareFailure || status == Status.InternalError;
     }
 }

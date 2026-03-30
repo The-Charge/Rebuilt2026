@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -52,6 +53,7 @@ import frc.robot.commands.climb.ManualSpool;
 import frc.robot.commands.indexer.RunIndexer;
 import frc.robot.commands.indexer.StopIndexer;
 import frc.robot.commands.intake.DeployIntake;
+import frc.robot.commands.intake.ReverseSpindexer;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
@@ -130,6 +132,7 @@ public class RobotContainer {
     public final BlinkLED autoLEDCommand;
     public final AimAtTarget aimAtHubCommand;
     public final AimAtTarget aimAtFZoneCommand;
+    public final ReverseSpindexer reverseSpindexerCommand;
     //     public final LimelightCommand limelightCommand;
 
     private SwerveRequest.Idle swerveIdle;
@@ -171,11 +174,13 @@ public class RobotContainer {
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
         aimAtHubCommand = AimAtTarget.atHub(turret, shooter, swerve);
         aimAtFZoneCommand = AimAtTarget.atFZone(turret, shooter, swerve);
+        reverseSpindexerCommand = new ReverseSpindexer(indexer);
 
         ntField = new Field2d();
         SmartDashboard.putData("Field", ntField); // only ever call once
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
+        MiscUtils.changeSubsystemDefaultCommand(indexer, reverseSpindexerCommand, false);
 
         // limelightCommand =
         //         new LimelightCommand(turretLimelight, otherLimelight, swerve, () -> DriverStation.isEnabled());
@@ -255,8 +260,10 @@ public class RobotContainer {
                 .testShoot()
                 .onTrue(new ManualShoot(
                                 shooter,
-                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0))
+                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
+                                true)
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+        commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(750), false));
         commandButtonBox
                 .stopShoot()
                 .onTrue(new StopShooter(shooter).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));

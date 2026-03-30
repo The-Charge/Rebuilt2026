@@ -21,7 +21,10 @@ public class IndexerConstants {
         public static final double maxDutyCycle = 1;
         public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
-        public static final double shootVoltage = 0.8 * 12;
+        public static final double shootVoltage = 12;
+        // public static final double reverseVoltage = -1 * 9 / 16.0 * 1.5;
+        public static final double slowReverseVoltage = -1.5;
+        public static final double fastReverseVoltage = -12 * 0.5;
     }
 
     public static class Exchange {

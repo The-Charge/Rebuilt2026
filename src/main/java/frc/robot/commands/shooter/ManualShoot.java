@@ -13,12 +13,14 @@ public class ManualShoot extends Command {
 
     private final ShooterSubsystem shoot;
     private final Supplier<AngularVelocity> targetVel;
+    private final boolean override;
 
     private final String key = String.format("%s/speed", getName());
 
-    public ManualShoot(ShooterSubsystem shootSub, Supplier<AngularVelocity> vel) {
+    public ManualShoot(ShooterSubsystem shootSub, Supplier<AngularVelocity> vel, boolean allowOverride) {
         shoot = shootSub;
         targetVel = vel;
+        override = allowOverride;
 
         addRequirements(shoot);
     }
@@ -37,7 +39,7 @@ public class ManualShoot extends Command {
 
     @Override
     public void execute() {
-        if (ShooterConstants.manualShootUseSmartdashboard) {
+        if (ShooterConstants.manualShootUseSmartdashboard && override) {
             shoot.setTargetVelocity(RPM.of(SmartDashboard.getNumber(key, 0)));
         } else {
             shoot.setTargetVelocity(targetVel.get());

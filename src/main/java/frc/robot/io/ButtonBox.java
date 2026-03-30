@@ -138,6 +138,22 @@ public class ButtonBox extends GenericHID {
         return button(Button.DEPLOY_INTAKE.value, loop).and(this::notAlt);
     }
 
+    public boolean getAltButton() {
+        return getRawButton(Button.ALT.value);
+    }
+
+    public boolean getAltButtonPressed() {
+        return getRawButtonPressed(Button.ALT.value);
+    }
+
+    public boolean getAltButtonReleased() {
+        return getRawButtonReleased(Button.ALT.value);
+    }
+
+    public BooleanEvent alt(EventLoop loop) {
+        return button(Button.ALT.value, loop);
+    }
+
     public boolean getTurretLeftButton() {
         return getRawButton(Button.TURRET_LEFT.value) && notAlt();
     }
