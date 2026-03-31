@@ -66,6 +66,12 @@ public class LimelightConstants {
             public static final double kMultipleTagsBonus = 0.05;
             public static final double kMinStd = 0.05;
         }
+        // 
+        public static final class Filter {
+            // Max valid "height" of robot
+            public static final double kMaxHeight = 0.2;
+
+        }
     }
 
     public enum PoseEstimationMethod {

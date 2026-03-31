@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
@@ -38,7 +39,7 @@ import limelight.results.RawFiducial;
 
 public class LimelightSubsystem extends SubsystemBase {
 
-    public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
+    public static record VisionMeasurement(Pose3d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     private final Limelight turretLimelight;
     private final Limelight sideLimelight;
@@ -117,8 +118,8 @@ public class LimelightSubsystem extends SubsystemBase {
         // Update vision with robot rotation information (mode 0)
         // setRobotOrientationSwerve(); // for external imu modes
 
-        // Log difference in MT2 measurements between both camaras
-        // logMT2diff(); // not using MT2
+        // Log difference in  measurements between both camaras
+        logDiff();
 
         // log the individual poses of MT1
         logTurret();
@@ -269,22 +270,22 @@ public class LimelightSubsystem extends SubsystemBase {
     public void seedMT1() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
 
-        Optional<VisionMeasurement> MT1turret = getVisionMeasurementTurret(swerve, false);
-        Optional<VisionMeasurement> MT1side = getVisionMeasurementSide(swerve, false);
-        if (MT1turret.isPresent() || MT1side.isPresent()) {
+        Optional<VisionMeasurement> visionMeasuremeantTurretMT1 = getVisionMeasurementTurret(swerve, false);
+        Optional<VisionMeasurement> visionMeasurementSideMT1 = getVisionMeasurementSide(swerve, false);
+        if (visionMeasuremeantTurretMT1.isPresent() || visionMeasurementSideMT1.isPresent()) {
             Angle rots;
-            if (MT1turret.isPresent() && MT1side.isPresent()) {
-                if (MT1turret.get().stdDevs().get(0, 0)
-                        > MT1side.get().stdDevs().get(0, 0)) {
-                    rots = MT1turret.get().pose().getRotation().getMeasure();
+            if (visionMeasuremeantTurretMT1.isPresent() && visionMeasurementSideMT1.isPresent()) {
+                if (visionMeasuremeantTurretMT1.get().stdDevs().get(0, 0)
+                        > visionMeasurementSideMT1.get().stdDevs().get(0, 0)) {
+                    rots = visionMeasuremeantTurretMT1.get().pose().toPose2d().getRotation().getMeasure();
 
                 } else {
-                    rots = MT1side.get().pose().getRotation().getMeasure();
+                    rots = visionMeasurementSideMT1.get().pose().toPose2d().getRotation().getMeasure();
                 }
-            } else if (MT1turret.isPresent()) {
-                rots = MT1turret.get().pose().getRotation().getMeasure();
+            } else if (visionMeasuremeantTurretMT1.isPresent()) {
+                rots = visionMeasuremeantTurretMT1.get().pose().toPose2d().getRotation().getMeasure();
             } else {
-                rots = MT1side.get().pose().getRotation().getMeasure();
+                rots = visionMeasurementSideMT1.get().pose().toPose2d().getRotation().getMeasure();
             }
             seedBothAbsolute(rots);
             isSeeded = true;
@@ -398,8 +399,7 @@ public class LimelightSubsystem extends SubsystemBase {
      * @param useMegaTag2
      * @return
      */
-    private Optional<VisionMeasurement> getVisionMeasurementTurret(
-            CommandSwerveDrivetrain swerve, boolean useMT2) {
+    private Optional<VisionMeasurement> getVisionMeasurementTurret(CommandSwerveDrivetrain swerve, boolean useMT2) {
         Optional<Matrix<N3, N1>> stdDevs;
         Optional<PoseEstimate> poseEstimate;
         if (useMT2) {
@@ -420,7 +420,7 @@ public class LimelightSubsystem extends SubsystemBase {
             if (stdDevs.isEmpty()) return Optional.empty();
         }
         return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+                poseEstimate.get().pose, poseEstimate.get().timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -452,7 +452,7 @@ public class LimelightSubsystem extends SubsystemBase {
             if (stdDevs.isEmpty()) return Optional.empty();
         }
         return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+                poseEstimate.get().pose, poseEstimate.get().timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -460,13 +460,19 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     private void multiple() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
-        Optional<VisionMeasurement> vmt = getVisionMeasurementTurret(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
-        Optional<VisionMeasurement> vms = getVisionMeasurementSide(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
-        if (!vmt.isEmpty()) {
-            swerve.addVisionMeasurement(vmt.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
+        Optional<VisionMeasurement> vmtOpt =
+                getVisionMeasurementTurret(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
+        Optional<VisionMeasurement> vmsOpt =
+                getVisionMeasurementSide(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
+        if (!vmtOpt.isEmpty()) {
+            VisionMeasurement visionMeasurementTurret = vmtOpt.get();
+            if (isFiltered(visionMeasurementTurret)) return;
+            swerve.addVisionMeasurement(visionMeasurementTurret.pose.toPose2d(), visionMeasurementTurret.timestamp, visionMeasurementTurret.stdDevs);
         }
-        if (!vms.isEmpty()) {
-            swerve.addVisionMeasurement(vms.get().pose, vms.get().timestamp, vms.get().stdDevs);
+        if (!vmsOpt.isEmpty()) {
+            VisionMeasurement visionMeasurementSide = vmsOpt.get();
+            if (isFiltered(visionMeasurementSide)) return;
+            swerve.addVisionMeasurement(visionMeasurementSide.pose.toPose2d(), visionMeasurementSide.timestamp, visionMeasurementSide.stdDevs);
         }
     }
 
@@ -663,5 +669,21 @@ public class LimelightSubsystem extends SubsystemBase {
     private boolean validPoseEstimate(PoseEstimate pe) {
         if (pe == null || !pe.hasData || pe.rawFiducials == null || pe.rawFiducials.length == 0) return false;
         return true;
+    }
+
+    /**
+     * Checks if the pose estimate is is flying, or outside of the field
+     * @param pe
+     * @return true if valid, false if rejected
+     */
+    private boolean isFiltered(VisionMeasurement vm) {
+        if (Math.abs(vm.pose.getZ()) > LimelightConstants.StdDevConstants.Filter.kMaxHeight
+                || vm.pose.getX() < 0
+                || vm.pose.getMeasureX().gt(FieldConstants.fieldXBound)
+                || vm.pose.getY() < 0
+                || vm.pose.getMeasureY().gt(FieldConstants.fieldYBound)) return true;
+        else {
+            return false;
+        }
     }
 }
