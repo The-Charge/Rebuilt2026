@@ -143,6 +143,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 Motor.kA,
                 Motor.rampTime);
 
+        // TODO: try catch configures
         if (shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
                 != REVLibError.kOk) {
             Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
