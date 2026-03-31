@@ -1,8 +1,12 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.DeviceEnableValue;
 import com.playingwithfusion.TimeOfFlight;
@@ -150,9 +154,9 @@ public class Logger {
     /**
      * Report a warning and log it to the console
      */
-    public static void reportWarning(Exception e, boolean printFullTrace) {
+    public static void reportWarning(Throwable e, boolean printFullTrace) {
         if (e == null) {
-            reportWarning("Unknown warning exception, attempted to log null Exception", true);
+            reportWarning("Unknown warning exception, attempted to log null Throwable", true);
         } else {
             reportWarning(e.getMessage(), generateStackTrace(e.getStackTrace(), 0), printFullTrace);
         }
@@ -197,9 +201,9 @@ public class Logger {
     /**
      * Report an error and log it to the console
      */
-    public static void reportError(Exception e) {
+    public static void reportError(Throwable e) {
         if (e == null) {
-            reportError("Unknown error exception, attempted to log null Exception");
+            reportError("Unknown error exception, attempted to log null Throwable");
         } else {
             reportError(e.getMessage(), generateStackTrace(e.getStackTrace(), 0));
         }
@@ -571,7 +575,7 @@ public class Logger {
         }
 
         String normalized;
-        if (subsystem == null) {
+        if (subsystem == null || subsystem.isEmpty()) {
             normalized = name;
         } else {
             normalized = subsystem + "/" + name;
@@ -596,7 +600,7 @@ public class Logger {
         }
 
         String normalized;
-        if (subsystem == null) {
+        if (subsystem == null || subsystem.isEmpty()) {
             normalized = name;
         } else {
             normalized = subsystem + "/" + name;
@@ -702,7 +706,7 @@ public class Logger {
         }
 
         String normalized;
-        if (subsystem == null) {
+        if (subsystem == null || subsystem.isEmpty()) {
             normalized = name;
         } else {
             normalized = subsystem + "/" + name;
@@ -889,7 +893,7 @@ public class Logger {
         }
 
         String normalized;
-        if (subsystem == null) {
+        if (subsystem == null || subsystem.isEmpty()) {
             normalized = name;
         } else {
             normalized = subsystem + "/" + name;
@@ -901,7 +905,6 @@ public class Logger {
     public static void logTOF(String subsystem, String name, TimeOfFlight tof) {
         if (!loggingLevel.logToNT || nt.isEmpty()) return;
 
-        if (subsystem == null) subsystem = "";
         if (name == null || name.isEmpty()) {
             reportWarning("Cannot log under an empty name", true);
             return;
@@ -911,14 +914,73 @@ public class Logger {
             return;
         }
 
-        String table = subsystem + "/" + name;
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
 
-        logDouble(table, "rangeMM", tof.getRange());
-        logDouble(table, "stdDevMM", tof.getRangeSigma());
-        logDouble(table, "samplePeriodMS", tof.getSampleTime());
-        logString(table, "status", tof.getStatus().toString());
-        logBool(table, "isRangeValid", tof.isRangeValid());
-        logDouble(table, "ambientLight", tof.getAmbientLightLevel());
+        logDouble(normalized, "rangeMM", tof.getRange());
+        logDouble(normalized, "stdDevMM", tof.getRangeSigma());
+        logDouble(normalized, "samplePeriodMS", tof.getSampleTime());
+        logString(normalized, "status", tof.getStatus().toString());
+        logBool(normalized, "isRangeValid", tof.isRangeValid());
+        logDouble(normalized, "ambientLight", tof.getAmbientLightLevel());
+    }
+
+    public static void logPigeon2(String subsystem, String name, Pigeon2 pigeon) {
+        if (!loggingLevel.logToNT || nt.isEmpty()) return;
+
+        if (name == null || name.isEmpty()) {
+            reportWarning("Cannot log under an empty name", true);
+            return;
+        }
+        if (pigeon == null) {
+            reportWarning("Cannot log a null Pigeon2", true);
+            return;
+        }
+
+        String normalized;
+        if (subsystem == null || subsystem.isEmpty()) {
+            normalized = name;
+        } else {
+            normalized = subsystem + "/" + name;
+        }
+
+        logDouble(
+                normalized, "accelX_MPS2", pigeon.getAccelerationX().getValue().in(MetersPerSecondPerSecond));
+        logDouble(
+                normalized, "accelY_MPS2", pigeon.getAccelerationY().getValue().in(MetersPerSecondPerSecond));
+        logDouble(
+                normalized, "accelZ_MPS2", pigeon.getAccelerationZ().getValue().in(MetersPerSecondPerSecond));
+        logDouble(normalized, "rollDeg", pigeon.getRoll().getValue().in(Degrees));
+        logDouble(normalized, "pitchDeg", pigeon.getPitch().getValue().in(Degrees));
+        logDouble(normalized, "yawDeg", pigeon.getYaw().getValue().in(Degrees));
+        logDouble(
+                normalized,
+                "angularVelXDevice_RPS",
+                pigeon.getAngularVelocityXDevice().getValue().in(RadiansPerSecond));
+        logDouble(
+                normalized,
+                "angularVelYDevice_RPS",
+                pigeon.getAngularVelocityYDevice().getValue().in(RadiansPerSecond));
+        logDouble(
+                normalized,
+                "angularVelZDevice_RPS",
+                pigeon.getAngularVelocityZDevice().getValue().in(RadiansPerSecond));
+        logDouble(
+                normalized,
+                "angularVelXWorld_RPS",
+                pigeon.getAngularVelocityXWorld().getValue().in(RadiansPerSecond));
+        logDouble(
+                normalized,
+                "angularVelYWorld_RPS",
+                pigeon.getAngularVelocityYWorld().getValue().in(RadiansPerSecond));
+        logDouble(
+                normalized,
+                "angularVelZWorld_RPS",
+                pigeon.getAngularVelocityZWorld().getValue().in(RadiansPerSecond));
     }
 
     public static <T extends StructSerializable, S extends Struct<T>> Optional<StructPublisher<T>> makeStructPublisher(

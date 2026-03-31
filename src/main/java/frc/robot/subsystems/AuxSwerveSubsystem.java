@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Celsius;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
@@ -24,6 +25,7 @@ public class AuxSwerveSubsystem extends SubsystemBase {
     private final Alert blAzimuthDisconnected, blAzimuthOverheating;
     private final Alert brDriveDisconnected, brDriveOverheating;
     private final Alert brAzimuthDisconnected, brAzimuthOverheating;
+    private final Alert pigeonDisconnected;
 
     public AuxSwerveSubsystem() {
         flDriveDisconnected =
@@ -58,6 +60,8 @@ public class AuxSwerveSubsystem extends SubsystemBase {
                 Alerts.makeDisconnectAlert(SwerveConstants.brAzimuthName, TunerConstants.BackRight.SteerMotorId);
         brAzimuthOverheating =
                 Alerts.makeOverheatingAlert(SwerveConstants.brAzimuthName, TunerConstants.BackRight.SteerMotorId);
+        pigeonDisconnected =
+                Alerts.makeDisconnectAlert(SwerveConstants.pigeonName, TunerConstants.DrivetrainConstants.Pigeon2Id);
     }
 
     @Override
@@ -73,10 +77,11 @@ public class AuxSwerveSubsystem extends SubsystemBase {
         Logger.logTalonFXReduced(getName(), SwerveConstants.blAzimuthName, blAzimuth());
         Logger.logTalonFXReduced(getName(), SwerveConstants.brDriveName, brDrive());
         Logger.logTalonFXReduced(getName(), SwerveConstants.brAzimuthName, brAzimuth());
+        Logger.logPigeon2(getName(), SwerveConstants.pigeonName, pigeon());
 
         ChassisSpeeds chassisSpeeds = swerve.getState().Speeds;
         Logger.logDouble(
-                getName(), "speedometer", Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond));
+                getName(), "chassisVel", Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond));
     }
 
     @Override
@@ -95,6 +100,7 @@ public class AuxSwerveSubsystem extends SubsystemBase {
         boolean blAzimuthConnected = blAzimuth().isConnected();
         boolean brDriveConnected = brDrive().isConnected();
         boolean brAzimuthConnected = brAzimuth().isConnected();
+        boolean pigeonConnected = pigeon().isConnected();
 
         CANMonitor.logCANDeviceStatus(
                 SwerveConstants.flDriveName, TunerConstants.FrontLeft.DriveMotorId, flDriveConnected);
@@ -135,6 +141,10 @@ public class AuxSwerveSubsystem extends SubsystemBase {
                 SwerveConstants.brAzimuthName, TunerConstants.BackRight.SteerMotorId, brAzimuthConnected);
         brAzimuthDisconnected.set(!brAzimuthConnected);
         brAzimuthOverheating.set(brAzimuth().getDeviceTemp().getValue().in(Celsius) >= 80);
+
+        CANMonitor.logCANDeviceStatus(
+                SwerveConstants.pigeonName, TunerConstants.DrivetrainConstants.Pigeon2Id, pigeonConnected);
+        pigeonDisconnected.set(!pigeonConnected);
     }
 
     private TalonFX flDrive() {
@@ -191,5 +201,9 @@ public class AuxSwerveSubsystem extends SubsystemBase {
                 .swerve
                 .getModule(SwerveConstants.brModuleIndex)
                 .getSteerMotor();
+    }
+
+    private Pigeon2 pigeon() {
+        return RobotContainer.getInstance().swerve.getPigeon2();
     }
 }
