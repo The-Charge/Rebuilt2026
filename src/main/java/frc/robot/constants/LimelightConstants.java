@@ -84,4 +84,10 @@ public class LimelightConstants {
 
     // imuMode of steady state
     public static ImuMode imuMode = ImuMode.InternalImuMT1Assist;
+    public static Mode activeMode = Mode.MT2;
+
+    public enum Mode {
+        MT1,
+        MT2
+    }
 }
