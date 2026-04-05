@@ -133,13 +133,13 @@ public class Logger {
      * Use instead of System.out.println
      */
     public static void println(String msg) {
+        if (msg == null) {
+            msg = "null";
+        }
+
         if (!loggingLevel.logToFile) {
             System.out.println(msg);
             return;
-        }
-
-        if (msg == null) {
-            msg = "null";
         }
         DataLogManager.log(PREFIX + msg);
     }

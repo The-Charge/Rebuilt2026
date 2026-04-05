@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Milliseconds;
 
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -57,8 +56,7 @@ public class ClimbSubsystem extends SubsystemBase {
                 Motor.kSSign,
                 Motor.kV,
                 Motor.kA);
-        if (motor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
-            Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
+        if (!TalonFXUtils.safeApplyConfig(motor, Motor.motorName, motorConfig)) {
             motorConfigFail.set(true);
         }
 

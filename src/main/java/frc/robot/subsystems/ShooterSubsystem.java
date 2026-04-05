@@ -4,9 +4,6 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -143,10 +140,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 Motor.kA,
                 Motor.rampTime);
 
-        // TODO: try catch configures
-        if (shootMotor.configure(shootConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
+        if (!SparkUtils.safeApplyConfig(shootMotor, Motor.motorName, shootConfig)) {
             motorConfigFail.set(true);
         }
     }

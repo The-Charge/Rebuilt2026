@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -50,24 +47,20 @@ public class IndexerSubsystem extends SubsystemBase {
                 Spindexer.inverted,
                 Spindexer.maxDutyCycle,
                 Spindexer.nominalVoltage);
-        if (spindexerMotor.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Spindexer.motorName));
+        if (!SparkUtils.safeApplyConfig(spindexerMotor, Spindexer.motorName, spindexerConfig)) {
             spindexerConfigFail.set(true);
         }
 
         exchangeMotor = new SparkMax(Exchange.motorID, MotorType.kBrushless);
-        SparkMaxConfig gateConfig = new SparkMaxConfig();
+        SparkMaxConfig exchangeConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
-                gateConfig,
+                exchangeConfig,
                 Exchange.maxCurrent,
                 Exchange.idleMode,
                 Exchange.inverted,
                 Exchange.maxDutyCycle,
                 Exchange.nominalVoltage);
-        if (exchangeMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Exchange.motorName));
+        if (!SparkUtils.safeApplyConfig(exchangeMotor, Exchange.motorName, exchangeConfig)) {
             exchangeConfigFail.set(true);
         }
     }
