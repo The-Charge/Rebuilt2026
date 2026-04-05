@@ -40,7 +40,7 @@ public class ShooterConstants {
     }
 
     public static final AngularVelocity targetUpwardTolerance = RPM.of(100);
-    public static final AngularVelocity targetDownwardTolerance = RPM.of(50);
+    public static final AngularVelocity targetDownwardTolerance = RPM.of(150);
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
 
     public static final boolean manualShootUseSmartdashboard = true;

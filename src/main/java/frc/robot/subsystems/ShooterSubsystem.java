@@ -149,13 +149,13 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Optional<Boolean> isShooterAtTargetSpeed() {
-        // TODO: use skewed tolerance
         if (targetShooterSpeed.isEmpty()) return Optional.empty();
 
         double currentRPM = shootMotor.getEncoder().getVelocity();
         double targetRPM = targetShooterSpeed.get().in(RPM);
-        double toleranceRPM = ShooterConstants.targetUpwardTolerance.in(RPM);
+        double upToleranceRPM = ShooterConstants.targetUpwardTolerance.in(RPM);
+        double downToleranceRPM = ShooterConstants.targetDownwardTolerance.in(RPM);
 
-        return Optional.of(Math.abs(currentRPM - targetRPM) <= toleranceRPM);
+        return Optional.of(currentRPM <= targetRPM + upToleranceRPM && currentRPM >= targetRPM - downToleranceRPM);
     }
 }

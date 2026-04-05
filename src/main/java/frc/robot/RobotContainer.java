@@ -20,6 +20,8 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -140,6 +142,8 @@ public class RobotContainer {
 
     public final Field2d ntField;
 
+    private final Debouncer readyToShootDebouncer;
+
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
 
@@ -178,6 +182,8 @@ public class RobotContainer {
 
         ntField = new Field2d();
         SmartDashboard.putData("Field", ntField); // only ever call once
+
+        readyToShootDebouncer = new Debouncer(0.4, DebounceType.kFalling);
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
         MiscUtils.changeSubsystemDefaultCommand(indexer, reverseSpindexerCommand, false);
@@ -400,6 +406,6 @@ public class RobotContainer {
     }
 
     public boolean isReadyToShoot() {
-        return shooter.isShooterAtTargetSpeed().orElse(false);
+        return readyToShootDebouncer.calculate(shooter.isShooterAtTargetSpeed().orElse(false));
     }
 }
