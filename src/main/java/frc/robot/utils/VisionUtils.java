@@ -2,8 +2,6 @@ package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -15,6 +13,7 @@ import frc.robot.constants.LimelightConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
 import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
+import java.util.Optional;
 import limelight.networktables.PoseEstimate;
 import limelight.results.RawFiducial;
 
@@ -38,8 +37,7 @@ public class VisionUtils {
      * @param swerve
      * @return
      */
-    public static Optional<Matrix<N3, N1>> calcStdDevsMT1(
-            PoseEstimate poseEstimate, ChassisSpeeds speeds) {
+    public static Optional<Matrix<N3, N1>> calcStdDevsMT1(PoseEstimate poseEstimate, ChassisSpeeds speeds) {
         if (!validPoseEstimate(poseEstimate)) return Optional.empty();
 
         // Optional<PoseEstimate> opt = turretPoseEstimator.getPoseEstimate();
@@ -78,11 +76,10 @@ public class VisionUtils {
      * @param swerve
      * @return
      */
-    public static Optional<Matrix<N3, N1>> calcStdDevsMT2(
-            PoseEstimate poseEstimate, ChassisSpeeds speeds) {
+    public static Optional<Matrix<N3, N1>> calcStdDevsMT2(PoseEstimate poseEstimate, ChassisSpeeds speeds) {
         if (!validPoseEstimate(poseEstimate)) return Optional.empty();
-        boolean isGoingTooFast = Math.abs(speeds.omegaRadiansPerSecond)
-                > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
+        boolean isGoingTooFast =
+                Math.abs(speeds.omegaRadiansPerSecond) > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
         if (isGoingTooFast) return Optional.empty();
 
         if (poseEstimate.avgTagDist > 8) return Optional.empty();
@@ -102,7 +99,7 @@ public class VisionUtils {
 
         return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
-    
+
     /**
      * Returns whether given pose estimate is valid. First check if optional is empty!
      * @param pe

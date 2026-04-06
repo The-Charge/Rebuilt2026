@@ -7,27 +7,15 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import java.util.Optional;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
-import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
-import frc.robot.generated.CommandSwerveDrivetrain;
 import limelight.networktables.LimelightSettings.ImuMode;
-import limelight.networktables.PoseEstimate;
-import limelight.results.RawFiducial;
 
 public class LimelightConstants {
     public static final String subsystemName = "Limelight";
@@ -78,11 +66,10 @@ public class LimelightConstants {
             public static final double kMultipleTagsBonus = 0.05;
             public static final double kMinStd = 0.05;
         }
-        // 
+        //
         public static final class Filter {
             // Max valid "height" of robot
             public static final double kMaxHeight = 0.2;
-
         }
     }
 
