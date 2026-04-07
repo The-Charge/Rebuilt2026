@@ -8,35 +8,60 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0958433734939756,
-        "y": 1.499771084337349
+        "x": 2.0785685192782744,
+        "y": 0.26684030340684917
       },
       "isLocked": false,
       "linkedName": "RightShoot"
     },
     {
       "anchor": {
-        "x": 1.08,
-        "y": 2.690891566265061
+        "x": 4.576433734939759,
+        "y": 0.5927710843373495
       },
       "prevControl": {
-        "x": 0.9270120481927708,
-        "y": 1.4014216867469884
+        "x": 3.5233021963161164,
+        "y": 0.5927710843373496
+      },
+      "nextControl": {
+        "x": 6.182844397570157,
+        "y": 0.5927710843373495
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.281156626506024,
+        "y": 5.0
+      },
+      "prevControl": {
+        "x": 6.281156626506024,
+        "y": 0.5
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightClimb"
+      "linkedName": "FarRightNeutral2"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.25,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 1.5,
+      "rotationDegrees": 90.0
+    }
+  ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.8,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 1.5992805755395723,
+      "maxWaypointRelativePos": 2.0,
       "constraints": {
-        "maxVelocity": 0.5,
-        "maxAcceleration": 3.0,
+        "maxVelocity": 3.0,
+        "maxAcceleration": 6.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -56,7 +81,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": null,
