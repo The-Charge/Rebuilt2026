@@ -3,6 +3,7 @@ package frc.robot.utils;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -255,5 +256,47 @@ public class TalonFXUtils {
             config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = reverseLimitResetRots.isPresent();
             config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = reverseLimitResetRots.orElse(0d);
         }
+    }
+
+    /**
+     * Safely apply a configuration to talon motor
+     * @param motor
+     * @param motorName Used for logging purposes
+     * @param config
+     * @return {@code true} if the configuration was successfully applied, {@code false} otherwise
+     */
+    public static boolean safeApplyConfig(TalonFX motor, String motorName, TalonFXConfiguration config) {
+        if (motor == null) {
+            Logger.reportError("Cannot configure a null TalonFX");
+            return false;
+        }
+        if (motorName == null || motorName.isEmpty()) {
+            Logger.reportWarning("Please provide a motor name when apply configurations", true);
+            motorName = "UNNAMED TalonFX";
+        }
+        if (config == null) {
+            Logger.reportError("Cannot apply a null TalonFXConfiguration");
+            return false;
+        }
+
+        final int MAX_TRIES = 3;
+        for (int i = 0; i < MAX_TRIES; i++) {
+            try {
+                StatusCode status = motor.getConfigurator().apply(config);
+
+                if (status == StatusCode.OK) {
+                    return true;
+                }
+            } catch (Throwable e) {
+                Logger.reportError(e);
+            }
+
+            if (i < MAX_TRIES - 1) {
+                Logger.reportWarning(String.format("Failed to configure %s, retrying...", motorName), false);
+            }
+        }
+
+        Logger.reportError(String.format("Failed to configure %s", motorName));
+        return false;
     }
 }

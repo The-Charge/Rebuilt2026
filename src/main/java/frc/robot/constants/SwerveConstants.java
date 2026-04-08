@@ -21,6 +21,7 @@ public class SwerveConstants {
     public static final String blAzimuthName = "blAzimuthMotor";
     public static final String brDriveName = "brDriveMotor";
     public static final String brAzimuthName = "brAzimuthMotor";
+    public static final String pigeonName = "pigeon2";
 
     public static final int flModuleIndex = 0;
     public static final int frModuleIndex = 1;
