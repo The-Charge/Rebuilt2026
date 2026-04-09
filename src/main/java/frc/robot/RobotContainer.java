@@ -46,14 +46,15 @@ import frc.robot.commands.AimAtTarget;
 import frc.robot.commands.AutoDriveToTower;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.AutoWaitForReadyToShoot;
+import frc.robot.commands.Shoot;
+import frc.robot.commands.StopShoot;
 import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
-import frc.robot.commands.indexer.RunIndexer;
-import frc.robot.commands.indexer.StopIndexer;
+import frc.robot.commands.indexer.ReverseSpindexer;
 import frc.robot.commands.intake.DeployIntake;
-import frc.robot.commands.intake.ReverseSpindexer;
+import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
@@ -220,22 +221,23 @@ public class RobotContainer {
 
         commandDriver2
                 .leftTrigger()
-                .whileTrue(new RunRoller(intake, false))
+                .whileTrue(new RepeatCommand(new RunRoller(intake, false)))
                 .whileTrue(new BlinkLED(ledSub, Color.kWhite));
+        commandDriver2.leftBumper().whileTrue(new RepeatCommand(new ReverseIntake(intake)));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povRight().or(commandDriver2.povLeft()).onTrue(new ClimbClimb(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
-                        new RunIndexer(indexer, true),
-                        new StopIndexer(indexer),
+                        new Shoot(indexer, intake, true),
+                        new StopShoot(indexer, intake),
                         () -> isReadyToShoot()
                                 && Robot.getInstance()
                                         .getTeleopLogic()
                                         .map((val) -> val.getIsHubActive().orElse(false))
                                         .orElse(true))))
-                .onFalse(new StopIndexer(indexer));
+                .onFalse(new StopShoot(indexer, intake));
         commandDriver2
                 .x()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
