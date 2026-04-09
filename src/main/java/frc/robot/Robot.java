@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -33,6 +34,8 @@ public class Robot extends TimedRobot {
     private Optional<TeleopDrive> teleopDrive;
     private Optional<Timer> autoGyroTimer;
 
+    private SlewRateLimiter pdpVoltageSlew;
+
     public Robot() {
         instance = this;
 
@@ -57,6 +60,14 @@ public class Robot extends TimedRobot {
         teleopLogic = Optional.empty();
         teleopDrive = Optional.empty();
         autoGyroTimer = Optional.empty();
+
+        /*
+         * Allow an increase at a rate of 100 volts / second (effectively infinite)
+         * Allow a derease at a rate of 0.2 volts / second
+         * Start with the current pdp reading
+         */
+        pdpVoltageSlew =
+                new SlewRateLimiter(100, 0.2, RobotContainer.getInstance().pdp.getVoltage());
 
         addPeriodic(this::slowRobotPeriodic, Seconds.of(0.05));
         addPeriodic(this::verySlowRobotPeriodic, Seconds.of(0.5));
@@ -109,11 +120,12 @@ public class Robot extends TimedRobot {
             Alerts.pdpDisconnected.get().set(!pdpConnected);
         }
 
-        double batteryVoltage = RobotContainer.getInstance().pdp.getVoltage();
-        if (batteryVoltage <= 11) {
+        double slewedPDPVoltage =
+                pdpVoltageSlew.calculate(RobotContainer.getInstance().pdp.getVoltage());
+        if (slewedPDPVoltage <= 11) {
             Alerts.lowBattery.set(false);
             Alerts.criticalBattery.set(true);
-        } else if (batteryVoltage <= 12) {
+        } else if (slewedPDPVoltage <= 12) {
             Alerts.lowBattery.set(true);
             Alerts.criticalBattery.set(false);
         } else {

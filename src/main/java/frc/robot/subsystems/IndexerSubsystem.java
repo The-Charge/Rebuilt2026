@@ -1,11 +1,11 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IndexerConstants;
@@ -15,24 +15,20 @@ import frc.robot.utils.Alerts;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.Logger;
 import frc.robot.utils.SparkUtils;
+import frc.robot.utils.TalonFXUtils;
 
 public class IndexerSubsystem extends SubsystemBase {
 
-    private final SparkMax spindexerMotor;
+    private final TalonFX spindexerMotor;
     private final SparkMax exchangeMotor;
 
-    private final Alert spindexerDisconnected,
-            spindexerOverheating,
-            spindexerFaults,
-            spindexerWarnings,
-            spindexerConfigFail;
+    private final Alert spindexerDisconnected, spindexerOverheating, spindexerFaults, spindexerConfigFail;
     private final Alert exchangeConfigFail, exchangeDisconnected, exchangeOverheating, exchangeFaults, exchangeWarnings;
 
     public IndexerSubsystem() {
         spindexerDisconnected = Alerts.makeDisconnectAlert(Spindexer.motorName, Spindexer.motorID);
         spindexerOverheating = Alerts.makeOverheatingAlert(Spindexer.motorName, Spindexer.motorID);
         spindexerFaults = Alerts.makeCriticalFaultsAlert(Spindexer.motorName, Spindexer.motorID);
-        spindexerWarnings = Alerts.makeCriticalWarningsAlert(Spindexer.motorName, Spindexer.motorID);
         spindexerConfigFail = Alerts.makeConfigFailAlert(Spindexer.motorName, Spindexer.motorID);
 
         exchangeConfigFail = Alerts.makeConfigFailAlert(Exchange.motorName, Exchange.motorID);
@@ -41,33 +37,29 @@ public class IndexerSubsystem extends SubsystemBase {
         exchangeFaults = Alerts.makeCriticalFaultsAlert(Exchange.motorName, Exchange.motorID);
         exchangeWarnings = Alerts.makeCriticalWarningsAlert(Exchange.motorName, Exchange.motorID);
 
-        spindexerMotor = new SparkMax(Spindexer.motorID, MotorType.kBrushless);
-        SparkMaxConfig spindexerConfig = new SparkMaxConfig();
-        SparkUtils.configureBasicSettings(
+        spindexerMotor = new TalonFX(Spindexer.motorID);
+        TalonFXConfiguration spindexerConfig = new TalonFXConfiguration();
+        TalonFXUtils.configureBasicSettings(
                 spindexerConfig,
                 Spindexer.maxCurrent,
-                Spindexer.idleMode,
+                Spindexer.neutralMode,
                 Spindexer.inverted,
                 Spindexer.maxDutyCycle,
-                Spindexer.nominalVoltage);
-        if (spindexerMotor.configure(spindexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Spindexer.motorName));
+                Spindexer.maxVoltage);
+        if (!TalonFXUtils.safeApplyConfig(spindexerMotor, Spindexer.motorName, spindexerConfig)) {
             spindexerConfigFail.set(true);
         }
 
         exchangeMotor = new SparkMax(Exchange.motorID, MotorType.kBrushless);
-        SparkMaxConfig gateConfig = new SparkMaxConfig();
+        SparkMaxConfig exchangeConfig = new SparkMaxConfig();
         SparkUtils.configureBasicSettings(
-                gateConfig,
+                exchangeConfig,
                 Exchange.maxCurrent,
                 Exchange.idleMode,
                 Exchange.inverted,
                 Exchange.maxDutyCycle,
                 Exchange.nominalVoltage);
-        if (exchangeMotor.configure(gateConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Exchange.motorName));
+        if (!SparkUtils.safeApplyConfig(exchangeMotor, Exchange.motorName, exchangeConfig)) {
             exchangeConfigFail.set(true);
         }
     }
@@ -81,7 +73,7 @@ public class IndexerSubsystem extends SubsystemBase {
     public void periodic() {
         Logger.logSubsystem(getName(), this);
 
-        Logger.logSparkMotor(getName(), Spindexer.motorName, spindexerMotor);
+        Logger.logTalonFX(getName(), Spindexer.motorName, spindexerMotor);
 
         Logger.logSparkMotor(getName(), Exchange.motorName, exchangeMotor);
     }
@@ -89,13 +81,12 @@ public class IndexerSubsystem extends SubsystemBase {
     public void slowPeriodic() {}
 
     public void verySlowPeriodic() {
-        boolean spindexerConnected = SparkUtils.isConnected(spindexerMotor);
+        boolean spindexerConnected = spindexerMotor.isConnected();
 
         CANMonitor.logCANDeviceStatus(Spindexer.motorName, Spindexer.motorID, spindexerConnected);
         spindexerDisconnected.set(!spindexerConnected);
-        spindexerOverheating.set(spindexerMotor.getMotorTemperature() >= 80);
-        spindexerFaults.set(SparkUtils.hasCriticalFaults(spindexerMotor.getFaults()));
-        spindexerWarnings.set(SparkUtils.hasCriticalWarnings(spindexerMotor.getWarnings()));
+        spindexerOverheating.set(spindexerMotor.getDeviceTemp().getValue().in(Units.Celsius) >= 80);
+        spindexerFaults.set(TalonFXUtils.getAllActiveFaults(spindexerMotor).hasCriticalFaults());
 
         boolean exchangeConnected = SparkUtils.isConnected(exchangeMotor);
         CANMonitor.logCANDeviceStatus(Exchange.motorName, Exchange.motorID, exchangeConnected);
@@ -103,10 +94,6 @@ public class IndexerSubsystem extends SubsystemBase {
         exchangeOverheating.set(exchangeMotor.getMotorTemperature() >= 80);
         exchangeFaults.set(SparkUtils.hasCriticalFaults(exchangeMotor.getFaults()));
         exchangeWarnings.set(SparkUtils.hasCriticalWarnings(exchangeMotor.getWarnings()));
-    }
-
-    public double getSpindexerVoltage() {
-        return spindexerMotor.get();
     }
 
     public void setSpindexerVoltage(double volts) {

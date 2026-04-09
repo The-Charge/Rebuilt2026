@@ -4,9 +4,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -79,9 +76,7 @@ public class TurretSubsystem extends SubsystemBase {
                 Motor.reverseHardLimitResetRots);
         SparkUtils.configureMAXMotion(turretConfig, Motor.maxAccel, Motor.cruiseVel, Motor.allowedError);
 
-        if (turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-                != REVLibError.kOk) {
-            Logger.reportError(String.format("Failed to configure %s", Motor.motorName));
+        if (!SparkUtils.safeApplyConfig(turretMotor, Motor.motorName, turretConfig)) {
             motorConfigFail.set(true);
         }
 
