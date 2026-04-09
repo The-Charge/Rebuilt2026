@@ -26,21 +26,20 @@ public class ShooterConstants {
         public static final double maxDutyCycle = 1.0;
         public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
-        // TODO: rerun sysid
-        public static double kP = 9.9644E-05;
+        public static double kP = 9.3539E-04 / 2;
         public static double kI = 0;
         public static final Optional<Double> iZone = Optional.empty();
         public static double kD = 0;
         public static final Optional<Voltage> kStaticG = Optional.empty();
         public static final Optional<Voltage> kCos = Optional.empty();
         public static final Optional<Double> kS = Optional.of(0.11245);
-        public static final Optional<Double> kV = Optional.of(0.10595);
-        public static final Optional<Double> kA = Optional.of(0.038945);
+        public static final Optional<Double> kV = Optional.of(12.071 / 6756);
+        public static final Optional<Double> kA = Optional.of(0.036117);
         public static final Optional<Time> rampTime = Optional.empty();
     }
 
     public static final AngularVelocity targetUpwardTolerance = RPM.of(100);
-    public static final AngularVelocity targetDownwardTolerance = RPM.of(150);
+    public static final AngularVelocity targetDownwardTolerance = RPM.of(100);
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
 
     public static final boolean manualShootUseSmartdashboard = true;
