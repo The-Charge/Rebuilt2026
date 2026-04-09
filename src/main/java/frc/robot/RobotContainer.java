@@ -20,6 +20,8 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -68,7 +70,6 @@ import frc.robot.commands.turret.ManualTurret;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
-import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
@@ -141,6 +142,8 @@ public class RobotContainer {
 
     public final Field2d ntField;
 
+    private final Debouncer readyToShootDebouncer;
+
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
 
@@ -179,6 +182,8 @@ public class RobotContainer {
 
         ntField = new Field2d();
         SmartDashboard.putData("Field", ntField); // only ever call once
+
+        readyToShootDebouncer = new Debouncer(0.4, DebounceType.kFalling);
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
         MiscUtils.changeSubsystemDefaultCommand(indexer, reverseSpindexerCommand, false);
@@ -260,11 +265,13 @@ public class RobotContainer {
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
-                .onTrue(new ManualShoot(
-                                shooter,
-                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
-                                true)
-                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                // .onTrue(new ManualShoot(
+                //                 shooter,
+                //                 () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) /
+                // 2.0),
+                //                 true)
+                //         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                .onTrue(shooter.runSysId);
         commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(750), false));
         commandButtonBox
                 .stopShoot()
@@ -402,6 +409,6 @@ public class RobotContainer {
     }
 
     public boolean isReadyToShoot() {
-        return shooter.isShooterAtTargetSpeed().orElse(false);
+        return readyToShootDebouncer.calculate(shooter.isShooterAtTargetSpeed().orElse(false));
     }
 }

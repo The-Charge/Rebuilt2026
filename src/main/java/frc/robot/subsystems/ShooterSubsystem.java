@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -11,6 +12,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
@@ -31,10 +33,15 @@ public class ShooterSubsystem extends SubsystemBase {
     private final SparkFlex shootMotor;
     private final SysIdRoutine sysIdRoutine;
 
-    private final Alert motorDisconnected, motorOverheating, motorFaults, motorWarnings, motorConfigFail;
+    private final Alert motorDisconnected,
+            motorOverheating,
+            motorFaults,
+            motorWarnings,
+            motorConfigFail,
+            motorBackupConfig;
 
     private Optional<AngularVelocity> targetShooterSpeed;
-    private SequentialCommandGroup runSysId;
+    public final SequentialCommandGroup runSysId;
 
     public ShooterSubsystem() {
         motorDisconnected = Alerts.makeDisconnectAlert(Motor.motorName, Motor.motorID);
@@ -42,12 +49,16 @@ public class ShooterSubsystem extends SubsystemBase {
         motorFaults = Alerts.makeCriticalFaultsAlert(Motor.motorName, Motor.motorID);
         motorWarnings = Alerts.makeCriticalWarningsAlert(Motor.motorName, Motor.motorID);
         motorConfigFail = Alerts.makeConfigFailAlert(Motor.motorName, Motor.motorID);
+        motorBackupConfig = new Alert(
+                String.format("Using backup config on %s (CAN %d)", Motor.motorName, Motor.motorID),
+                AlertType.kWarning);
 
         shootMotor = new SparkFlex(Motor.motorID, MotorType.kBrushless);
         configureMotor();
 
         sysIdRoutine = new SysIdRoutine(
-                new SysIdRoutine.Config(), new SysIdRoutine.Mechanism(this::setVoltage, this::logSysIdMotors, this));
+                new SysIdRoutine.Config(null, null, Seconds.of(10)),
+                new SysIdRoutine.Mechanism(this::setVoltage, this::logSysIdMotors, this));
         runSysId = new SequentialCommandGroup(
                 sysIdQuasistatic(SysIdRoutine.Direction.kForward),
                 sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
@@ -92,6 +103,7 @@ public class ShooterSubsystem extends SubsystemBase {
         MotorLog motorLog = log.motor("shooter");
         motorLog.angularPosition(Rotations.of(shootMotor.getEncoder().getPosition()));
         motorLog.angularVelocity(RPM.of(shootMotor.getEncoder().getVelocity()));
+        motorLog.voltage(Volts.of(shootMotor.getAppliedOutput() * shootMotor.getBusVoltage()));
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -129,19 +141,46 @@ public class ShooterSubsystem extends SubsystemBase {
                 Motor.nominalVoltage);
         SparkUtils.configureClosedLoopSettings(
                 shootConfig,
-                Motor.kP,
-                Motor.kI,
-                Motor.iZone,
-                Motor.kD,
-                Motor.kStaticG,
-                Motor.kCos,
-                Motor.kS,
-                Motor.kV,
-                Motor.kA,
-                Motor.rampTime);
+                Motor.NormalPID.kP,
+                Motor.NormalPID.kI,
+                Motor.NormalPID.iZone,
+                Motor.NormalPID.kD,
+                Motor.NormalPID.kStaticG,
+                Motor.NormalPID.kCos,
+                Motor.NormalPID.kS,
+                Motor.NormalPID.kV,
+                Motor.NormalPID.kA,
+                Motor.NormalPID.rampTime);
 
         if (!SparkUtils.safeApplyConfig(shootMotor, Motor.motorName, shootConfig)) {
-            motorConfigFail.set(true);
+            shootConfig = new SparkFlexConfig();
+
+            SparkUtils.configureBasicSettings(
+                    shootConfig,
+                    Motor.currentLimit,
+                    Motor.idleMode,
+                    Motor.inverted,
+                    Motor.maxDutyCycle,
+                    Motor.nominalVoltage);
+            SparkUtils.configureClosedLoopSettings(
+                    shootConfig,
+                    Motor.BackupPID.kP,
+                    Motor.BackupPID.kI,
+                    Motor.BackupPID.iZone,
+                    Motor.BackupPID.kD,
+                    Motor.BackupPID.kStaticG,
+                    Motor.BackupPID.kCos,
+                    Motor.BackupPID.kS,
+                    Motor.BackupPID.kV,
+                    Motor.BackupPID.kA,
+                    Motor.BackupPID.rampTime);
+
+            if (!SparkUtils.safeApplyConfig(shootMotor, Motor.motorName, shootConfig)) {
+                motorConfigFail.set(true);
+            } else {
+                Logger.reportWarning("Using backup config on shooter motor", false);
+                motorBackupConfig.set(true);
+            }
         }
     }
 
@@ -150,8 +189,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
         double currentRPM = shootMotor.getEncoder().getVelocity();
         double targetRPM = targetShooterSpeed.get().in(RPM);
-        double toleranceRPM = ShooterConstants.targetTolerance.in(RPM);
+        double upToleranceRPM = ShooterConstants.targetUpwardTolerance.in(RPM);
+        double downToleranceRPM = ShooterConstants.targetDownwardTolerance.in(RPM);
 
-        return Optional.of(Math.abs(currentRPM - targetRPM) <= toleranceRPM);
+        return Optional.of(currentRPM <= targetRPM + upToleranceRPM && currentRPM >= targetRPM - downToleranceRPM);
     }
 }
