@@ -1,6 +1,9 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -46,7 +49,7 @@ public class TeleopDrive {
     private Command brakeCommand;
 
     private final DoubleSupplier speedShifter, intakeMultiplier, cubicLeftY, cubicLeftX;
-    private final Supplier<Integer> povTurnDirection;
+    private final Supplier<Integer> omegaTurnDirection;
     private final Supplier<LinearVelocity> commonXVel, commonYVel;
     private final Supplier<AngularVelocity> commonOmegaVel;
     private final Supplier<Optional<Angle>> commonPOVAngle;
@@ -67,7 +70,7 @@ public class TeleopDrive {
                 RobotContainer.getInstance().hidDriver1.getLeftX(),
                 SwerveConstants.joystickDeadband,
                 SwerveConstants.joystickExponent);
-        povTurnDirection = () -> {
+        omegaTurnDirection = () -> {
             int povVal = RobotContainer.getInstance().hidDriver1.getPOV();
 
             switch (povVal) {
@@ -84,14 +87,15 @@ public class TeleopDrive {
                 -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
         commonYVel = () -> SwerveConstants.maxTranslationVel.times(
                 -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
-        commonOmegaVel = () -> SwerveConstants.maxAngularVel.times(povTurnDirection.get() * speedShifter.getAsDouble());
+        commonOmegaVel =
+                () -> SwerveConstants.maxAngularVel.times(omegaTurnDirection.get() * speedShifter.getAsDouble());
         commonPOVAngle = () -> {
             double x = RobotContainer.getInstance().hidDriver1.getRightX();
             double y = RobotContainer.getInstance().hidDriver1.getRightY();
 
             if (Math.hypot(x, y) < SwerveConstants.joystickDeadband) return Optional.empty();
 
-            return Optional.of(Radians.of(Math.atan2(-y, x)));
+            return Optional.of(Radians.of(Math.atan2(-x, -y)));
         };
 
         lastMode = Optional.empty();
@@ -100,7 +104,11 @@ public class TeleopDrive {
 
         setupCommands();
 
-        RobotContainer.getInstance().swerve.setDefaultCommand(fieldCentricOmegaCommand);
+        RobotContainer.getInstance().swerve.setDefaultCommand(fieldCentricPOVCommand);
+    }
+
+    public String getName() {
+        return "TelopDrive";
     }
 
     private void setupCommands() {
@@ -187,26 +195,39 @@ public class TeleopDrive {
     }
 
     public void teleopPeriodic() {
+        Logger.logDouble(getName(), "speedShifter", speedShifter.getAsDouble());
+        Logger.logDouble(getName(), "intakeMultiplier", intakeMultiplier.getAsDouble());
+        Logger.logDouble(getName(), "cubicLeftY", cubicLeftY.getAsDouble());
+        Logger.logDouble(getName(), "cubicLeftX", cubicLeftX.getAsDouble());
+        Logger.logLong(getName(), "omegaTurnDirection", omegaTurnDirection.get());
+        Logger.logDouble(getName(), "commonXVel", commonXVel.get().in(MetersPerSecond));
+        Logger.logDouble(getName(), "commonYVel", commonYVel.get().in(MetersPerSecond));
+        Logger.logDouble(getName(), "commonOmegaVel", commonOmegaVel.get().in(RadiansPerSecond));
+        Logger.logDouble(
+                getName(),
+                "commonPOVAngle",
+                commonPOVAngle.get().map((val) -> val.in(Degrees)).orElse(Double.NaN));
+
         SwerveMode mode;
         if (RobotContainer.getInstance().hidDriver1.getXButton()) {
             mode = SwerveMode.BRAKE;
         } else if (RobotContainer.getInstance().hidDriver1.getLeftTriggerAxis() >= 0.5) {
             if (commonPOVAngle.get().isPresent()) {
-                mode = SwerveMode.ROBOT_CENTRIC_OMEGA;
-            } else {
                 mode = SwerveMode.ROBOT_CENTRIC_POV;
+            } else {
+                mode = SwerveMode.ROBOT_CENTRIC_OMEGA;
             }
         } else if (RobotContainer.getInstance().hidDriver1.getLeftBumperButton()) {
             mode = SwerveMode.SNAKE;
         } else {
             if (commonPOVAngle.get().isPresent()) {
-                mode = SwerveMode.FIELD_CENTRIC_OMEGA;
-            } else {
                 mode = SwerveMode.FIELD_CENTRIC_POV;
+            } else {
+                mode = SwerveMode.FIELD_CENTRIC_OMEGA;
             }
         }
 
-        Logger.logEnum("TeleopDrive", "mode", mode);
+        Logger.logEnum(getName(), "mode", mode);
 
         if (lastMode.isEmpty() || !mode.equals(lastMode.get())) {
             lastMode = Optional.of(mode);

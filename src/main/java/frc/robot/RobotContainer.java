@@ -20,6 +20,8 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -46,14 +48,15 @@ import frc.robot.commands.AimAtTarget;
 import frc.robot.commands.AutoDriveToTower;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.AutoWaitForReadyToShoot;
+import frc.robot.commands.Shoot;
+import frc.robot.commands.StopShoot;
 import frc.robot.commands.climb.ClimbClimb;
 import frc.robot.commands.climb.ClimbDown;
 import frc.robot.commands.climb.ClimbUp;
 import frc.robot.commands.climb.ManualSpool;
-import frc.robot.commands.indexer.RunIndexer;
-import frc.robot.commands.indexer.StopIndexer;
+import frc.robot.commands.indexer.ReverseSpindexer;
 import frc.robot.commands.intake.DeployIntake;
-import frc.robot.commands.intake.ReverseSpindexer;
+import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.commands.intake.RunRoller;
 import frc.robot.commands.leds.ActiveAtFZoneLED;
 import frc.robot.commands.leds.ActiveAtHubLED;
@@ -67,7 +70,6 @@ import frc.robot.commands.turret.ManualTurret;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
-import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
@@ -140,6 +142,8 @@ public class RobotContainer {
 
     public final Field2d ntField;
 
+    private final Debouncer readyToShootDebouncer;
+
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
 
@@ -178,6 +182,8 @@ public class RobotContainer {
 
         ntField = new Field2d();
         SmartDashboard.putData("Field", ntField); // only ever call once
+
+        readyToShootDebouncer = new Debouncer(0.4, DebounceType.kFalling);
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
         MiscUtils.changeSubsystemDefaultCommand(indexer, reverseSpindexerCommand, false);
@@ -220,22 +226,23 @@ public class RobotContainer {
 
         commandDriver2
                 .leftTrigger()
-                .whileTrue(new RunRoller(intake, false))
+                .whileTrue(new RepeatCommand(new RunRoller(intake, false)))
                 .whileTrue(new BlinkLED(ledSub, Color.kWhite));
+        commandDriver2.leftBumper().whileTrue(new RepeatCommand(new ReverseIntake(intake)));
         commandDriver2.povUp().onTrue(new ClimbUp(climber, false));
         commandDriver2.povRight().or(commandDriver2.povLeft()).onTrue(new ClimbClimb(climber, false));
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
-                        new RunIndexer(indexer, true),
-                        new StopIndexer(indexer),
+                        new Shoot(indexer, intake, true),
+                        new StopShoot(indexer, intake),
                         () -> isReadyToShoot()
                                 && Robot.getInstance()
                                         .getTeleopLogic()
                                         .map((val) -> val.getIsHubActive().orElse(false))
                                         .orElse(true))))
-                .onFalse(new StopIndexer(indexer));
+                .onFalse(new StopShoot(indexer, intake));
         commandDriver2
                 .x()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
@@ -258,11 +265,13 @@ public class RobotContainer {
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
-                .onTrue(new ManualShoot(
-                                shooter,
-                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
-                                true)
-                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                // .onTrue(new ManualShoot(
+                //                 shooter,
+                //                 () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) /
+                // 2.0),
+                //                 true)
+                //         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                .onTrue(shooter.runSysId);
         commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(750), false));
         commandButtonBox
                 .stopShoot()
@@ -400,6 +409,6 @@ public class RobotContainer {
     }
 
     public boolean isReadyToShoot() {
-        return shooter.isShooterAtTargetSpeed().orElse(false);
+        return readyToShootDebouncer.calculate(shooter.isShooterAtTargetSpeed().orElse(false));
     }
 }

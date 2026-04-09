@@ -23,6 +23,7 @@ public class IntakeConstants {
 
         public static final double intakeVoltage = 12;
         public static final double shootVoltage = 12;
+        public static final double reverseVoltage = -4;
     }
 
     public static class LeftDeployer {

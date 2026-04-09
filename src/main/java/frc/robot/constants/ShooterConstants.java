@@ -3,7 +3,6 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -25,21 +24,37 @@ public class ShooterConstants {
         public static IdleMode idleMode = IdleMode.kCoast;
         public static boolean inverted = false;
         public static final double maxDutyCycle = 1.0;
-        public static final Optional<Voltage> nominalVoltage = Optional.of(Volts.of(13));
+        public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
-        public static double kP = 0.001;
-        public static double kI = 5e-7;
-        public static final Optional<Double> iZone = Optional.of(2000d);
-        public static double kD = 4e-4;
-        public static final Optional<Voltage> kStaticG = Optional.empty();
-        public static final Optional<Voltage> kCos = Optional.empty();
-        public static final Optional<Double> kS = Optional.empty();
-        public static final Optional<Double> kV = Optional.empty();
-        public static final Optional<Double> kA = Optional.empty();
-        public static final Optional<Time> rampTime = Optional.empty();
+        public static class NormalPID {
+            public static double kP = 9.3539E-04 / 2;
+            public static double kI = 0;
+            public static final Optional<Double> iZone = Optional.empty();
+            public static double kD = 0;
+            public static final Optional<Voltage> kStaticG = Optional.empty();
+            public static final Optional<Voltage> kCos = Optional.empty();
+            public static final Optional<Double> kS = Optional.of(0.11245);
+            public static final Optional<Double> kV = Optional.of(12.071 / 6756);
+            public static final Optional<Double> kA = Optional.of(0.036117);
+            public static final Optional<Time> rampTime = Optional.empty();
+        }
+
+        public static class BackupPID {
+            public static double kP = 0.001;
+            public static double kI = 5e-7;
+            public static final Optional<Double> iZone = Optional.of(2000d);
+            public static double kD = 4e-4;
+            public static final Optional<Voltage> kStaticG = Optional.empty();
+            public static final Optional<Voltage> kCos = Optional.empty();
+            public static final Optional<Double> kS = Optional.empty();
+            public static final Optional<Double> kV = Optional.empty();
+            public static final Optional<Double> kA = Optional.empty();
+            public static final Optional<Time> rampTime = Optional.empty();
+        }
     }
 
-    public static final AngularVelocity targetTolerance = RPM.of(100);
+    public static final AngularVelocity targetUpwardTolerance = RPM.of(100);
+    public static final AngularVelocity targetDownwardTolerance = RPM.of(100);
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
 
     public static final boolean manualShootUseSmartdashboard = true;
