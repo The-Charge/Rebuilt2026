@@ -33,7 +33,8 @@ public class SwerveConstants {
     public static final LinearVelocity deadbandTranslationVel = MetersPerSecond.of(0.01);
     public static final AngularVelocity deadbandAngularVel = RotationsPerSecond.of(0.01);
 
-    public static final double joystickDeadband = 0.1;
+    public static final double driveJoystickDeadband = 0.1;
+    public static final double turnJoystickDeadband = 0.2;
     public static final int joystickExponent = 3;
 
     public static final PIDConstants pathplannerTranslationPID = new PIDConstants(10, 0, 0);

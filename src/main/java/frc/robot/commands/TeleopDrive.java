@@ -64,11 +64,11 @@ public class TeleopDrive {
 
         cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
                 RobotContainer.getInstance().hidDriver1.getLeftY(),
-                SwerveConstants.joystickDeadband,
+                SwerveConstants.driveJoystickDeadband,
                 SwerveConstants.joystickExponent);
         cubicLeftX = () -> ControllerUtil.applyExponentialDeadband(
                 RobotContainer.getInstance().hidDriver1.getLeftX(),
-                SwerveConstants.joystickDeadband,
+                SwerveConstants.driveJoystickDeadband,
                 SwerveConstants.joystickExponent);
         omegaTurnDirection = () -> {
             int povVal = RobotContainer.getInstance().hidDriver1.getPOV();
@@ -93,7 +93,7 @@ public class TeleopDrive {
             double x = RobotContainer.getInstance().hidDriver1.getRightX();
             double y = RobotContainer.getInstance().hidDriver1.getRightY();
 
-            if (Math.hypot(x, y) < SwerveConstants.joystickDeadband) return Optional.empty();
+            if (Math.hypot(x, y) < SwerveConstants.turnJoystickDeadband) return Optional.empty();
 
             return Optional.of(Radians.of(Math.atan2(-x, -y)));
         };
