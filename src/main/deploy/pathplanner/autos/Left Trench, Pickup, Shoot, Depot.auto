@@ -25,7 +25,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Right Start to Collect"
+                              "pathName": "Left Trench to Collect"
                             }
                           },
                           {
@@ -40,7 +40,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Right Collect to Shoot"
+                        "pathName": "Left Collect to Shoot"
                       }
                     },
                     {
@@ -75,7 +75,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Right Shoot to Pickup 2"
+                              "pathName": "Left Shoot to Depot"
                             }
                           },
                           {
@@ -85,6 +85,18 @@
                             }
                           }
                         ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "WaitForReadyToShoot"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Shoot"
                       }
                     }
                   ]
