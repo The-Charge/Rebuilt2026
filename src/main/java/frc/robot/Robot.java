@@ -160,7 +160,7 @@ public class Robot extends TimedRobot {
 
         RobotContainer.getInstance().displayAuto();
 
-        RobotContainer.getInstance().limelights.setThrottle(true);
+        RobotContainer.getInstance().limelights.setThrottleMode(true);
     }
 
     @Override
@@ -267,6 +267,6 @@ public class Robot extends TimedRobot {
     }
 
     private void onEnabled() {
-        RobotContainer.getInstance().limelights.setThrottle(false);
+        RobotContainer.getInstance().limelights.setThrottleMode(false);
     }
 }
