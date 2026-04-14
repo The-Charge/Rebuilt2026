@@ -70,6 +70,7 @@ import frc.robot.commands.turret.ManualTurret;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.LEDConstants;
 import frc.robot.constants.LimelightConstants;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.constants.TurretConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
@@ -265,13 +266,12 @@ public class RobotContainer {
                         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         commandButtonBox
                 .testShoot()
-                // .onTrue(new ManualShoot(
-                //                 shooter,
-                //                 () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) /
-                // 2.0),
-                //                 true)
-                //         .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
-                .onTrue(shooter.runSysId);
+                .onTrue(new ManualShoot(
+                                shooter,
+                                () -> ShooterConstants.maxManualSpeed.times((-hidButtonBox.getSliderAxis() + 1) / 2.0),
+                                true)
+                        .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+        // .onTrue(shooter.runSysId);
         commandButtonBox.alt().onTrue(new ManualShoot(shooter, () -> RPM.of(750), false));
         commandButtonBox
                 .stopShoot()

@@ -29,7 +29,7 @@ public class ClimberConstants {
         public static final double maxDutyCycle = 1;
         public static final Optional<Voltage> maxVoltage = Optional.empty();
 
-        public static final double kP = 5;
+        public static final double kP = 10;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final Optional<Double> kG = Optional.empty();
@@ -43,7 +43,7 @@ public class ClimberConstants {
         public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(145.88 / 9);
         public static final ClimberPosition downPosition = ClimberPosition.fromMotorRotations(0);
 
-        public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5 / 9);
+        public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5);
         public static final double manualSpoolSpeed = 0.1;
     }
 

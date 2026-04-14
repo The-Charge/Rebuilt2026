@@ -60,23 +60,17 @@ public class ShooterConstants {
     public static final boolean manualShootUseSmartdashboard = true;
 
     public static final Time ballAirTime =
-            Seconds.of(0.7); // This value is quite consistent across distances, and obtained from footage
+            Seconds.of(0.8); // This value is quite consistent across distances, and obtained from footage
     public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
     static {
         // https://docs.google.com/spreadsheets/d/1gD5zpmwW_OerKw1IJ8A7G90_bQRWeTSE9Q0T1-Z4_QU/edit?usp=sharing
         distanceToRPMPlot = new InterpolatingDoubleTreeMap();
 
-        distanceToRPMPlot.put(1.9505, 2500.0d);
-        distanceToRPMPlot.put(2.2, 2530.0d);
-        distanceToRPMPlot.put(2.860123, 2900.0d);
-        distanceToRPMPlot.put(3.084457, 2700.0d);
-        distanceToRPMPlot.put(3.203391, 2800.0d);
-        distanceToRPMPlot.put(3.40251, 2900.0d);
-        distanceToRPMPlot.put(3.672000, 3000.0d);
-        distanceToRPMPlot.put(4.136633, 3100.0d);
-        distanceToRPMPlot.put(4.876027, 3500.0d);
-        distanceToRPMPlot.put(5.181369, 3700.0d);
-        distanceToRPMPlot.put(5.610685, 4000.0d);
+        distanceToRPMPlot.put(1.96, 2400d);
+        distanceToRPMPlot.put(2.50, 2550d);
+        distanceToRPMPlot.put(3.03, 2700d);
+        distanceToRPMPlot.put(3.31, 2900d);
+        distanceToRPMPlot.put(4.37, 3200d);
     }
 }
