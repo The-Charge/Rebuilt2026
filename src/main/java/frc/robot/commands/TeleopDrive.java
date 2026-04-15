@@ -48,7 +48,7 @@ public class TeleopDrive {
     private Command snakeCommand;
     private Command brakeCommand;
 
-    private final DoubleSupplier speedShifter, intakeMultiplier, cubicLeftY, cubicLeftX;
+    private final DoubleSupplier speedShifter, slowDown, cubicLeftY, cubicLeftX;
     private final Supplier<Integer> omegaTurnDirection;
     private final Supplier<LinearVelocity> commonXVel, commonYVel;
     private final Supplier<AngularVelocity> commonOmegaVel;
@@ -60,7 +60,14 @@ public class TeleopDrive {
 
     public TeleopDrive() {
         speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
-        intakeMultiplier = () -> RobotContainer.getInstance().hidDriver2.getLeftTriggerAxis() >= 0.5 ? 0.5 : 1;
+        slowDown = () -> {
+            if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
+                return 0.25 * 0.5;
+            } else if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
+                return 0.5;
+            }
+            return 1;
+        };
 
         cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
                 RobotContainer.getInstance().hidDriver1.getLeftY(),
@@ -84,9 +91,9 @@ public class TeleopDrive {
         };
 
         commonXVel = () -> SwerveConstants.maxTranslationVel.times(
-                -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
+                -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * slowDown.getAsDouble());
         commonYVel = () -> SwerveConstants.maxTranslationVel.times(
-                -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * intakeMultiplier.getAsDouble());
+                -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * slowDown.getAsDouble());
         commonOmegaVel =
                 () -> SwerveConstants.maxAngularVel.times(omegaTurnDirection.get() * speedShifter.getAsDouble());
         commonPOVAngle = () -> {
@@ -196,7 +203,7 @@ public class TeleopDrive {
 
     public void teleopPeriodic() {
         Logger.logDouble(getName(), "speedShifter", speedShifter.getAsDouble());
-        Logger.logDouble(getName(), "intakeMultiplier", intakeMultiplier.getAsDouble());
+        Logger.logDouble(getName(), "intakeMultiplier", slowDown.getAsDouble());
         Logger.logDouble(getName(), "cubicLeftY", cubicLeftY.getAsDouble());
         Logger.logDouble(getName(), "cubicLeftX", cubicLeftX.getAsDouble());
         Logger.logLong(getName(), "omegaTurnDirection", omegaTurnDirection.get());

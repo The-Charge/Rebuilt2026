@@ -39,8 +39,8 @@ public class ClimberConstants {
         public static final Optional<Double> kV = Optional.empty();
         public static final Optional<Double> kA = Optional.empty();
 
-        public static final ClimberPosition upPosition = ClimberPosition.fromMotorRotations(415.21 / 9);
-        public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(145.88 / 9);
+        public static final ClimberPosition upPosition = ClimberPosition.fromMotorRotations(133.57);
+        public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(15);
         public static final ClimberPosition downPosition = ClimberPosition.fromMotorRotations(0);
 
         public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5);

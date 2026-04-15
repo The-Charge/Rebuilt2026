@@ -71,6 +71,7 @@ public class ShooterConstants {
         distanceToRPMPlot.put(2.50, 2550d);
         distanceToRPMPlot.put(3.03, 2700d);
         distanceToRPMPlot.put(3.31, 2900d);
-        distanceToRPMPlot.put(4.37, 3200d);
+        distanceToRPMPlot.put(4.17, 3200d);
+        distanceToRPMPlot.put(4.37, 3300d);
     }
 }
