@@ -18,7 +18,7 @@ public class Shoot extends Command {
         intake = intakeSub;
         instant = isInstant;
 
-        addRequirements(indexer, intake);
+        addRequirements(indexer);
     }
 
     @Override
@@ -30,6 +30,10 @@ public class Shoot extends Command {
     public void initialize() {
         indexer.setExchangeMotorVoltage(Exchange.shootVoltage);
         indexer.setSpindexerVoltage(Spindexer.shootVoltage);
+    }
+
+    @Override
+    public void execute() {
         intake.setRollerVoltage(Roller.shootVoltage);
     }
 

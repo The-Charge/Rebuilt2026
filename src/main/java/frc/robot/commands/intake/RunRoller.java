@@ -22,7 +22,7 @@ public class RunRoller extends Command {
     }
 
     @Override
-    public void initialize() {
+    public void execute() {
         intake.setRollerVoltage(Roller.intakeVoltage);
     }
 

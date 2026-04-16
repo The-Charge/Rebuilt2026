@@ -77,7 +77,11 @@ public class AutoDriveToTower extends Command {
             finalAlignCommand.execute();
         }
 
-        if (climb.canSeeTower() && !hasSeenTower) {
+        if ((climb.canSeeTower()
+                        || expirationTimer
+                                .map((val) -> val.hasElapsed(expiration.get()))
+                                .orElse(false))
+                && !hasSeenTower) {
             hasSeenTower = true;
 
             finalAlignTimer = Optional.of(new Timer());
@@ -102,7 +106,6 @@ public class AutoDriveToTower extends Command {
 
     @Override
     public boolean isFinished() {
-        return expirationTimer.map((val) -> val.hasElapsed(expiration.get())).orElse(false)
-                || finalAlignTimer.map((val) -> val.hasElapsed(0.25)).orElse(false);
+        return finalAlignTimer.map((val) -> val.hasElapsed(0.25)).orElse(false);
     }
 }
