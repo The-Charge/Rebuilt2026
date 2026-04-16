@@ -108,7 +108,11 @@ public class LimelightSubsystem extends SubsystemBase {
         // blue/red)
 
         // Update vision with robot rotation information (mode 0)
-        // setRobotOrientationSwerve(); // for external imu modes
+        // for external imu modes
+        if (LimelightConstants.imuMode == ImuMode.ExternalImu
+                || LimelightConstants.imuMode == ImuMode.InternalImuExternalAssist) {
+            setRobotOrientationSwerve();
+        }
 
         // Log difference in  measurements between both camaras
         logDiff();
@@ -513,9 +517,10 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * FIX REWIND, THROTTLE
      */
-    // public void takeRewind() {
-    //     LimelightHelpers.triggerRewindCapture(cameraName, 200.0);
-    // }
+    public void takeRewind() {
+        LimelightHelpers.triggerRewindCapture(turretLimelight.limelightName, 200.0);
+        LimelightHelpers.triggerRewindCapture(sideLimelight.limelightName, 200.0);
+    }
     // public void setThrottle(boolean enabled) {
     // LimelightHelpers.SetThrottle(cameraName, enabled ? 200 : 0);
     // }

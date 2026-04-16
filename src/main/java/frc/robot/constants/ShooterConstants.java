@@ -27,7 +27,7 @@ public class ShooterConstants {
         public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
         public static class NormalPID {
-            public static double kP = 9.3539E-04 / 2;
+            public static double kP = 9.3539e-4;
             public static double kI = 0;
             public static final Optional<Double> iZone = Optional.empty();
             public static double kD = 0;

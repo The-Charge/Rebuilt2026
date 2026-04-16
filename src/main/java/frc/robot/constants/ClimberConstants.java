@@ -44,7 +44,7 @@ public class ClimberConstants {
         public static final ClimberPosition downPosition = ClimberPosition.fromMotorRotations(0);
 
         public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5);
-        public static final double manualSpoolSpeed = 0.1;
+        public static final double manualSpoolSpeed = 0.2;
     }
 
     public static class TowerSensor {
