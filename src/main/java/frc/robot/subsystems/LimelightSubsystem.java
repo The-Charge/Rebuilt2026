@@ -1,15 +1,12 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -18,12 +15,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.constants.LimelightConstants;
-import frc.robot.constants.LimelightConstants.StdDevConstants;
-import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag1;
-import frc.robot.constants.LimelightConstants.StdDevConstants.MegaTag2;
 import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.Logger;
+import frc.robot.utils.VisionUtils;
+import frc.robot.utils.VisionUtils.VisionMeasurement;
 import java.util.Optional;
 import limelight.Limelight;
 import limelight.networktables.AngularVelocity3d;
@@ -34,11 +30,8 @@ import limelight.networktables.LimelightSettings.StreamMode;
 import limelight.networktables.Orientation3d;
 import limelight.networktables.PoseEstimate;
 import limelight.networktables.target.AprilTagFiducial;
-import limelight.results.RawFiducial;
 
 public class LimelightSubsystem extends SubsystemBase {
-
-    public static record VisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     private final Limelight turretLimelight;
     private final Limelight sideLimelight;
@@ -53,8 +46,12 @@ public class LimelightSubsystem extends SubsystemBase {
     private final Optional<StructArrayPublisher<Pose2d>> visionTargetsSide;
 
     private final Optional<StructPublisher<Pose3d>> diffPublisher;
-    private final Optional<StructPublisher<Pose3d>> MT1TurretPublisher;
-    private final Optional<StructPublisher<Pose3d>> MT1SidePublisher;
+
+    private final Optional<StructPublisher<Pose3d>> turretPublisherMT1;
+    private final Optional<StructPublisher<Pose3d>> sidePublisherMT1;
+
+    private final Optional<StructPublisher<Pose3d>> turretPublisherMT2;
+    private final Optional<StructPublisher<Pose3d>> sidePublisherMT2;
 
     private boolean isSeeded = false;
     private boolean throttle = false;
@@ -86,8 +83,14 @@ public class LimelightSubsystem extends SubsystemBase {
 
         // Logging for diff
         diffPublisher = Logger.makeStructPublisher(getName(), "poseDeviation", Pose3d.struct);
-        MT1TurretPublisher = Logger.makeStructPublisher(getName(), "MT1" + turretLimelight + "Pose", Pose3d.struct);
-        MT1SidePublisher = Logger.makeStructPublisher(getName(), "MT1" + sideLimelight + "Pose", Pose3d.struct);
+
+        // Logging for MT1 publisher
+        turretPublisherMT1 = Logger.makeStructPublisher(getName(), "MT1" + turretLimelight + "Pose", Pose3d.struct);
+        sidePublisherMT1 = Logger.makeStructPublisher(getName(), "MT1" + sideLimelight + "Pose", Pose3d.struct);
+
+        // Logging for MT2 Publisher
+        turretPublisherMT2 = Logger.makeStructPublisher(getName(), "MT2" + turretLimelight + "Pose", Pose3d.struct);
+        sidePublisherMT2 = Logger.makeStructPublisher(getName(), "MT2" + sideLimelight + "Pose", Pose3d.struct);
     }
 
     @Override
@@ -105,17 +108,21 @@ public class LimelightSubsystem extends SubsystemBase {
         // blue/red)
 
         // Update vision with robot rotation information (mode 0)
-        // setRobotOrientationSwerve(); // for external imu modes
+        // for external imu modes
+        if (LimelightConstants.imuMode == ImuMode.ExternalImu
+                || LimelightConstants.imuMode == ImuMode.InternalImuExternalAssist) {
+            setRobotOrientationSwerve();
+        }
 
-        // Log difference in MT2 measurements between both camaras
-        // logMT2diff(); // not using MT2
+        // Log difference in  measurements between both camaras
+        logDiff();
 
         // log the individual poses of MT1
-        logMT1Turret();
-        logMT1Side();
+        logTurret();
+        logSide();
 
         // Now update swerve with two vision measurements
-        multipleMT1();
+        multiple();
 
         // logVisionTargets(turretLimelight, visionTargetsTurret);
         // logVisionTargets(sideLimelight, visionTargetsSide);
@@ -152,7 +159,7 @@ public class LimelightSubsystem extends SubsystemBase {
      * Unthrtottled, no throttle & use Apriltag pipeline
      * @param isEnabled
      */
-    public void setThrottle(boolean throttle) {
+    public void setThrottleMode(boolean throttle) {
         if (throttle) {
             LimelightHelpers.SetThrottle(turretLimelight.limelightName, 200);
             LimelightHelpers.SetThrottle(sideLimelight.limelightName, 200);
@@ -187,7 +194,6 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     // public Optional<Pose3d> getTransformToTag(int id) {
     //     LimelightTarget_Fiducial[] targetFiducials = results.targets_Fiducials;
-
     //     for (LimelightTarget_Fiducial targetFiducial : targetFiducials) {
     //         if (targetFiducial.fiducialID == id) {
     //             Pose3d pose = targetFiducial.getTargetPose_CameraSpace();
@@ -259,22 +265,42 @@ public class LimelightSubsystem extends SubsystemBase {
     public void seedMT1() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
 
-        Optional<VisionMeasurement> MT1turret = getVisionMeasurementTurret(swerve, false);
-        Optional<VisionMeasurement> MT1side = getVisionMeasurementSide(swerve, false);
-        if (MT1turret.isPresent() || MT1side.isPresent()) {
+        Optional<VisionMeasurement> visionMeasuremeantTurretMT1 = getVisionMeasurementTurret(swerve, false);
+        Optional<VisionMeasurement> visionMeasurementSideMT1 = getVisionMeasurementSide(swerve, false);
+        if (visionMeasuremeantTurretMT1.isPresent() || visionMeasurementSideMT1.isPresent()) {
             Angle rots;
-            if (MT1turret.isPresent() && MT1side.isPresent()) {
-                if (MT1turret.get().stdDevs().get(0, 0)
-                        > MT1side.get().stdDevs().get(0, 0)) {
-                    rots = MT1turret.get().pose().getRotation().getMeasure();
+            if (visionMeasuremeantTurretMT1.isPresent() && visionMeasurementSideMT1.isPresent()) {
+                if (visionMeasuremeantTurretMT1.get().stdDevs().get(0, 0)
+                        > visionMeasurementSideMT1.get().stdDevs().get(0, 0)) {
+                    rots = visionMeasuremeantTurretMT1
+                            .get()
+                            .pose()
+                            .toPose2d()
+                            .getRotation()
+                            .getMeasure();
 
                 } else {
-                    rots = MT1side.get().pose().getRotation().getMeasure();
+                    rots = visionMeasurementSideMT1
+                            .get()
+                            .pose()
+                            .toPose2d()
+                            .getRotation()
+                            .getMeasure();
                 }
-            } else if (MT1turret.isPresent()) {
-                rots = MT1turret.get().pose().getRotation().getMeasure();
+            } else if (visionMeasuremeantTurretMT1.isPresent()) {
+                rots = visionMeasuremeantTurretMT1
+                        .get()
+                        .pose()
+                        .toPose2d()
+                        .getRotation()
+                        .getMeasure();
             } else {
-                rots = MT1side.get().pose().getRotation().getMeasure();
+                rots = visionMeasurementSideMT1
+                        .get()
+                        .pose()
+                        .toPose2d()
+                        .getRotation()
+                        .getMeasure();
             }
             seedBothAbsolute(rots);
             isSeeded = true;
@@ -307,6 +333,11 @@ public class LimelightSubsystem extends SubsystemBase {
         return isSeeded;
     }
 
+    /**
+     * TODO: The reason why our robot is teleporting ???
+     * @param limelight
+     * @param targetPublisher
+     */
     private void logVisionTargets(Limelight limelight, Optional<StructArrayPublisher<Pose2d>> targetPublisher) {
         Optional<limelight.networktables.LimelightResults> results = limelight.getLatestResults();
 
@@ -335,47 +366,62 @@ public class LimelightSubsystem extends SubsystemBase {
             targetPublisher.get().set(targetPoses);
         }
     }
-
+    /**
+     * Getters just in case!!!
+     * @return
+     */
     private Optional<PoseEstimate> getMegaTag1Turret() {
         Optional<PoseEstimate> poseEstimate = turretPoseEstimatorMT1.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
+        if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
         return poseEstimate;
     }
 
+    /**
+     * Getters just in case!!!
+     * @return
+     */
     private Optional<PoseEstimate> getMegTag1Side() {
         Optional<PoseEstimate> poseEstimate = sidePoseEstimatorMT1.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
+        if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
         return poseEstimate;
     }
 
+    /**
+     * Getters just in case!!!
+     * @return
+     */
     private Optional<PoseEstimate> getMegaTag2Turret() {
         Optional<PoseEstimate> poseEstimate = turretPoseEstimatorMT2.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
+        if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
         return poseEstimate;
     }
 
+    /**
+     * Getters just in case!!!
+     * @return
+     */
     private Optional<PoseEstimate> getMegaTag2Side() {
         Optional<PoseEstimate> poseEstimate = sidePoseEstimatorMT2.getPoseEstimate();
-        if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
+        if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
         return poseEstimate;
     }
 
     /**
      * YALL getVisionMeasurement for Turret Camera
      * NOTE:: REMOVED MAX DISTANCE!!!!
+     * kept boolean for useMT2 because might need to seed from MT1 even if using MT2 as active mode
      * @param swerve
      * @param useMegaTag2
      * @return
      */
-    private Optional<VisionMeasurement> getVisionMeasurementTurret(
-            CommandSwerveDrivetrain swerve, boolean useMegaTag2) {
+    private Optional<VisionMeasurement> getVisionMeasurementTurret(CommandSwerveDrivetrain swerve, boolean useMT2) {
         Optional<Matrix<N3, N1>> stdDevs;
         Optional<PoseEstimate> poseEstimate;
-        if (useMegaTag2) {
+        if (useMT2) {
             // MT2 Code
             poseEstimate = turretPoseEstimatorMT2.getPoseEstimate();
-            if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-            stdDevs = calculateStdDevsMegaTag2(poseEstimate.get(), swerve);
+            if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
+            stdDevs = VisionUtils.calcStdDevsMT2(poseEstimate.get(), swerve.getStateCopy().Speeds);
             if (stdDevs.isEmpty()) return Optional.empty();
         } else {
             // MT1 Code
@@ -384,12 +430,12 @@ public class LimelightSubsystem extends SubsystemBase {
                 return Optional.empty();
             }
 
-            stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
+            stdDevs = VisionUtils.calcStdDevsMT1(poseEstimate.get(), swerve.getStateCopy().Speeds);
 
             if (stdDevs.isEmpty()) return Optional.empty();
         }
-        return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+        return Optional.of(
+                new VisionMeasurement(poseEstimate.get().pose, poseEstimate.get().timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -406,8 +452,8 @@ public class LimelightSubsystem extends SubsystemBase {
         if (useMegaTag2) {
             // MT2 Code
             poseEstimate = sidePoseEstimatorMT2.getPoseEstimate();
-            if (poseEstimate.isEmpty() || !validPoseEstimate(poseEstimate.get())) return Optional.empty();
-            stdDevs = calculateStdDevsMegaTag2(poseEstimate.get(), swerve);
+            if (poseEstimate.isEmpty() || !VisionUtils.validPoseEstimate(poseEstimate.get())) return Optional.empty();
+            stdDevs = VisionUtils.calcStdDevsMT2(poseEstimate.get(), swerve.getStateCopy().Speeds);
             if (stdDevs.isEmpty()) return Optional.empty();
         } else {
             // MT1 Code
@@ -416,12 +462,12 @@ public class LimelightSubsystem extends SubsystemBase {
                 return Optional.empty();
             }
 
-            stdDevs = calculateStdDevsMegaTag1(poseEstimate.get(), swerve);
+            stdDevs = VisionUtils.calcStdDevsMT1(poseEstimate.get(), swerve.getStateCopy().Speeds);
 
             if (stdDevs.isEmpty()) return Optional.empty();
         }
-        return Optional.of(new VisionMeasurement(
-                poseEstimate.get().pose.toPose2d(), poseEstimate.get().timestampSeconds, stdDevs.get()));
+        return Optional.of(
+                new VisionMeasurement(poseEstimate.get().pose, poseEstimate.get().timestampSeconds, stdDevs.get()));
     }
 
     /**
@@ -429,104 +475,26 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     private void multiple() {
         CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
-        Optional<VisionMeasurement> vmt = getVisionMeasurementTurret(swerve, true);
-        Optional<VisionMeasurement> vms = getVisionMeasurementSide(swerve, true);
-        if (!vmt.isEmpty()) {
-            swerve.addVisionMeasurement(vmt.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
+        Optional<VisionMeasurement> vmtOpt =
+                getVisionMeasurementTurret(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
+        Optional<VisionMeasurement> vmsOpt =
+                getVisionMeasurementSide(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
+        if (!vmtOpt.isEmpty()) {
+            VisionMeasurement visionMeasurementTurret = vmtOpt.get();
+            if (VisionUtils.isFiltered(visionMeasurementTurret)) return;
+            swerve.addVisionMeasurement(
+                    visionMeasurementTurret.pose().toPose2d(),
+                    visionMeasurementTurret.timestamp(),
+                    visionMeasurementTurret.stdDevs());
         }
-        if (!vms.isEmpty()) {
-            swerve.addVisionMeasurement(vms.get().pose, vms.get().timestamp, vms.get().stdDevs);
+        if (!vmsOpt.isEmpty()) {
+            VisionMeasurement visionMeasurementSide = vmsOpt.get();
+            if (VisionUtils.isFiltered(visionMeasurementSide)) return;
+            swerve.addVisionMeasurement(
+                    visionMeasurementSide.pose().toPose2d(),
+                    visionMeasurementSide.timestamp(),
+                    visionMeasurementSide.stdDevs());
         }
-    }
-
-    /**
-     * Gets vision measurements, then adds them to swerve
-     */
-    private void multipleMT1() {
-        CommandSwerveDrivetrain swerve = RobotContainer.getInstance().swerve;
-        Optional<VisionMeasurement> vmt = getVisionMeasurementTurret(swerve, false);
-        Optional<VisionMeasurement> vms = getVisionMeasurementSide(swerve, false);
-        if (vmt.isPresent()) {
-            swerve.addVisionMeasurement(vmt.get().pose, vmt.get().timestamp, vmt.get().stdDevs);
-        }
-        if (vms.isPresent()) {
-            swerve.addVisionMeasurement(vms.get().pose, vms.get().timestamp, vms.get().stdDevs);
-        }
-    }
-
-    /**
-     * YALL MT1 std
-     * @param poseEstimate
-     * @param swerve
-     * @return
-     */
-    private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag1(
-            PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
-        if (!validPoseEstimate(poseEstimate)) return Optional.empty();
-
-        // Optional<PoseEstimate> opt = turretPoseEstimator.getPoseEstimate();
-        // PoseEstimate poseEstimate = opt.get();
-        // if (opt.isEmpty()) return Optional.empty();
-
-        double translationalStdDev = StdDevConstants.MegaTag1.kInitialValue;
-
-        if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) { // single tag
-            RawFiducial singleTag = poseEstimate.rawFiducials[0];
-
-            if (singleTag.ambiguity > 0.7 || singleTag.distToCamera > 5) {
-                return Optional.empty(); // don't trust if too ambiguous or too far
-            }
-
-            // megatag1 performs much worse with only one tag
-            translationalStdDev += StdDevConstants.MegaTag1.kSingleTagPunishment;
-        }
-
-        ChassisSpeeds speed = swerve.getStateCopy().Speeds;
-
-        translationalStdDev -= Math.min(poseEstimate.tagCount, 4) * StdDevConstants.MegaTag1.kTagCountReward;
-        translationalStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag1.kAverageDistancePunishment;
-        translationalStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond)
-                * StdDevConstants.MegaTag1.kRobotSpeedPunishment;
-
-        // make sure we aren't putting all our trust in vision
-        translationalStdDev = Math.max(translationalStdDev, MegaTag1.kMinStd);
-
-        double rotStdDev = LimelightConstants.kRotStdDev; // we want to get the rotation from megatag1
-
-        return Optional.of(VecBuilder.fill(translationalStdDev, translationalStdDev, rotStdDev));
-    }
-
-    /**
-     * YALL std mt2
-     * @param poseEstimate
-     * @param swerve
-     * @return
-     */
-    private Optional<Matrix<N3, N1>> calculateStdDevsMegaTag2(
-            PoseEstimate poseEstimate, CommandSwerveDrivetrain swerve) {
-        if (!validPoseEstimate(poseEstimate)) return Optional.empty();
-        boolean isGoingTooFast = Math.abs(swerve.getStateCopy().Speeds.omegaRadiansPerSecond)
-                > LimelightConstants.kMaxAngularSpeed.in(RadiansPerSecond);
-        if (isGoingTooFast) return Optional.empty();
-
-        if (poseEstimate.avgTagDist > 8) return Optional.empty();
-
-        double transStdDev = StdDevConstants.MegaTag2.kInitialValue;
-
-        ChassisSpeeds speed = swerve.getStateCopy().Speeds;
-
-        if (poseEstimate.tagCount > 1) transStdDev -= StdDevConstants.MegaTag2.kMultipleTagsBonus;
-        transStdDev += poseEstimate.avgTagDist * StdDevConstants.MegaTag2.kAverageDistancePunishment;
-        transStdDev += Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond)
-                * StdDevConstants.MegaTag2.kRobotSpeedPunishment;
-
-        transStdDev = Math.max(transStdDev, MegaTag2.kMinStd); // make sure we aren't putting all our trust in vision
-
-        double rotStdDev = LimelightConstants.kRotStdDev / 4; // never trust rotation under any circumstances, but
-        // maybe do
-        // double rotStdDev = Double.MAX_VALUE;
-
-        return Optional.of(VecBuilder.fill(transStdDev, transStdDev, rotStdDev));
     }
 
     /**
@@ -549,9 +517,10 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * FIX REWIND, THROTTLE
      */
-    // public void takeRewind() {
-    //     LimelightHelpers.triggerRewindCapture(cameraName, 200.0);
-    // }
+    public void takeRewind() {
+        LimelightHelpers.triggerRewindCapture(turretLimelight.limelightName, 200.0);
+        LimelightHelpers.triggerRewindCapture(sideLimelight.limelightName, 200.0);
+    }
     // public void setThrottle(boolean enabled) {
     // LimelightHelpers.SetThrottle(cameraName, enabled ? 200 : 0);
     // }
@@ -559,51 +528,83 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * Logs difference between MT2 measurements between camaras.
      */
-    private void logMT2diff() {
-        if (diffPublisher.isEmpty()) return;
+    private void logDiff() {
+        // MT2 Case
+        if (LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2)) {
+            if (diffPublisher.isEmpty()) return;
 
-        Optional<PoseEstimate> turret = turretPoseEstimatorMT2.getPoseEstimate();
-        Optional<PoseEstimate> side = sidePoseEstimatorMT2.getPoseEstimate();
-        if (turret.isEmpty() || side.isEmpty() || !validPoseEstimate(turret.get()) || !validPoseEstimate(side.get()))
-            return;
-        Pose3d turretPose = turret.get().pose;
-        Pose3d sidePose = side.get().pose;
+            Optional<PoseEstimate> turret = turretPoseEstimatorMT2.getPoseEstimate();
+            Optional<PoseEstimate> side = sidePoseEstimatorMT2.getPoseEstimate();
+            if (turret.isEmpty()
+                    || side.isEmpty()
+                    || !VisionUtils.validPoseEstimate(turret.get())
+                    || !VisionUtils.validPoseEstimate(side.get())) return;
+            Pose3d turretPose = turret.get().pose;
+            Pose3d sidePose = side.get().pose;
 
-        Pose3d diff = new Pose3d().plus(sidePose.minus(turretPose));
-        diffPublisher.get().set(diff);
+            Pose3d diff = new Pose3d().plus(sidePose.minus(turretPose));
+            diffPublisher.get().set(diff);
+        } else {
+            // MT1
+            if (diffPublisher.isEmpty()) return;
+
+            Optional<PoseEstimate> turret = turretPoseEstimatorMT1.getPoseEstimate();
+            Optional<PoseEstimate> side = sidePoseEstimatorMT1.getPoseEstimate();
+            if (turret.isEmpty()
+                    || side.isEmpty()
+                    || !VisionUtils.validPoseEstimate(turret.get())
+                    || !VisionUtils.validPoseEstimate(side.get())) return;
+            Pose3d turretPose = turret.get().pose;
+            Pose3d sidePose = side.get().pose;
+
+            Pose3d diff = new Pose3d().plus(sidePose.minus(turretPose));
+            diffPublisher.get().set(diff);
+        }
     }
 
     /**
-     * Log the pose we got from MT1 on the turret
+     * Log the pose we got from turret; uses poseEstimators from Constant's activeMode
      */
-    private void logMT1Turret() {
-        if (MT1TurretPublisher.isEmpty()) return;
+    private void logTurret() {
+        if (LimelightConstants.activeMode == LimelightConstants.Mode.MT1) {
+            if (turretPublisherMT1.isEmpty()) return;
 
-        var pose = turretPoseEstimatorMT1.getPoseEstimate();
-        if (pose.isEmpty()) return;
+            Optional<PoseEstimate> opt = turretPoseEstimatorMT1.getPoseEstimate();
+            if (opt.isEmpty()) return;
+            PoseEstimate poseEstimate = opt.get();
+            if (!VisionUtils.validPoseEstimate(poseEstimate)) return;
 
-        MT1TurretPublisher.get().set(pose.get().pose);
+            turretPublisherMT1.get().set(opt.get().pose);
+        } else {
+            if (turretPublisherMT2.isEmpty()) return;
+
+            var pose = turretPoseEstimatorMT2.getPoseEstimate();
+            if (pose.isEmpty()) return;
+
+            turretPublisherMT2.get().set(pose.get().pose);
+        }
     }
 
     /**
-     * Log the pose we got from MT1 on the side
+     * Log the pose we got from side
      */
-    private void logMT1Side() {
-        if (MT1SidePublisher.isEmpty()) return;
+    private void logSide() {
+        if (LimelightConstants.activeMode == LimelightConstants.Mode.MT1) {
+            if (sidePublisherMT1.isEmpty()) return;
 
-        var pose = sidePoseEstimatorMT1.getPoseEstimate();
-        if (pose.isEmpty()) return;
+            Optional<PoseEstimate> opt = sidePoseEstimatorMT1.getPoseEstimate();
+            if (opt.isEmpty()) return;
+            PoseEstimate poseEstimate = opt.get();
+            if (!VisionUtils.validPoseEstimate(poseEstimate)) return;
 
-        MT1SidePublisher.get().set(pose.get().pose);
-    }
+            sidePublisherMT1.get().set(opt.get().pose);
+        } else {
+            if (sidePublisherMT2.isEmpty()) return;
 
-    /**
-     * Returns whether given pose estimate is valid. First check if optional is empty!
-     * @param pe
-     * @return
-     */
-    private boolean validPoseEstimate(PoseEstimate pe) {
-        if (pe == null || !pe.hasData || pe.rawFiducials == null || pe.rawFiducials.length == 0) return false;
-        return true;
+            var pose = sidePoseEstimatorMT2.getPoseEstimate();
+            if (pose.isEmpty()) return;
+
+            sidePublisherMT2.get().set(pose.get().pose);
+        }
     }
 }

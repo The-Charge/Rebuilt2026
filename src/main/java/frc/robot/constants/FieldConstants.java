@@ -49,4 +49,7 @@ public class FieldConstants {
             }
         }
     }
+
+    public static final Distance fieldXBound = Inches.of(651.22);
+    public static final Distance fieldYBound = Inches.of(317.69);
 }

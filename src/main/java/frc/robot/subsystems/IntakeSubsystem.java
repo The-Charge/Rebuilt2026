@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Celsius;
 
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.Alert;
@@ -93,8 +92,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Roller.maxDutyCycle,
                 Roller.maxVoltage);
 
-        if (rollerMotor.getConfigurator().apply(motorConfig) != StatusCode.OK) {
-            Logger.reportError(String.format("Failed to configure %s", Roller.motorName));
+        if (!TalonFXUtils.safeApplyConfig(rollerMotor, Roller.motorName, motorConfig)) {
             rollerConfigFail.set(true);
         }
     }

@@ -25,7 +25,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Right Start to Collect"
+                              "pathName": "Center Start to Depot"
                             }
                           },
                           {
@@ -35,12 +35,6 @@
                             }
                           }
                         ]
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "Right Collect to Shoot"
                       }
                     },
                     {
@@ -63,25 +57,6 @@
                             "type": "named",
                             "data": {
                               "name": "Shoot"
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "deadline",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "path",
-                            "data": {
-                              "pathName": "Right Shoot to Pickup 2"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Intake"
                             }
                           }
                         ]
@@ -110,6 +85,37 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Depot to Left Climb"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ClimbUp"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DriveToTower"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ClimbClimb"
           }
         }
       ]

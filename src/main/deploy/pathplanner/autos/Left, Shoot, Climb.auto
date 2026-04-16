@@ -5,64 +5,71 @@
     "data": {
       "commands": [
         {
-          "type": "deadline",
+          "type": "named",
+          "data": {
+            "name": "DeployIntake"
+          }
+        },
+        {
+          "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
+                "data": {
+                  "pathName": "Left Start to Shoot"
+                }
+              },
+              {
+                "type": "deadline",
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "DeployIntake"
-                      }
-                    },
-                    {
-                      "type": "deadline",
+                      "type": "sequential",
                       "data": {
                         "commands": [
                           {
-                            "type": "path",
+                            "type": "named",
                             "data": {
-                              "pathName": "Right Start to Collect"
+                              "name": "WaitForReadyToShoot"
                             }
                           },
                           {
-                            "type": "named",
+                            "type": "deadline",
                             "data": {
-                              "name": "Intake"
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 3.0
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "Shoot"
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
                       }
                     },
                     {
-                      "type": "path",
-                      "data": {
-                        "pathName": "Right Collect to Shoot"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "WaitForReadyToShoot"
-                      }
-                    },
-                    {
-                      "type": "deadline",
+                      "type": "sequential",
                       "data": {
                         "commands": [
                           {
-                            "type": "wait",
+                            "type": "named",
                             "data": {
-                              "waitTime": 4.0
+                              "name": "CalibrateTurret"
                             }
                           },
                           {
                             "type": "named",
                             "data": {
-                              "name": "Shoot"
+                              "name": "AimAtHub"
                             }
                           }
                         ]
@@ -70,24 +77,18 @@
                     }
                   ]
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "CalibrateTurret"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "AimAtHub"
-                      }
-                    }
-                  ]
+                  "pathName": "Left Shoot to Climb"
                 }
               },
               {
@@ -97,12 +98,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right Shoot to Climb"
           }
         },
         {

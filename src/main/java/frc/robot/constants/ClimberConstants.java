@@ -23,13 +23,13 @@ public class ClimberConstants {
         public static final String motorName = "climbMotor";
         public static final double mechanismInchesPerMotorRotation = 1; // TODO: climber conversion factor
 
-        public static final Current maxCurrent = Amps.of(40);
+        public static final Current maxCurrent = Amps.of(60);
         public static final NeutralModeValue neutralMode = NeutralModeValue.Brake;
         public static final InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
         public static final double maxDutyCycle = 1;
         public static final Optional<Voltage> maxVoltage = Optional.empty();
 
-        public static final double kP = 0.2;
+        public static final double kP = 10;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final Optional<Double> kG = Optional.empty();
@@ -39,8 +39,8 @@ public class ClimberConstants {
         public static final Optional<Double> kV = Optional.empty();
         public static final Optional<Double> kA = Optional.empty();
 
-        public static final ClimberPosition upPosition = ClimberPosition.fromMotorRotations(415.21);
-        public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(145.88);
+        public static final ClimberPosition upPosition = ClimberPosition.fromMotorRotations(133.57);
+        public static final ClimberPosition climbPosition = ClimberPosition.fromMotorRotations(15);
         public static final ClimberPosition downPosition = ClimberPosition.fromMotorRotations(0);
 
         public static final ClimberPosition targetTolerance = ClimberPosition.fromMotorRotations(5);
