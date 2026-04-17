@@ -235,7 +235,7 @@ public class RobotContainer {
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
-                .or(commandDriver1.a())
+                .or(commandDriver1.leftBumper())
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
                         new Shoot(indexer, intake, true), new StopShoot(indexer, intake), () -> Robot.getInstance()
                                 .getTeleopLogic()
