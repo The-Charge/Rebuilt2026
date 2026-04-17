@@ -116,16 +116,16 @@ public class VisionUtils {
      * @return true if valid, false if rejected
      */
     public static boolean isFiltered(VisionMeasurement vm) {
-        return false;
+        // return false;
 
-        // if (Math.abs(vm.pose.getZ()) > LimelightConstants.StdDevConstants.Filter.kMaxHeight
-        //         || vm.pose.getX() < 0
-        //         || vm.pose.getMeasureX().gt(FieldConstants.fieldXBound)
-        //         || vm.pose.getY() < 0
-        //         || vm.pose.getMeasureY().gt(FieldConstants.fieldYBound)) return true;
-        // else {
-        //     return false;
-        // }
+        if (Math.abs(vm.pose.getZ()) > LimelightConstants.StdDevConstants.Filter.kMaxHeight
+                || vm.pose.getX() < 0
+                || vm.pose.getMeasureX().gt(FieldConstants.fieldXBound)
+                || vm.pose.getY() < 0
+                || vm.pose.getMeasureY().gt(FieldConstants.fieldYBound)) return true;
+        else {
+            return false;
+        }
     }
 
     public static boolean wouldFilter(VisionMeasurement vm) {
