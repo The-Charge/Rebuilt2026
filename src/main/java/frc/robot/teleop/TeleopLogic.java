@@ -108,7 +108,7 @@ public class TeleopLogic {
         if (isInFriendlyZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_HUB;
         } else if (isInEnemyZone) {
-            turretMode = TeleopTurretMode.INACTIVE_TURRET;
+            turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
         } else if (isInNeutralZone) {
             turretMode = TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE;
         }
@@ -177,6 +177,7 @@ public class TeleopLogic {
                 "autoWinningAlliance",
                 autoWinner.map((val) -> val.toString()).orElse("None"));
         Logger.logString(tableName, "zone", zone.toString());
+        Logger.logBool(tableName, "isAllowedToShoot", isAllowedToShoot());
 
         lastTimeLeftInPhase = Optional.of(timeLeftInPhase);
         lastPhase = Optional.of(phase);
@@ -233,5 +234,16 @@ public class TeleopLogic {
 
     public Optional<Boolean> getIsHubActive() {
         return lastIsHubActive;
+    }
+
+    public boolean isAllowedToShoot() {
+        return RobotContainer.getInstance().isReadyToShoot();
+
+        // if(lastIsHubActive.isEmpty() || lastTurretMode.isEmpty()) return
+        // RobotContainer.getInstance().isReadyToShoot();
+        // if(lastTurretMode.get() == TeleopTurretMode.ACTIVE_TURRET_AT_FRIENDLY_ZONE) return
+        // RobotContainer.getInstance().isReadyToShoot();
+
+        // return RobotContainer.getInstance().isReadyToShoot() && lastIsHubActive.get();
     }
 }

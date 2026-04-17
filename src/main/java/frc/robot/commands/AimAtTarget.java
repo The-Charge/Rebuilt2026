@@ -111,7 +111,9 @@ public class AimAtTarget extends Command {
         Logger.logDouble(getName(), "distToTarget", distToTarget.in(Meters));
 
         turret.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));
-        shooter.setTargetVelocity(RPM.of(ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters))));
+        shooter.setTargetVelocity(RPM.of(Math.min(
+                ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters)),
+                ShooterConstants.maxRealSpeed.in(RPM))));
     }
 
     @Override

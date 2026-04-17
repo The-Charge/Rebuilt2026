@@ -235,14 +235,12 @@ public class RobotContainer {
         commandDriver2.povDown().onTrue(new ClimbDown(climber, false));
         commandDriver2
                 .rightTrigger()
+                .or(commandDriver1.a())
                 .whileTrue(new RepeatCommand(new ConditionalCommand(
-                        new Shoot(indexer, intake, true),
-                        new StopShoot(indexer, intake),
-                        () -> isReadyToShoot()
-                                && Robot.getInstance()
-                                        .getTeleopLogic()
-                                        .map((val) -> val.getIsHubActive().orElse(false))
-                                        .orElse(true))))
+                        new Shoot(indexer, intake, true), new StopShoot(indexer, intake), () -> Robot.getInstance()
+                                .getTeleopLogic()
+                                .map((val) -> val.isAllowedToShoot())
+                                .orElse(true))))
                 .onFalse(new StopShoot(indexer, intake));
         commandDriver2
                 .x()
