@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AimAtTarget;
 import frc.robot.commands.AutoDriveToTower;
 import frc.robot.commands.AutoShoot;
@@ -87,6 +88,7 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.utils.AutoDisplayUtil;
+import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
 import frc.robot.utils.MiscUtils;
 import java.util.Optional;
@@ -144,6 +146,7 @@ public class RobotContainer {
     public final Field2d ntField;
 
     private final Debouncer readyToShootDebouncer;
+    public boolean overrideTurret;
 
     private RobotContainer() {
         pdp = new PowerDistribution(30, ModuleType.kRev);
@@ -177,14 +180,15 @@ public class RobotContainer {
         inactiveLEDCommand = new InactiveLED(ledSub);
         idleLEDCommand = new IdleLED(ledSub);
         autoLEDCommand = new BlinkLED(ledSub, LEDConstants.orange);
-        aimAtHubCommand = AimAtTarget.atHub(turret, shooter, swerve);
-        aimAtFZoneCommand = AimAtTarget.atFZone(turret, shooter, swerve);
+        aimAtHubCommand = AimAtTarget.atHub(turret, shooter, swerve, () -> overrideTurret);
+        aimAtFZoneCommand = AimAtTarget.atFZone(turret, shooter, swerve, () -> overrideTurret);
         reverseSpindexerCommand = new ReverseSpindexer(indexer);
 
         ntField = new Field2d();
         SmartDashboard.putData("Field", ntField); // only ever call once
 
         readyToShootDebouncer = new Debouncer(0.4, DebounceType.kFalling);
+        overrideTurret = false;
 
         MiscUtils.changeSubsystemDefaultCommand(ledSub, idleLEDCommand, true);
         MiscUtils.changeSubsystemDefaultCommand(indexer, reverseSpindexerCommand, false);
@@ -245,6 +249,19 @@ public class RobotContainer {
         commandDriver2
                 .x()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        new Trigger(() -> Math.abs(
+                                ControllerUtil.applySimpleDeadband(hidDriver2.getLeftX() + hidDriver2.getRightX(), 0.1))
+                        > 0)
+                .onTrue(new InstantCommand(() -> {
+                    overrideTurret = true;
+                }));
+        commandDriver2
+                .leftStick()
+                .or(commandDriver2.rightStick())
+                .onTrue(new InstantCommand(() -> {
+                            overrideTurret = false;
+                        })
+                        .ignoringDisable(true));
 
         commandButtonBox
                 .resetTurret()
