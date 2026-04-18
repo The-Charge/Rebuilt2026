@@ -140,9 +140,9 @@ public class AimAtTarget extends Command {
             turret.setTurretAngle(TurretAngle.fromMechanismAngle(robotCentricAngle));
         }
 
-        shooter.setTargetVelocity(RPM.of(Math.min(
-                ShooterConstants.distanceToRPMPlot.get(distToTarget.in(Meters)) + extraRPM.in(RPM),
-                ShooterConstants.maxRealSpeed.in(RPM))));
+        AngularVelocity targetRPM = RPM.of(381 * distToTarget.in(Meters) + 1614 + extraRPM.in(RPM));
+
+        shooter.setTargetVelocity(RPM.of(Math.min(targetRPM.in(RPM), ShooterConstants.maxRealSpeed.in(RPM))));
     }
 
     @Override

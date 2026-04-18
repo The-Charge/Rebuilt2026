@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
@@ -55,24 +54,25 @@ public class ShooterConstants {
 
     public static final AngularVelocity targetUpwardTolerance = RPM.of(100);
     public static final AngularVelocity targetDownwardTolerance = RPM.of(100);
-    public static final AngularVelocity maxRealSpeed = RPM.of(6700);
+    public static final AngularVelocity maxRealSpeed = RPM.of(5900);
     public static final AngularVelocity maxManualSpeed = RPM.of(7000);
+    public static final AngularVelocity targetOffset = RPM.of(50);
 
     public static final boolean manualShootUseSmartdashboard = true;
 
     public static final Time ballAirTime =
             Seconds.of(0.8); // This value is quite consistent across distances, and obtained from footage
-    public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
+    // public static final InterpolatingDoubleTreeMap distanceToRPMPlot;
 
     static {
         // https://docs.google.com/spreadsheets/d/1gD5zpmwW_OerKw1IJ8A7G90_bQRWeTSE9Q0T1-Z4_QU/edit?usp=sharing
-        distanceToRPMPlot = new InterpolatingDoubleTreeMap();
+        // distanceToRPMPlot = new InterpolatingDoubleTreeMap();
 
-        distanceToRPMPlot.put(1.96, 2400d);
-        distanceToRPMPlot.put(2.50, 2550d);
-        distanceToRPMPlot.put(3.03, 2700d);
-        distanceToRPMPlot.put(3.31, 2900d);
-        distanceToRPMPlot.put(4.17, 3200d);
-        distanceToRPMPlot.put(4.37, 3300d);
+        // distanceToRPMPlot.put(1.96, 2400d);
+        // distanceToRPMPlot.put(2.50, 2550d);
+        // distanceToRPMPlot.put(3.03, 2700d);
+        // distanceToRPMPlot.put(3.31, 2900d);
+        // distanceToRPMPlot.put(4.17, 3200d);
+        // distanceToRPMPlot.put(4.37, 3300d);
     }
 }
