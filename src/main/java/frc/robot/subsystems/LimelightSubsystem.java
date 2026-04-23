@@ -115,11 +115,11 @@ public class LimelightSubsystem extends SubsystemBase {
         }
 
         // Log difference in  measurements between both camaras
-        logDiff();
+        // logDiff();
 
         // log the individual poses of MT1
-        logTurret();
-        logSide();
+        // logTurret();
+        // logSide();
 
         // Now update swerve with two vision measurements
         multiple();
@@ -481,7 +481,12 @@ public class LimelightSubsystem extends SubsystemBase {
                 getVisionMeasurementSide(swerve, LimelightConstants.activeMode.equals(LimelightConstants.Mode.MT2));
         if (!vmtOpt.isEmpty()) {
             VisionMeasurement visionMeasurementTurret = vmtOpt.get();
-            if (VisionUtils.isFiltered(visionMeasurementTurret)) return;
+            boolean filter = VisionUtils.isFiltered(visionMeasurementTurret);
+            boolean wouldFilter = VisionUtils.wouldFilter(visionMeasurementTurret);
+            Logger.logBool(getName(), "turretFiltered", filter);
+            Logger.logBool(getName(), "wouldTurretFilter", wouldFilter);
+
+            if (filter) return;
             swerve.addVisionMeasurement(
                     visionMeasurementTurret.pose().toPose2d(),
                     visionMeasurementTurret.timestamp(),
@@ -489,7 +494,12 @@ public class LimelightSubsystem extends SubsystemBase {
         }
         if (!vmsOpt.isEmpty()) {
             VisionMeasurement visionMeasurementSide = vmsOpt.get();
-            if (VisionUtils.isFiltered(visionMeasurementSide)) return;
+            boolean filter = VisionUtils.isFiltered(visionMeasurementSide);
+            boolean wouldFilter = VisionUtils.wouldFilter(visionMeasurementSide);
+            Logger.logBool(getName(), "sideFiltered", filter);
+            Logger.logBool(getName(), "wouldSideFilter", wouldFilter);
+
+            if (filter) return;
             swerve.addVisionMeasurement(
                     visionMeasurementSide.pose().toPose2d(),
                     visionMeasurementSide.timestamp(),

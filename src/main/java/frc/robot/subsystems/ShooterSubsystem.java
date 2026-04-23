@@ -120,7 +120,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setTargetVelocity(AngularVelocity speed) {
-        shootMotor.getClosedLoopController().setSetpoint(speed.abs(RPM), ControlType.kVelocity);
+        shootMotor
+                .getClosedLoopController()
+                .setSetpoint(speed.in(RPM) + ShooterConstants.targetOffset.in(RPM), ControlType.kVelocity);
         targetShooterSpeed = Optional.of(speed);
     }
 
@@ -187,7 +189,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public Optional<Boolean> isShooterAtTargetSpeed() {
         if (targetShooterSpeed.isEmpty()) return Optional.empty();
 
-        double currentRPM = shootMotor.getEncoder().getVelocity();
+        double currentRPM = shootMotor.getEncoder().getVelocity() - ShooterConstants.targetOffset.in(RPM);
         double targetRPM = targetShooterSpeed.get().in(RPM);
         double upToleranceRPM = ShooterConstants.targetUpwardTolerance.in(RPM);
         double downToleranceRPM = ShooterConstants.targetDownwardTolerance.in(RPM);
