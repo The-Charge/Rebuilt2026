@@ -30,7 +30,7 @@ public class LimelightConstants {
     }
 
     public static class Side {
-        public static final String cameraName = "other";
+        public static final String cameraName = "side";
         public static final Pose3d robotRelativePose = new Pose3d(
                 Inches.of(-27 / 2 + 5.5),
                 Inches.of(-27 / 2 + 1),
@@ -85,11 +85,11 @@ public class LimelightConstants {
 
     public static double kRotStdDev = 0.3;
 
-    public static double imuAssistAlpha = 0.1;
+    public static double imuAssistAlpha = 0.001;
 
     // imuMode of steady state
-    public static ImuMode imuMode = ImuMode.ExternalImu;
-    public static Mode activeMode = Mode.MT1;
+    public static ImuMode imuMode = ImuMode.InternalImuMT1Assist;
+    public static Mode activeMode = Mode.MT2;
 
     public enum Mode {
         MT1,
