@@ -250,7 +250,7 @@ public class RobotContainer {
                 .x()
                 .onTrue(new CalibrateTurret(turret).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         new Trigger(() -> Math.abs(
-                                ControllerUtil.applySimpleDeadband(hidDriver2.getLeftX() + hidDriver2.getRightX(), 0.1))
+                                ControllerUtil.applySimpleDeadband(hidDriver2.getLeftX() + hidDriver2.getRightX(), 0.5))
                         > 0)
                 .onTrue(new InstantCommand(() -> {
                     overrideTurret = true;
