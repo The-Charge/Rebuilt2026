@@ -412,19 +412,6 @@
             }
           },
           {
-            "title": "limelight-other",
-            "x": 640.0,
-            "y": 320.0,
-            "width": 320.0,
-            "height": 256.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-other",
-              "period": 0.06,
-              "rotation_turns": 0
-            }
-          },
-          {
             "title": "Alerts",
             "x": 0.0,
             "y": 0.0,
@@ -455,6 +442,19 @@
               "robot_color": 4294198070,
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "limelight-side",
+            "x": 640.0,
+            "y": 320.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-side",
+              "period": 0.06,
+              "rotation_turns": 0
             }
           }
         ]
