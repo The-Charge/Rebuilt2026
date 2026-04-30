@@ -61,14 +61,19 @@ public class TeleopDrive {
     public TeleopDrive() {
         speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
         slowDown = () -> {
+            // if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
+            //     return 1;
+            // } else if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
+            //     return 0.25 * 0.5;
+            // } else if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
+            //     return 0.5;
+            // }
+            // return 1;
             if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
-                return 1;
-            } else if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
-                return 0.25 * 0.5;
-            } else if (RobotContainer.getInstance().hidDriver2.getRightTriggerAxis() >= 0.5) {
                 return 0.5;
+            } else {
+                return 1;
             }
-            return 1;
         };
 
         cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
