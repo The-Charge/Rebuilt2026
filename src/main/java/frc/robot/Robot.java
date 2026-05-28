@@ -9,16 +9,13 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.leds.BlinkLED;
-import frc.robot.teleop.TeleopLogic;
+import frc.robot.commands.turret.CalibrateTurret;
 import frc.robot.utils.Alerts;
-import frc.robot.utils.AutoDisplayUtil;
 import frc.robot.utils.CANMonitor;
 import frc.robot.utils.ControllerUtil;
 import frc.robot.utils.Logger;
@@ -29,10 +26,10 @@ public class Robot extends TimedRobot {
 
     private static Robot instance;
 
-    private Command autoCommand;
-    private Optional<TeleopLogic> teleopLogic;
+    // private Command autoCommand;
+    // private Optional<TeleopLogic> teleopLogic;
     private Optional<TeleopDrive> teleopDrive;
-    private Optional<Timer> autoGyroTimer;
+    // private Optional<Timer> autoGyroTimer;
 
     private SlewRateLimiter pdpVoltageSlew;
 
@@ -57,9 +54,9 @@ public class Robot extends TimedRobot {
                             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
         });
 
-        teleopLogic = Optional.empty();
+        // teleopLogic = Optional.empty();
         teleopDrive = Optional.empty();
-        autoGyroTimer = Optional.empty();
+        // autoGyroTimer = Optional.empty();
 
         /*
          * Allow an increase at a rate of 100 volts / second (effectively infinite)
@@ -77,24 +74,25 @@ public class Robot extends TimedRobot {
         return instance;
     }
 
-    public Optional<TeleopLogic> getTeleopLogic() {
-        return teleopLogic;
-    }
+    // public Optional<TeleopLogic> getTeleopLogic() {
+    //     return teleopLogic;
+    // }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
 
-        Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
+        // Logger.logDouble("", "matchTime", DriverStation.getMatchTime());
         Logger.logBool("", "isReadyToShoot", RobotContainer.getInstance().isReadyToShoot());
+        Logger.logDouble("", "targetShooterRPM", RobotContainer.getInstance().shooterSpeed);
     }
 
     public void slowRobotPeriodic() {
-        RobotContainer.getInstance().climber.slowPeriodic();
+        // RobotContainer.getInstance().climber.slowPeriodic();
         RobotContainer.getInstance().indexer.slowPeriodic();
         RobotContainer.getInstance().intake.slowPeriodic();
         RobotContainer.getInstance().ledSub.slowPeriodic();
-        RobotContainer.getInstance().limelights.slowPeriodic();
+        // RobotContainer.getInstance().limelights.slowPeriodic();
         RobotContainer.getInstance().auxSwerve.slowPeriodic();
         RobotContainer.getInstance().turret.slowPeriodic();
         RobotContainer.getInstance().shooter.slowPeriodic();
@@ -105,11 +103,11 @@ public class Robot extends TimedRobot {
     }
 
     public void verySlowRobotPeriodic() {
-        RobotContainer.getInstance().climber.verySlowPeriodic();
+        // RobotContainer.getInstance().climber.verySlowPeriodic();
         RobotContainer.getInstance().indexer.verySlowPeriodic();
         RobotContainer.getInstance().intake.verySlowPeriodic();
         RobotContainer.getInstance().ledSub.verySlowPeriodic();
-        RobotContainer.getInstance().limelights.verySlowPeriodic();
+        // RobotContainer.getInstance().limelights.verySlowPeriodic();
         RobotContainer.getInstance().auxSwerve.verySlowPeriodic();
         RobotContainer.getInstance().turret.verySlowPeriodic();
         RobotContainer.getInstance().shooter.verySlowPeriodic();
@@ -143,7 +141,7 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         RobotContainer.getInstance().indexer.stopAll();
         RobotContainer.getInstance().intake.stopRoller();
-        RobotContainer.getInstance().climber.stopAll();
+        // RobotContainer.getInstance().climber.stopAll();
         RobotContainer.getInstance().shooter.stopShooter();
         RobotContainer.getInstance().turret.stopTurret();
 
@@ -153,13 +151,13 @@ public class Robot extends TimedRobot {
         ControllerUtil.cancelControllerRumbles(0);
         ControllerUtil.cancelControllerRumbles(1);
 
-        if (DriverStation.isFMSAttached()) {
-            RobotContainer.getInstance().limelights.takeRewind();
-        }
+        // if (DriverStation.isFMSAttached()) {
+        //     RobotContainer.getInstance().limelights.takeRewind();
+        // }
 
-        RobotContainer.getInstance().displayAuto();
+        // RobotContainer.getInstance().displayAuto();
 
-        RobotContainer.getInstance().limelights.setThrottleMode(true);
+        // RobotContainer.getInstance().limelights.setThrottleMode(true);
     }
 
     @Override
@@ -170,57 +168,61 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        MiscUtils.changeSubsystemDefaultCommand(
-                RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
+        // MiscUtils.changeSubsystemDefaultCommand(
+        //         RobotContainer.getInstance().ledSub, RobotContainer.getInstance().autoLEDCommand, true);
 
-        autoCommand = RobotContainer.getInstance().getAutonomousCommand();
-        if (autoCommand != null) {
-            CommandScheduler.getInstance().schedule(autoCommand);
-        }
+        // autoCommand = RobotContainer.getInstance().getAutonomousCommand();
+        // if (autoCommand != null) {
+        //     CommandScheduler.getInstance().schedule(autoCommand);
+        // }
 
-        RobotContainer.getInstance().displayAuto();
+        // RobotContainer.getInstance().displayAuto();
 
-        autoGyroTimer = Optional.of(new Timer());
-        autoGyroTimer.get().start();
+        // autoGyroTimer = Optional.of(new Timer());
+        // autoGyroTimer.get().start();
         // RobotContainer.getInstance().limelightCommand.cancel();
         onEnabled();
     }
 
     @Override
     public void autonomousPeriodic() {
-        if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
-            // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
-            RobotContainer.getInstance().limelights.seedSwerve();
-            autoGyroTimer = Optional.empty();
-        }
+        // if (autoGyroTimer.isPresent() && autoGyroTimer.get().hasElapsed(0.1)) {
+        //     // CommandScheduler.getInstance().schedule(RobotContainer.getInstance().limelightCommand);
+        //     RobotContainer.getInstance().limelights.seedSwerve();
+        //     autoGyroTimer = Optional.empty();
+        // }
     }
 
     @Override
     public void autonomousExit() {
-        if (autoCommand != null) {
-            autoCommand.cancel();
-        }
+        // if (autoCommand != null) {
+        //     autoCommand.cancel();
+        // }
     }
 
     @Override
     public void teleopInit() {
-        try {
-            AutoDisplayUtil.clearAutoPath();
-        } catch (Exception e) {
-            Logger.reportError(e);
-        }
+        // try {
+        //     AutoDisplayUtil.clearAutoPath();
+        // } catch (Exception e) {
+        //     Logger.reportError(e);
+        // }
 
-        teleopLogic = Optional.of(new TeleopLogic());
+        // teleopLogic = Optional.of(new TeleopLogic());
         teleopDrive = Optional.of(new TeleopDrive());
+        MiscUtils.changeSubsystemDefaultCommand(
+                RobotContainer.getInstance().turret, RobotContainer.getInstance().demoAimingCommand, true);
 
-        onEnabled();
+        if (!RobotContainer.getInstance().turret.getIsCalibrated()) {
+            CommandScheduler.getInstance().schedule(new CalibrateTurret(RobotContainer.getInstance().turret));
+        }
     }
 
     @Override
     public void teleopPeriodic() {
-        if (teleopLogic.isPresent()) {
-            teleopLogic.get().teleopPeriodic();
-        }
+        // if (teleopLogic.isPresent()) {
+        //     teleopLogic.get().teleopPeriodic();
+        // }
         if (teleopDrive.isPresent()) {
             teleopDrive.get().teleopPeriodic();
         }
@@ -228,13 +230,13 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopExit() {
-        if (teleopLogic.isPresent()) {
-            teleopLogic.get().endTeleop();
-        }
+        // if (teleopLogic.isPresent()) {
+        //     teleopLogic.get().endTeleop();
+        // }
         if (teleopDrive.isPresent()) {
             teleopDrive.get().endTeleop();
         }
-        teleopLogic = Optional.empty();
+        // teleopLogic = Optional.empty();
         teleopDrive = Optional.empty();
     }
 
@@ -244,7 +246,7 @@ public class Robot extends TimedRobot {
         RobotContainer.getInstance().shooter.removeDefaultCommand();
         RobotContainer.getInstance().intake.removeDefaultCommand();
         // RobotContainer.getInstance().indexer.removeDefaultCommand();
-        RobotContainer.getInstance().climber.removeDefaultCommand();
+        // RobotContainer.getInstance().climber.removeDefaultCommand();
 
         teleopDrive = Optional.of(new TeleopDrive());
         onEnabled();
@@ -266,6 +268,6 @@ public class Robot extends TimedRobot {
     }
 
     private void onEnabled() {
-        RobotContainer.getInstance().limelights.setThrottleMode(false);
+        // RobotContainer.getInstance().limelights.setThrottleMode(false);
     }
 }

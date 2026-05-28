@@ -28,7 +28,7 @@ public class TurretConstants {
         public static final Current maxCurrent = Amps.of(10);
         public static final IdleMode idleMode = IdleMode.kCoast;
         public static final boolean inverted = true;
-        public static final double maxDutyCycle = 1;
+        public static final double maxDutyCycle = 0.6;
         public static final Optional<Voltage> nominalVoltage = Optional.empty();
 
         public static final boolean forwardHardLimitEnabled = false;

@@ -59,7 +59,7 @@ public class TeleopDrive {
     private Optional<Rotation2d> lastDefinedPOVRotation;
 
     public TeleopDrive() {
-        speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
+        speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.5 : 1;
         slowDown = () -> {
             // if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
             //     return 1;
@@ -69,11 +69,13 @@ public class TeleopDrive {
             //     return 0.5;
             // }
             // return 1;
-            if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
-                return 0.5;
-            } else {
-                return 1;
-            }
+            // if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
+            //     return 0.5;
+            // } else {
+            //     return 1;
+            // }
+
+            return 0.25;
         };
 
         cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
@@ -168,6 +170,7 @@ public class TeleopDrive {
                 req.withTargetDirection(
                         RobotContainer.getInstance().swerve.getState().Pose.getRotation());
             }
+            req.withMaxAbsRotationalRate(SwerveConstants.maxAngularVel.times(speedShifter.getAsDouble()));
 
             return req;
         });
@@ -185,6 +188,7 @@ public class TeleopDrive {
                 req.withTargetDirection(
                         RobotContainer.getInstance().swerve.getState().Pose.getRotation());
             }
+            req.withMaxAbsRotationalRate(SwerveConstants.maxAngularVel.times(speedShifter.getAsDouble()));
 
             return req;
         });
