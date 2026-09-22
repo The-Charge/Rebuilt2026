@@ -59,7 +59,7 @@ public class TeleopDrive {
     private Optional<Rotation2d> lastDefinedPOVRotation;
 
     public TeleopDrive() {
-        speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.5 : 1;
+        speedShifter = () -> RobotContainer.getInstance().hidDriver1.getRightTriggerAxis() >= 0.5 ? 0.25 : 1;
         slowDown = () -> {
             // if (RobotContainer.getInstance().hidDriver1.getRightBumperButton()) {
             //     return 1;
@@ -75,7 +75,7 @@ public class TeleopDrive {
             //     return 1;
             // }
 
-            return 0.25;
+            return 1;
         };
 
         cubicLeftY = () -> ControllerUtil.applyExponentialDeadband(
