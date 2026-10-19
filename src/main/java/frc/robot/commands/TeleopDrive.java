@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -48,7 +47,7 @@ public class TeleopDrive {
     private Command snakeCommand;
     private Command brakeCommand;
 
-    private final DoubleSupplier speedShifter, slowDown, cubicLeftY, cubicLeftX;
+    private final DoubleSupplier speedShifter, slowDown, cubicLeftY, cubicLeftX, cubicRightX;
     private final Supplier<Integer> omegaTurnDirection;
     private final Supplier<LinearVelocity> commonXVel, commonYVel;
     private final Supplier<AngularVelocity> commonOmegaVel;
@@ -84,6 +83,10 @@ public class TeleopDrive {
                 RobotContainer.getInstance().hidDriver1.getLeftX(),
                 SwerveConstants.driveJoystickDeadband,
                 SwerveConstants.joystickExponent);
+        cubicRightX = () -> ControllerUtil.applyExponentialDeadband(
+                RobotContainer.getInstance().hidDriver1.getRightX(),
+                SwerveConstants.turnJoystickDeadband,
+                SwerveConstants.joystickExponent);
         omegaTurnDirection = () -> {
             int povVal = RobotContainer.getInstance().hidDriver1.getPOV();
 
@@ -101,15 +104,20 @@ public class TeleopDrive {
                 -cubicLeftY.getAsDouble() * speedShifter.getAsDouble() * slowDown.getAsDouble());
         commonYVel = () -> SwerveConstants.maxTranslationVel.times(
                 -cubicLeftX.getAsDouble() * speedShifter.getAsDouble() * slowDown.getAsDouble());
+        // commonOmegaVel =
+        //         () -> SwerveConstants.maxAngularVel.times(omegaTurnDirection.get() * speedShifter.getAsDouble());
         commonOmegaVel =
-                () -> SwerveConstants.maxAngularVel.times(omegaTurnDirection.get() * speedShifter.getAsDouble());
+                () -> SwerveConstants.maxAngularVel.times(-cubicRightX.getAsDouble() * speedShifter.getAsDouble());
         commonPOVAngle = () -> {
-            double x = RobotContainer.getInstance().hidDriver1.getRightX();
-            double y = RobotContainer.getInstance().hidDriver1.getRightY();
+            // double x = RobotContainer.getInstance().hidDriver1.getRightX();
+            // double y = RobotContainer.getInstance().hidDriver1.getRightY();
 
-            if (Math.hypot(x, y) < SwerveConstants.turnJoystickDeadband) return Optional.empty();
+            // if (Math.hypot(x, y) < SwerveConstants.turnJoystickDeadband) return Optional.empty();
 
-            return Optional.of(Radians.of(Math.atan2(-x, -y)));
+            // return Optional.of(Radians.of(Math.atan2(-x, -y)));
+            int angle = RobotContainer.getInstance().hidDriver1.getPOV();
+            if (angle == -1) return Optional.empty();
+            return Optional.of(Degrees.of(-angle));
         };
 
         lastMode = Optional.empty();
