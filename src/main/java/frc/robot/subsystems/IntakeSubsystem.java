@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Celsius;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Servo;
@@ -74,7 +75,8 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void setRollerVoltage(double volts) {
-        rollerMotor.setVoltage(volts);
+        // rollerMotor.setVoltage(volts);
+        rollerMotor.setControl(new TorqueCurrentFOC(Roller.currentLimit.times(volts / 12)));
     }
 
     public void stopRoller() {
